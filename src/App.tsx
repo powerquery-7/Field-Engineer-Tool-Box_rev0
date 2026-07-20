@@ -902,7 +902,7 @@ export default function App() {
                         </span>
                       </label>
 
-                      <div className="grid grid-cols-2 gap-2 pt-1">
+                      <div className="pt-1">
                         <button
                           type="button"
                           onClick={() => setLogStep(2)}
@@ -910,27 +910,30 @@ export default function App() {
                         >
                           Back
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSaveTeamLog()}
-                          disabled={isSavingLog || !hasCertified}
-                          className="w-full py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/10 cursor-pointer"
-                        >
-                          {isSavingLog ? (
-                            <>
-                              <RefreshCw className="h-3 w-3 animate-spin" />
-                              Committing...
-                            </>
-                          ) : (
-                            <>
-                              <Send className="h-3 w-3" />
-                              Save to Database
-                            </>
-                          )}
-                        </button>
                       </div>
                     </div>
                   )}
+
+                  {/* Permanently Exposed Save to Database Action Button */}
+                  <div className="mt-4 pt-4 border-t border-neutral-850/30">
+                    <button
+                      type="button"
+                      onClick={() => handleSaveTeamLog()}
+                      className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/10 cursor-pointer"
+                    >
+                      {isSavingLog ? (
+                        <>
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                          Committing...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-3.5 w-3.5" />
+                          Save to Database
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="pt-3 border-t border-neutral-850/40 text-[9px] text-neutral-500 font-mono flex items-center justify-between">
