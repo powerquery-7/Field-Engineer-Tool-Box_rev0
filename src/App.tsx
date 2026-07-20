@@ -17,6 +17,10 @@ import {
   CheckCircle2,
   Activity,
   FileText,
+  Database,
+  RefreshCw,
+  Send,
+  AlertCircle,
 } from 'lucide-react';
 import { SessionState, ConduitData } from './types';
 import { calculateAllMetrics, generateDemoReadings } from './utils/calculations';
@@ -61,6 +65,66 @@ export default function App() {
   // Recovery States
   const [showRecoveryBanner, setShowRecoveryBanner] = useState(false);
   const [recoveredData, setRecoveredData] = useState<SessionState | null>(null);
+
+  // Neon Postgres Live Team Logging State
+  const [teamLogs, setTeamLogs] = useState<{ content: string }[]>([]);
+  const [newLogText, setNewLogText] = useState('');
+  const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+  const [isSavingLog, setIsSavingLog] = useState(false);
+  const [logsError, setLogsError] = useState<string | null>(null);
+
+  const fetchTeamLogs = async () => {
+    setIsLoadingLogs(true);
+    setLogsError(null);
+    try {
+      const response = await fetch('/api/get-logs');
+      if (!response.ok) {
+        throw new Error(`Failed to load team logs: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setTeamLogs(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error('Error fetching logs:', err);
+      setLogsError(err.message || 'Failed to sync with Neon Postgres.');
+    } finally {
+      setIsLoadingLogs(false);
+    }
+  };
+
+  const handleSaveTeamLog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLogText.trim()) return;
+
+    setIsSavingLog(true);
+    setLogsError(null);
+    try {
+      const response = await fetch('/api/save-log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: newLogText.trim() }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to submit log: ${response.statusText}`);
+      }
+
+      setNewLogText('');
+      await fetchTeamLogs();
+    } catch (err: any) {
+      console.error('Error saving log:', err);
+      setLogsError(err.message || 'Failed to write log to Neon Postgres.');
+    } finally {
+      setIsSavingLog(false);
+    }
+  };
+
+  // Fetch logs on mount
+  useEffect(() => {
+    fetchTeamLogs();
+  }, []);
 
   // Check for recovered data on mount
   useEffect(() => {
@@ -469,6 +533,151 @@ export default function App() {
                   <p className="text-neutral-400 text-xs leading-relaxed">
                     Check the real-time deviation indicators to find distribution discrepancies. Open the Export Modal to obtain your structured spreadsheet .CSV and launch pre-addressed emails.
                   </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Neon Postgres Live Team Logging */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 border-t border-neutral-900/60">
+              {/* Left Form: Entry Form */}
+              <div className="lg:col-span-1 bg-neutral-900 border border-neutral-850/80 rounded-2xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
+                    <Database className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-sans font-semibold text-sm">
+                      Log New Operation
+                    </h3>
+                    <p className="text-neutral-500 text-[11px] font-mono uppercase tracking-wider">
+                      Neon DB Live Portal
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSaveTeamLog} className="space-y-3">
+                  <div>
+                    <label className="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider mb-1.5">
+                      Operational Log Entry Text
+                    </label>
+                    <textarea
+                      value={newLogText}
+                      onChange={(e) => setNewLogText(e.target.value)}
+                      placeholder="e.g. Swept Pitot calibration complete on Mill A, Conduit 1."
+                      className="w-full h-24 bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-sans text-xs p-3 rounded-lg transition-colors resize-none placeholder-neutral-600"
+                      disabled={isSavingLog}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSavingLog || !newLogText.trim()}
+                    className="w-full py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/10"
+                  >
+                    {isSavingLog ? (
+                      <>
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        Logging Entry...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-3.5 w-3.5" />
+                        Dispatch to Neon DB
+                      </>
+                    )}
+                  </button>
+                </form>
+                
+                <p className="text-neutral-500 text-[10px] leading-relaxed">
+                  Every entry is transmitted through secure Vercel Serverless proxy and stored immediately in a serverless Neon PostgreSQL cluster.
+                </p>
+              </div>
+
+              {/* Right List: Synchronized Database Logs */}
+              <div className="lg:col-span-2 bg-neutral-900 border border-neutral-850/80 rounded-2xl p-5 flex flex-col h-[320px]">
+                <div className="flex items-center justify-between border-b border-neutral-800/80 pb-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4.5 w-4.5 text-amber-400" />
+                    <div>
+                      <h3 className="text-white font-sans font-semibold text-sm">
+                        Synchronized Operations Log
+                      </h3>
+                      <p className="text-neutral-500 text-[11px] font-mono uppercase tracking-wider">
+                        Recent 50 Entries (Live Database Sync)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {/* Status indicator */}
+                    <div className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Active
+                    </div>
+                    
+                    <button
+                      onClick={fetchTeamLogs}
+                      disabled={isLoadingLogs}
+                      className="p-1.5 bg-neutral-950 border border-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white rounded-lg transition-colors"
+                      title="Sync with database"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${isLoadingLogs ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Logs Scroll List */}
+                <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-thin">
+                  {logsError ? (
+                    <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-xl flex items-start gap-2.5 text-red-400">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <div className="text-xs font-bold font-mono">Neon DB Sync Warn</div>
+                        <p className="text-[11px] leading-normal text-neutral-400">
+                          {logsError}
+                        </p>
+                        <button
+                          onClick={fetchTeamLogs}
+                          className="text-[10px] font-mono px-2 py-0.5 bg-red-900/20 hover:bg-red-900/30 border border-red-900/40 rounded text-red-300 font-bold transition-all mt-1"
+                        >
+                          Retry Sync
+                        </button>
+                      </div>
+                    </div>
+                  ) : isLoadingLogs && teamLogs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-neutral-500 space-y-2 py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin text-amber-500" />
+                      <span className="text-xs font-mono">Querying Postgres cluster...</span>
+                    </div>
+                  ) : teamLogs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-neutral-500 py-8 text-center space-y-2">
+                      <Database className="h-7 w-7 text-neutral-700" />
+                      <p className="text-xs font-mono max-w-sm">
+                        No team log rows fetched. Submit a log entry on the left to append to Neon Postgres!
+                      </p>
+                    </div>
+                  ) : (
+                    teamLogs.map((log, index) => (
+                      <div
+                        key={index}
+                        className="p-3 bg-neutral-950/60 border border-neutral-850/60 hover:border-neutral-800 rounded-xl flex items-start gap-3 transition-colors group"
+                      >
+                        <div className="p-1.5 bg-neutral-900 border border-neutral-800 text-neutral-400 rounded-md shrink-0 group-hover:text-amber-400 transition-colors">
+                          <FileText className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="space-y-1 min-w-0">
+                          <p className="text-xs text-neutral-200 leading-relaxed font-sans break-words whitespace-pre-wrap">
+                            {log.content}
+                          </p>
+                          <div className="flex items-center gap-2 text-[10px] font-mono text-neutral-600">
+                            <span>Index {teamLogs.length - index}</span>
+                            <span>•</span>
+                            <span className="text-neutral-500">Neon Postgres Managed Row</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
