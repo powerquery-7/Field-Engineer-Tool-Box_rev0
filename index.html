@@ -19,6 +19,17 @@
           fontFamily: {
             sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
             mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          },
+          colors: {
+            appBg: 'var(--bg-app)',
+            appText: 'var(--text-primary)',
+            appTextSec: 'var(--text-secondary)',
+            appTextTer: 'var(--text-tertiary)',
+            cardBg: 'var(--bg-card)',
+            inputBg: 'var(--bg-input)',
+            borderPrim: 'var(--border-primary)',
+            borderSec: 'var(--border-secondary)',
+            headerBg: 'var(--header-bg)',
           }
         }
       }
@@ -28,7 +39,45 @@
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Inline Theme Initer -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      if (savedTheme === 'light') {
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
   <style>
+    :root {
+      --bg-app: #050505;
+      --text-primary: #f5f5f5;
+      --text-secondary: #a3a3a3;
+      --text-tertiary: #525252;
+      --bg-card: #0f0f0f;
+      --bg-input: #050505;
+      --border-primary: #1c1c1c;
+      --border-secondary: #0d0d0d;
+      --header-bg: rgba(13, 13, 13, 0.6);
+      --card-shadow: rgba(0, 0, 0, 0.8);
+    }
+
+    html.light {
+      --bg-app: #f8fafc;
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-tertiary: #64748b;
+      --bg-card: #ffffff;
+      --bg-input: #f1f5f9;
+      --border-primary: #e2e8f0;
+      --border-secondary: #f1f5f9;
+      --header-bg: rgba(255, 255, 255, 0.75);
+      --card-shadow: rgba(148, 163, 184, 0.1);
+    }
+
     /* Custom Scrollbar for precise grid design */
     ::-webkit-scrollbar {
       width: 6px;
@@ -55,44 +104,50 @@
     }
   </style>
 </head>
-<body class="bg-[#050505] text-neutral-100 min-h-screen flex flex-col font-sans selection:bg-amber-500 selection:text-neutral-950">
+<body class="bg-appBg text-appText min-h-screen flex flex-col font-sans selection:bg-amber-500 selection:text-neutral-950 transition-colors duration-200">
 
   <!-- 1. Global Header -->
-  <header class="border-b border-neutral-900 bg-neutral-900/40 backdrop-blur-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 py-3 md:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+  <header class="border-b border-borderSec bg-headerBg backdrop-blur-md sticky top-0 z-40 transition-colors duration-200">
+    <div class="w-full max-w-full mx-auto px-4 lg:px-8 xl:px-12 py-3 md:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
       <div class="flex items-center gap-3 w-full sm:w-auto">
-        <div class="p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg shadow-inner text-amber-400">
+        <div class="p-2.5 bg-inputBg border border-borderPrim rounded-lg shadow-inner text-amber-500">
           <i data-lucide="cpu" class="h-5 w-5"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-white font-mono font-bold text-base md:text-lg tracking-tight">
+            <h1 class="text-appText font-mono font-bold text-base md:text-lg tracking-tight">
               Field Engineer Toolbox System
             </h1>
-            <span class="text-[10px] font-mono px-1.5 py-0.5 bg-neutral-800 border border-neutral-750 text-neutral-400 rounded">
-              v2.6 (JS)
+            <span class="text-[10px] font-mono px-1.5 py-0.5 bg-inputBg border border-borderPrim text-appTextSec rounded">
+              v2.7 (JS)
             </span>
           </div>
-          <p class="text-neutral-500 text-[10px] md:text-xs uppercase tracking-wider flex items-center gap-2 mt-0.5 font-mono">
+          <p class="text-appTextTer text-[10px] md:text-xs uppercase tracking-wider flex items-center gap-2 mt-0.5 font-mono">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             Local Engines Active
-            <span class="text-neutral-700">|</span>
+            <span class="text-appTextTer/40">|</span>
             Operating in Offline Direct Repository Mode
           </p>
         </div>
       </div>
-      <div class="flex items-center gap-4 w-full sm:w-auto justify-end">
-        <div class="flex items-center gap-2 px-3 py-1.5 bg-neutral-950 border border-neutral-850 rounded-lg text-[11px] font-mono">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="text-neutral-400 uppercase">Local Cache:</span>
-          <span class="text-emerald-400 font-semibold">Active</span>
+      <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+        <!-- Theme Toggle Button -->
+        <button id="btn-theme-toggle" class="p-2 bg-inputBg border border-borderPrim rounded-lg hover:bg-cardBg text-amber-500 hover:text-amber-400 transition-colors flex items-center justify-center cursor-pointer" title="Toggle Light/Dark Theme">
+          <i data-lucide="sun" class="h-4 w-4" id="theme-toggle-icon"></i>
+        </button>
+
+        <!-- Cache Status -->
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-inputBg border border-borderPrim rounded-lg text-[11px] font-mono">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-appTextSec uppercase">Local Cache:</span>
+          <span class="text-emerald-500 font-semibold">Active</span>
         </div>
       </div>
     </div>
   </header>
 
   <!-- Main Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+  <main class="flex-1 w-full max-w-full mx-auto p-4 md:p-6 lg:p-8 xl:px-12 space-y-6">
 
     <!-- Active State Recovery Banner -->
     <div id="recovery-banner" class="hidden border border-amber-500/30 bg-amber-950/20 backdrop-blur-md rounded-lg p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in">
@@ -232,6 +287,24 @@
               <i data-lucide="lock" class="h-3.5 w-3.5"></i> System Lock (v2.8)
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Active Facilities & Mills Cache Registry -->
+      <div class="space-y-4 pt-4 border-t border-borderSec">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div class="space-y-0.5">
+            <h3 class="text-xs font-mono font-bold text-appTextSec uppercase tracking-wider">
+              Cached Facilities & Mills Sweep Directory
+            </h3>
+            <p class="text-appTextTer text-[11px]">Real-time offline cache records and balance index for boiler feeds.</p>
+          </div>
+          <span class="text-[10px] font-mono text-amber-500 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
+            Real-time local database sync
+          </span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="dashboard-registry-grid">
+          <!-- Populated by JavaScript -->
         </div>
       </div>
 
@@ -460,78 +533,106 @@
 
   <!-- 5. Export Report Modal -->
   <div id="export-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-    <div class="relative w-full max-w-2xl bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-2xl shadow-black/80">
+    <div class="relative w-full max-w-2xl bg-cardBg border border-borderPrim rounded-xl overflow-hidden shadow-2xl shadow-black/80 transition-colors duration-200">
       <!-- Header -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-borderSec bg-cardBg/50">
         <div class="flex items-center gap-2">
-          <i data-lucide="mail" class="text-amber-400 h-5 w-5"></i>
-          <h3 class="text-white font-sans font-semibold text-lg">Export and Dispatch Report</h3>
+          <i data-lucide="mail" class="text-amber-500 h-5 w-5"></i>
+          <h3 class="text-appText font-sans font-semibold text-lg">Export and Dispatch Report</h3>
         </div>
-        <button id="btn-close-export" class="p-1.5 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors">
+        <button id="btn-close-export" class="p-1.5 text-appTextSec hover:text-appText hover:bg-inputBg rounded-lg transition-colors cursor-pointer">
           <i data-lucide="x" class="h-5 w-5"></i>
         </button>
       </div>
 
       <!-- Content -->
       <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+        <!-- Export Scope Selection -->
+        <div class="bg-inputBg border border-borderPrim p-4 rounded-xl space-y-3">
+          <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider font-semibold">Choose Export Scope:</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button id="btn-scope-mill" class="p-3 border border-amber-500 bg-amber-500/10 text-amber-500 rounded-lg text-left transition-all cursor-pointer">
+              <div class="font-bold text-xs flex items-center gap-1.5">
+                <i data-lucide="target" class="h-3.5 w-3.5 text-amber-500"></i>
+                Active Mill Only
+              </div>
+              <div class="text-[10px] text-appTextSec mt-1" id="lbl-scope-mill-name">QPL - Mill A</div>
+            </button>
+            <button id="btn-scope-facility" class="p-3 border border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec rounded-lg text-left transition-all cursor-pointer">
+              <div class="font-bold text-xs flex items-center gap-1.5">
+                <i data-lucide="factory" class="h-3.5 w-3.5"></i>
+                Active Facility All
+              </div>
+              <div class="text-[10px] text-appTextTer mt-1" id="lbl-scope-facility-name">QPL (All Mills)</div>
+            </button>
+            <button id="btn-scope-all" class="p-3 border border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec rounded-lg text-left transition-all cursor-pointer">
+              <div class="font-bold text-xs flex items-center gap-1.5">
+                <i data-lucide="globe" class="h-3.5 w-3.5"></i>
+                Whole Database
+              </div>
+              <div class="text-[10px] text-appTextTer mt-1">Both Facilities (All Mills)</div>
+            </button>
+          </div>
+        </div>
+
         <!-- Step 1: Download CSV -->
-        <div class="space-y-3">
-          <div class="flex items-center gap-2 text-sm font-sans font-medium text-neutral-300">
-            <span class="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs border border-amber-500/20 font-mono">1</span>
+        <div class="space-y-3 border-t border-borderSec pt-4">
+          <div class="flex items-center gap-2 text-sm font-sans font-medium text-appText">
+            <span class="w-5 h-5 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center text-xs border border-amber-500/20 font-mono">1</span>
             <span>Primary Data Export</span>
           </div>
-          <p class="text-neutral-400 text-xs pl-7 leading-relaxed font-sans">
+          <p class="text-appTextSec text-xs pl-7 leading-relaxed font-sans">
             Export the raw 12-point velocity grid matrix, global barometric readings, flue density profiles, and computed deviations in standard CSV layout.
           </p>
           <div class="pl-7">
-            <button id="btn-download-csv-standalone" class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-sm transition-all shadow-md">
+            <button id="btn-download-csv-standalone" class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-sm transition-all shadow-md cursor-pointer">
               <i data-lucide="download" class="h-4 w-4"></i>
               Download Report (.CSV)
             </button>
           </div>
         </div>
 
-        <div class="border-t border-neutral-800"></div>
+        <div class="border-t border-borderSec"></div>
 
         <!-- Step 2: Email Dispatcher -->
         <div class="space-y-4">
-          <div class="flex items-center gap-2 text-sm font-sans font-medium text-neutral-300">
-            <span class="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs border border-amber-500/20 font-mono">2</span>
+          <div class="flex items-center gap-2 text-sm font-sans font-medium text-appText">
+            <span class="w-5 h-5 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center text-xs border border-amber-500/20 font-mono">2</span>
             <span>Structured Email Dispatch</span>
           </div>
-          <p class="text-neutral-400 text-xs pl-7 leading-relaxed">
+          <p class="text-appTextSec text-xs pl-7 leading-relaxed">
             Select an email endpoint to open a pre-formatted draft with all consolidated averages, individual velocities, and deviances. Drag-and-drop your downloaded CSV file directly into your draft!
           </p>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pl-7">
-            <a id="lnk-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-xs font-mono text-neutral-300 hover:text-white transition-all">
+            <a id="lnk-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-inputBg hover:bg-cardBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
               <span class="w-2 h-2 rounded-full bg-red-500"></span>
               Gmail Webmail
             </a>
-            <a id="lnk-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-xs font-mono text-neutral-300 hover:text-white transition-all">
+            <a id="lnk-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-inputBg hover:bg-cardBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
               <span class="w-2 h-2 rounded-full bg-blue-500"></span>
               Outlook Web
             </a>
-            <a id="lnk-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-xs font-mono text-neutral-300 hover:text-white transition-all">
+            <a id="lnk-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-inputBg hover:bg-cardBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
               <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
               System Client
             </a>
           </div>
         </div>
 
-        <div class="border-t border-neutral-800"></div>
+        <div class="border-t border-borderSec"></div>
 
         <!-- Quick Copy Preview -->
         <div class="space-y-3">
           <div class="flex items-center justify-between pl-7">
-            <span class="text-xs font-sans font-medium text-neutral-400">Plaintext Summary Preview</span>
-            <button id="btn-copy-summary-standalone" class="flex items-center gap-1.5 px-3 py-1 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded text-[11px] font-mono transition-colors">
+            <span class="text-xs font-sans font-medium text-appTextSec">Plaintext Summary Preview</span>
+            <button id="btn-copy-summary-standalone" class="flex items-center gap-1.5 px-3 py-1 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded text-[11px] font-mono transition-colors cursor-pointer">
               <i data-lucide="copy" class="h-3 w-3"></i>
               <span id="lbl-copy-btn">Copy Summary</span>
             </button>
           </div>
           <div class="pl-7">
-            <pre id="pre-report-preview" class="p-3 bg-neutral-950 border border-neutral-800 rounded-lg text-[10px] font-mono text-neutral-400 max-h-40 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
+            <pre id="pre-report-preview" class="p-3 bg-inputBg border border-borderPrim rounded-lg text-[10px] font-mono text-appTextSec max-h-40 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
               Summary loading...
             </pre>
           </div>
@@ -539,9 +640,46 @@
       </div>
 
       <!-- Footer -->
-      <div class="flex items-center justify-end px-6 py-4 bg-neutral-950/40 border-t border-neutral-850">
-        <button id="btn-close-export-footer" class="px-4 py-2 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded-lg text-xs font-mono transition-colors">
+      <div class="flex items-center justify-end px-6 py-4 bg-inputBg/40 border-t border-borderSec">
+        <button id="btn-close-export-footer" class="px-4 py-2 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded-lg text-xs font-mono transition-colors cursor-pointer">
           Close Dialog
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 6. Clear Confirmation Modal -->
+  <div id="clear-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+    <div class="relative w-full max-w-md bg-cardBg border border-borderPrim rounded-xl overflow-hidden shadow-2xl shadow-black/80 p-6 space-y-6 transition-colors duration-200">
+      <div class="flex items-center gap-3 border-b border-borderSec pb-3">
+        <div class="p-2 bg-red-500/10 text-red-500 rounded-lg shrink-0">
+          <i data-lucide="trash-2" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <h3 class="text-appText font-sans font-semibold text-base">Confirm Data Reset</h3>
+          <p class="text-appTextTer text-xs font-mono">Irreversible Field Purge</p>
+        </div>
+      </div>
+      
+      <p class="text-appTextSec text-xs leading-relaxed">
+        Choose how you would like to purge the recorded isokinetic measurements and start with a fresh sweep matrix:
+      </p>
+
+      <div class="flex flex-col gap-2.5">
+        <button id="btn-clear-current-mill" class="w-full py-2.5 px-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 font-mono text-xs rounded-lg transition-colors flex items-center justify-between cursor-pointer">
+          <span>Clear Current Mill (<span id="lbl-clear-current-name">--</span>)</span>
+          <i data-lucide="corner-down-right" class="h-3.5 w-3.5"></i>
+        </button>
+        <button id="btn-clear-all-database" class="w-full py-2.5 px-4 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg transition-colors flex items-center justify-between shadow-md cursor-pointer">
+          <span>Clear Entire System Cache</span>
+          <i data-lucide="alert-octagon" class="h-3.5 w-3.5"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-borderSec">
+        <button id="btn-cancel-clear" class="px-4 py-2 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded-lg text-xs font-mono transition-colors cursor-pointer">
+          Cancel
         </button>
       </div>
     </div>
@@ -550,15 +688,12 @@
 
   <!-- Vanilla JavaScript App Engine -->
   <script>
-    // State representation
+    // State representation with multi-facility and multi-mill dataset caching
     let appState = {
-      facility: 'QPL', // 'QPL' or 'SBPL'
-      millName: 'Mill A',
-      conduitSize: '20.5',
-      barometricPressure: '29.60',
-      ambientTemp: '82.4',
-      pitotCoefficient: '0.94',
-      conduits: [],
+      theme: 'dark',
+      facility: 'QPL', // Active facility: 'QPL' or 'SBPL'
+      millName: 'Mill A', // Active mill
+      datasets: {}, // Key: `facility_millName` -> { conduitSize, barometricPressure, ambientTemp, pitotCoefficient, conduits: [] }
       startTime: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
     };
@@ -569,7 +704,7 @@
     // LocalStorage keys
     const STORAGE_KEY = 'field_engineer_toolbox_standalone_session';
 
-    // Get default conduits
+    // Get default conduits array
     function createDefaultConduits(facility) {
       const count = facility === 'QPL' ? 5 : 4;
       return Array.from({ length: count }).map((_, i) => ({
@@ -581,15 +716,36 @@
       }));
     }
 
+    // Retrieve or initialize dataset for facility + mill combo
+    function getDataset(facility, millName) {
+      const key = `${facility}_${millName}`;
+      if (!appState.datasets[key]) {
+        appState.datasets[key] = {
+          conduitSize: facility === 'QPL' ? '20.5' : '24.0',
+          barometricPressure: '29.60',
+          ambientTemp: '82.4',
+          pitotCoefficient: '0.94',
+          conduits: createDefaultConduits(facility)
+        };
+      }
+      return appState.datasets[key];
+    }
+
     // Initialize state
     function initDefaultState(facility = 'QPL') {
       appState.facility = facility;
       appState.millName = 'Mill A';
-      appState.conduitSize = facility === 'QPL' ? '20.5' : '24.0';
-      appState.barometricPressure = '29.60';
-      appState.ambientTemp = '82.4';
-      appState.pitotCoefficient = '0.94';
-      appState.conduits = createDefaultConduits(facility);
+      appState.datasets = {};
+      
+      // Seed initial datasets for both facilities
+      const qplMills = ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E'];
+      const sbplMills = ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'];
+
+      qplMills.forEach(m => getDataset('QPL', m));
+      sbplMills.forEach(m => getDataset('SBPL', m));
+
+      // Bind current active conduit reference
+      appState.conduits = getDataset(facility, 'Mill A').conduits;
       appState.startTime = new Date().toISOString();
       appState.lastUpdated = new Date().toISOString();
     }
@@ -599,6 +755,7 @@
       appState.lastUpdated = new Date().toISOString();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       updateLiveCalculations();
+      renderDashboardRegistry();
     }
 
     // Generate random demo readings
@@ -663,10 +820,11 @@
 
     // Master updates of DOM calculations
     function updateLiveCalculations() {
-      const size = parseFloat(appState.conduitSize) || 20.5;
-      const baro = parseFloat(appState.barometricPressure) || 29.60;
-      const ambient = parseFloat(appState.ambientTemp) || 82.4;
-      const pitot = parseFloat(appState.pitotCoefficient) || 0.94;
+      const dataset = getDataset(appState.facility, appState.millName);
+      const size = parseFloat(dataset.conduitSize) || 20.5;
+      const baro = parseFloat(dataset.barometricPressure) || 29.60;
+      const ambient = parseFloat(dataset.ambientTemp) || 82.4;
+      const pitot = parseFloat(dataset.pitotCoefficient) || 0.94;
 
       // Update physical fallbacks preview labels
       document.getElementById('lbl-fallback-temp').innerText = `${ambient.toFixed(1)}°F`;
@@ -723,13 +881,13 @@
         const isActive = activeConduitId === c.id;
 
         return `
-          <button onclick="setActiveConduit(${c.id})" class="px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-2 border ${
+          <button onclick="setActiveConduit(${c.id})" class="px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-2 border cursor-pointer ${
             isActive
               ? 'bg-amber-500 text-neutral-950 border-amber-500 shadow-md'
-              : 'bg-neutral-950 text-neutral-400 hover:text-white border-neutral-800 hover:bg-neutral-900'
+              : 'bg-inputBg text-appTextSec hover:text-appText border-borderPrim hover:bg-cardBg'
           }">
             Conduit ${c.id}
-            ${hasData ? `<span class="w-2 h-2 rounded-full ${isActive ? 'bg-neutral-950' : 'bg-emerald-400 shadow-sm'}"></span>` : ''}
+            ${hasData ? `<span class="w-2 h-2 rounded-full ${isActive ? 'bg-neutral-950' : 'bg-emerald-500 shadow-sm'}"></span>` : ''}
           </button>
         `;
       }).join('');
@@ -767,42 +925,42 @@
         const widthPercent = Math.min(50, Math.abs(dev) * 500);
 
         html += `
-          <div class="flex flex-col bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-xl shadow-black/40 ${layoutMode === 'grid' ? 'w-[300px] shrink-0' : ''}">
+          <div class="flex flex-col bg-cardBg border border-borderPrim rounded-xl overflow-hidden shadow-xl shadow-borderPrim/10 ${layoutMode === 'grid' ? 'w-[300px] shrink-0' : ''}">
             <!-- Conduit title bar -->
-            <div class="px-4 py-3 bg-neutral-950/80 border-b border-neutral-800 flex items-center justify-between">
+            <div class="px-4 py-3 bg-inputBg/80 border-b border-borderPrim flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                <span class="text-sm font-mono font-bold text-neutral-200">CONDUIT ${c.id}</span>
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span class="text-sm font-mono font-bold text-appText">CONDUIT ${c.id}</span>
               </div>
               <div class="flex items-center gap-2">
-                <button onclick="fillConduitDemo(${c.id})" title="Populate demo data" class="p-1 text-neutral-400 hover:text-amber-400 hover:bg-neutral-800 rounded transition-colors">
+                <button onclick="fillConduitDemo(${c.id})" title="Populate demo data" class="p-1 text-appTextSec hover:text-amber-500 hover:bg-inputBg rounded transition-colors cursor-pointer">
                   <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
                 </button>
-                <button onclick="clearConduit(${c.id})" title="Reset conduit values" class="p-1 text-neutral-400 hover:text-red-400 hover:bg-neutral-800 rounded transition-colors">
+                <button onclick="clearConduit(${c.id})" title="Reset conduit values" class="p-1 text-appTextSec hover:text-red-500 hover:bg-inputBg rounded transition-colors cursor-pointer">
                   <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
                 </button>
               </div>
             </div>
 
             <!-- Parameters -->
-            <div class="p-4 bg-neutral-950/40 border-b border-neutral-800 grid grid-cols-2 gap-3">
+            <div class="p-4 bg-inputBg/40 border-b border-borderPrim grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-[10px] font-mono text-neutral-500 uppercase tracking-wider mb-1">
+                <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider mb-1">
                   Static P. (inWC)
                 </label>
-                <input type="text" placeholder="0.00" value="${c.staticPressure}" oninput="updateConduitField(${c.id}, 'staticPressure', this.value)" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
+                <input type="text" placeholder="0.00" value="${c.staticPressure}" oninput="updateConduitField(${c.id}, 'staticPressure', this.value)" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
               </div>
               <div>
-                <label class="block text-[10px] font-mono text-neutral-500 uppercase tracking-wider mb-1">
+                <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider mb-1">
                   Gas Temp (°F)
                 </label>
-                <input type="text" placeholder="${ambientTemp} (ambient)" value="${c.temperature}" oninput="updateConduitField(${c.id}, 'temperature', this.value)" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
+                <input type="text" placeholder="${ambientTemp} (ambient)" value="${c.temperature}" oninput="updateConduitField(${c.id}, 'temperature', this.value)" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
               </div>
             </div>
 
             <!-- 12-point matrix -->
             <div class="p-4 flex-1 space-y-3">
-              <div class="grid grid-cols-3 text-center text-[10px] font-mono font-bold text-neutral-500 uppercase tracking-wider pb-1 border-b border-neutral-800/65">
+              <div class="grid grid-cols-3 text-center text-[10px] font-mono font-bold text-appTextTer uppercase tracking-wider pb-1 border-b border-borderPrim">
                 <span>Port 1</span>
                 <span>Point</span>
                 <span>Port 2</span>
@@ -813,9 +971,9 @@
                   const pt = idx + 1;
                   return `
                     <div class="grid grid-cols-3 items-center gap-1.5">
-                      <input type="text" placeholder="0.000" value="${c.port1Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port1', ${idx}, this.value)" class="bg-neutral-950 border border-neutral-850/80 focus:border-amber-500/50 outline-none text-neutral-300 font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
-                      <div class="text-center font-mono text-[10px] text-neutral-500 bg-neutral-950/60 py-1 border border-neutral-850/30 rounded">${pt}</div>
-                      <input type="text" placeholder="0.000" value="${c.port2Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port2', ${idx}, this.value)" class="bg-neutral-950 border border-neutral-850/80 focus:border-amber-500/50 outline-none text-neutral-300 font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
+                      <input type="text" placeholder="0.000" value="${c.port1Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port1', ${idx}, this.value)" class="bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
+                      <div class="text-center font-mono text-[10px] text-appTextTer bg-inputBg/60 py-1 border border-borderPrim/50 rounded">${pt}</div>
+                      <input type="text" placeholder="0.000" value="${c.port2Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port2', ${idx}, this.value)" class="bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
                     </div>
                   `;
                 }).join('')}
@@ -823,45 +981,45 @@
             </div>
 
             <!-- Live Calculated Conduit results -->
-            <div class="p-4 bg-neutral-950/80 border-t border-neutral-850/80 space-y-2.5">
+            <div class="p-4 bg-inputBg/80 border-t border-borderPrim space-y-2.5">
               <div class="flex items-center justify-between">
-                <span class="text-[10px] font-mono text-neutral-500 uppercase">Mass Flow Rate</span>
-                <span class="text-xs font-mono font-bold text-white">
+                <span class="text-[10px] font-mono text-appTextSec uppercase">Mass Flow Rate</span>
+                <span class="text-xs font-mono font-bold text-appText">
                   ${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/hr` : '0.000 k lb/hr'}
                 </span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-[10px] font-mono text-neutral-500 uppercase">Avg Velocity</span>
-                <span class="text-xs font-mono text-neutral-300">
+                <span class="text-[10px] font-mono text-appTextSec uppercase">Avg Velocity</span>
+                <span class="text-xs font-mono text-appTextSec">
                   ${m.hasValidReadings ? `${m.avgVelocity.toFixed(0)} fpm` : '0 fpm'}
                 </span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-[10px] font-mono text-neutral-500 uppercase">Gas Density</span>
-                <span class="text-xs font-mono text-neutral-400">
+                <span class="text-[10px] font-mono text-appTextSec uppercase">Gas Density</span>
+                <span class="text-xs font-mono text-appTextTer">
                   ${m.hasValidReadings ? `${m.density.toFixed(4)} lb/ft³` : 'N/A'}
                 </span>
               </div>
 
-              <div class="pt-2 border-t border-neutral-850/50 flex flex-col gap-1">
+              <div class="pt-2 border-t border-borderPrim/50 flex flex-col gap-1">
                 <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-mono text-neutral-500 uppercase">Mean Deviation</span>
-                  <span class="text-xs font-mono font-semibold ${isWarn ? 'text-red-400' : 'text-emerald-400'}">
+                  <span class="text-[10px] font-mono text-appTextSec uppercase">Mean Deviation</span>
+                  <span class="text-xs font-mono font-semibold ${isWarn ? 'text-red-500' : 'text-emerald-500'}">
                     ${m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0.0%'}
                   </span>
                 </div>
 
                 <!-- deviation visual miniature line -->
                 ${m.hasValidReadings ? `
-                  <div class="w-full h-1 bg-neutral-900 rounded-full overflow-hidden mt-1 relative">
+                  <div class="w-full h-1 bg-inputBg rounded-full overflow-hidden mt-1 relative">
                     <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarn ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${widthPercent}%; ${dev >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
-                    <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-neutral-700"></div>
+                    <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim"></div>
                   </div>
                 ` : ''}
 
                 ${isWarn ? `
-                  <div class="mt-1.5 flex items-center gap-1 text-[9px] font-mono text-red-400 leading-tight">
-                    <i data-lucide="alert-triangle" class="h-3.5 w-3.5 text-red-400 shrink-0"></i>
+                  <div class="mt-1.5 flex items-center gap-1 text-[9px] font-mono text-red-500 leading-tight">
+                    <i data-lucide="alert-triangle" class="h-3.5 w-3.5 text-red-500 shrink-0"></i>
                     <span>Imbalance exceeds 5% threshold!</span>
                   </div>
                 ` : ''}
@@ -896,25 +1054,25 @@
         return `
           <div class="grid grid-cols-1 md:grid-cols-12 items-center gap-3">
             <div class="md:col-span-2 flex items-center justify-between md:justify-start gap-2">
-              <span class="text-xs font-mono font-bold text-neutral-300">Conduit ${c.id}</span>
+              <span class="text-xs font-mono font-bold text-appText">Conduit ${c.id}</span>
               ${!m.hasValidReadings ? `
-                <span class="text-[10px] font-mono text-neutral-600">(No Data)</span>
+                <span class="text-[10px] font-mono text-appTextTer">(No Data)</span>
               ` : isExceeds ? `
-                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-red-950/60 text-red-400 border border-red-900/40 rounded">EXCEEDS</span>
+                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded">EXCEEDS</span>
               ` : `
-                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-900/40 rounded">BALANCED</span>
+                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded">BALANCED</span>
               `}
             </div>
 
-            <div class="md:col-span-2 text-right text-xs font-mono text-neutral-400 md:pr-4">
+            <div class="md:col-span-2 text-right text-xs font-mono text-appTextSec md:pr-4">
               ${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/h` : '0.000'}
             </div>
 
             <!-- deviation range bar -->
-            <div class="md:col-span-6 relative h-6 bg-neutral-900/60 border border-neutral-850 rounded-lg overflow-hidden flex items-center">
-              <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-neutral-800 z-10"></div>
-              <div class="absolute left-[25%] top-0 bottom-0 w-[1px] bg-neutral-900/30 border-dashed"></div>
-              <div class="absolute left-[75%] top-0 bottom-0 w-[1px] bg-neutral-900/30 border-dashed"></div>
+            <div class="md:col-span-6 relative h-6 bg-inputBg border border-borderPrim rounded-lg overflow-hidden flex items-center">
+              <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim z-10"></div>
+              <div class="absolute left-[25%] top-0 bottom-0 w-[1px] bg-borderPrim/30 border-dashed"></div>
+              <div class="absolute left-[75%] top-0 bottom-0 w-[1px] bg-borderPrim/30 border-dashed"></div>
 
               ${m.hasValidReadings ? `
                 <div class="absolute h-full transition-all duration-300 ${
@@ -923,18 +1081,18 @@
               ` : ''}
 
               <div class="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[10px] font-mono z-20">
-                <span class="text-neutral-600">-50%</span>
-                <span class="text-neutral-600">0%</span>
-                <span class="text-neutral-600">+50%</span>
+                <span class="text-appTextTer">-50%</span>
+                <span class="text-appTextTer">0%</span>
+                <span class="text-appTextTer">+50%</span>
               </div>
             </div>
 
             <div class="md:col-span-2 text-right font-mono text-xs font-semibold">
               ${m.hasValidReadings ? `
-                <span class="${isExceeds ? 'text-red-400' : 'text-emerald-400'}">
+                <span class="${isExceeds ? 'text-red-500' : 'text-emerald-500'}">
                   ${devVal >= 0 ? '+' : ''}${devPctStr}%
                 </span>
-              ` : '<span class="text-neutral-600">0.0%</span>'}
+              ` : '<span class="text-appTextTer">0.0%</span>'}
             </div>
           </div>
         `;
@@ -993,52 +1151,77 @@
       saveState();
     });
 
+    // Custom confirmation modals trigger
+    const clearConfirmModal = document.getElementById('clear-confirm-modal');
+    const lblClearCurrentName = document.getElementById('lbl-clear-current-name');
+
     document.getElementById('btn-bulk-clear').addEventListener('click', () => {
-      appState.conduits.forEach(c => {
-        c.port1Readings = Array(12).fill('');
-        c.port2Readings = Array(12).fill('');
-        c.staticPressure = '';
-        c.temperature = '';
-      });
-      saveState();
+      lblClearCurrentName.innerText = `${appState.facility} - ${appState.millName}`;
+      clearConfirmModal.classList.remove('hidden');
     });
+
+    document.getElementById('btn-cancel-clear').addEventListener('click', () => {
+      clearConfirmModal.classList.add('hidden');
+    });
+
+    document.getElementById('btn-clear-current-mill').addEventListener('click', () => {
+      const activeSet = getDataset(appState.facility, appState.millName);
+      activeSet.conduits = createDefaultConduits(appState.facility);
+      appState.conduits = activeSet.conduits;
+      saveState();
+      clearConfirmModal.classList.add('hidden');
+      updateLiveCalculations();
+      renderDashboardRegistry();
+    });
+
+    document.getElementById('btn-clear-all-database').addEventListener('click', () => {
+      initDefaultState(appState.facility);
+      saveState();
+      clearConfirmModal.classList.add('hidden');
+      updateLiveCalculations();
+      renderDashboardRegistry();
+    });
+
 
     // Facility toggle actions
     const btnQpl = document.getElementById('btn-fac-qpl');
     const btnSbpl = document.getElementById('btn-fac-sbpl');
 
+    function populateMillDropdown(facility) {
+      const select = document.getElementById('param-mill');
+      const mills = facility === 'QPL' 
+        ? ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E']
+        : ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'];
+        
+      select.innerHTML = mills.map(m => `<option value="${m}">${m}</option>`).join('');
+      
+      // Keep millName within bounds
+      if (facility === 'QPL' && appState.millName === 'Mill F') {
+        appState.millName = 'Mill A';
+      }
+      select.value = appState.millName;
+    }
+
     function selectFacility(facility) {
-      initDefaultState(facility);
-      activeConduitId = 1;
+      appState.facility = facility;
+      populateMillDropdown(facility);
+
+      const activeSet = getDataset(facility, appState.millName);
+      appState.conduits = activeSet.conduits;
+
+      // Update form fields
+      document.getElementById('param-size').value = activeSet.conduitSize;
+      document.getElementById('param-baro').value = activeSet.barometricPressure;
+      document.getElementById('param-ambient').value = activeSet.ambientTemp;
+      document.getElementById('param-pitot').value = activeSet.pitotCoefficient;
 
       // Update button highlights
       if (facility === 'QPL') {
-        btnQpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md";
-        btnSbpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-neutral-400 hover:text-white hover:bg-neutral-900/60";
-        document.getElementById('param-size').value = '20.5';
-        
-        // Options for Mill A-E
-        document.getElementById('param-mill').innerHTML = `
-          <option value="Mill A">Mill A</option>
-          <option value="Mill B">Mill B</option>
-          <option value="Mill C">Mill C</option>
-          <option value="Mill D">Mill D</option>
-          <option value="Mill E">Mill E</option>
-        `;
+        btnQpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md cursor-pointer";
+        btnSbpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-appTextSec hover:text-appText hover:bg-inputBg cursor-pointer";
       } else {
-        btnSbpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md";
-        btnQpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-neutral-400 hover:text-white hover:bg-neutral-900/60";
-        document.getElementById('param-size').value = '24.0';
-
-        // Options for Mill A-F
-        document.getElementById('param-mill').innerHTML = `
-          <option value="Mill A">Mill A</option>
-          <option value="Mill B">Mill B</option>
-          <option value="Mill C">Mill C</option>
-          <option value="Mill D">Mill D</option>
-          <option value="Mill E">Mill E</option>
-          <option value="Mill F">Mill F</option>
-        `;
+        btnSbpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md cursor-pointer";
+        btnQpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-appTextSec hover:text-appText hover:bg-inputBg cursor-pointer";
       }
 
       saveState();
@@ -1050,22 +1233,32 @@
     // Global parameters binding
     document.getElementById('param-mill').addEventListener('change', (e) => {
       appState.millName = e.target.value;
+      const activeSet = getDataset(appState.facility, appState.millName);
+      appState.conduits = activeSet.conduits;
+
+      // Update form fields
+      document.getElementById('param-size').value = activeSet.conduitSize;
+      document.getElementById('param-baro').value = activeSet.barometricPressure;
+      document.getElementById('param-ambient').value = activeSet.ambientTemp;
+      document.getElementById('param-pitot').value = activeSet.pitotCoefficient;
+
       saveState();
     });
+
     document.getElementById('param-size').addEventListener('input', (e) => {
-      appState.conduitSize = e.target.value;
+      getDataset(appState.facility, appState.millName).conduitSize = e.target.value;
       saveState();
     });
     document.getElementById('param-baro').addEventListener('input', (e) => {
-      appState.barometricPressure = e.target.value;
+      getDataset(appState.facility, appState.millName).barometricPressure = e.target.value;
       saveState();
     });
     document.getElementById('param-ambient').addEventListener('input', (e) => {
-      appState.ambientTemp = e.target.value;
+      getDataset(appState.facility, appState.millName).ambientTemp = e.target.value;
       saveState();
     });
     document.getElementById('param-pitot').addEventListener('input', (e) => {
-      appState.pitotCoefficient = e.target.value;
+      getDataset(appState.facility, appState.millName).pitotCoefficient = e.target.value;
       saveState();
     });
 
@@ -1075,15 +1268,15 @@
 
     tabbedLayoutBtn.addEventListener('click', () => {
       layoutMode = 'tabbed';
-      tabbedLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-neutral-800 text-amber-400 border border-neutral-700/60";
-      gridLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-neutral-400 hover:text-white";
+      tabbedLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-neutral-800 text-amber-400 border border-neutral-700/60 cursor-pointer";
+      gridLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-appTextSec hover:text-appText cursor-pointer";
       updateLiveCalculations();
     });
 
     gridLayoutBtn.addEventListener('click', () => {
       layoutMode = 'grid';
-      gridLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-neutral-800 text-amber-400 border border-neutral-700/60";
-      tabbedLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-neutral-400 hover:text-white";
+      gridLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-neutral-800 text-amber-400 border border-neutral-700/60 cursor-pointer";
+      tabbedLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-appTextSec hover:text-appText cursor-pointer";
       updateLiveCalculations();
     });
 
@@ -1096,160 +1289,174 @@
     document.getElementById('btn-back-dashboard').addEventListener('click', () => {
       document.getElementById('view-dashboard').classList.remove('hidden');
       document.getElementById('view-sampling').classList.add('hidden');
+      renderDashboardRegistry();
     });
 
-    // State recovery setup
-    const recoveryBanner = document.getElementById('recovery-banner');
-    const recoveryTimestamp = document.getElementById('recovery-timestamp');
+    // Export reports generation compiled selectors
+    let exportScope = 'mill';
 
-    try {
-      const cachedSession = localStorage.getItem(STORAGE_KEY);
-      if (cachedSession) {
-        const parsed = JSON.parse(cachedSession);
-        if (parsed && parsed.conduits && parsed.conduits.length > 0) {
-          recoveryTimestamp.innerText = new Date(parsed.lastUpdated).toLocaleString();
-          recoveryBanner.classList.remove('hidden');
-          
-          document.getElementById('btn-recovery-keep').onclick = () => {
-            appState = parsed;
-            // set inputs
-            document.getElementById('param-size').value = appState.conduitSize;
-            document.getElementById('param-baro').value = appState.barometricPressure;
-            document.getElementById('param-ambient').value = appState.ambientTemp;
-            document.getElementById('param-pitot').value = appState.pitotCoefficient;
-            selectFacility(appState.facility);
-            // restore mill select
-            document.getElementById('param-mill').value = appState.millName;
-            
-            recoveryBanner.classList.add('hidden');
-            updateLiveCalculations();
-          };
-
-          document.getElementById('btn-recovery-clear').onclick = () => {
-            localStorage.removeItem(STORAGE_KEY);
-            initDefaultState('QPL');
-            recoveryBanner.classList.add('hidden');
-            updateLiveCalculations();
-          };
-        }
-      } else {
-        initDefaultState('QPL');
-      }
-    } catch (e) {
-      initDefaultState('QPL');
-    }
-
-    // Export Reports Generation Logic
-    function compilePlaintextSummary(metrics, deviations) {
-      const dateStr = new Date().toISOString().split('T')[0];
+    function compilePlaintextSummaryForScope(scope) {
       const timeStr = new Date().toLocaleString();
+      let body = `FIELD ENGINEER COAL SAMPLING REPORT - COMPILED SUMMARY\n`;
+      body += `==================================================\n`;
+      body += `Generated At: ${timeStr}\n`;
+      body += `Selected Scope: ${scope === 'mill' ? 'Active Mill Only' : (scope === 'facility' ? 'Facility Wide' : 'Entire System Database')}\n\n`;
 
-      let body = `FIELD ENGINEER COAL SAMPLING REPORT SUMMARY\n`;
-      body += `==========================================\n`;
-      body += `Facility: ${appState.facility} Facility\n`;
-      body += `Mill Name: ${appState.millName || 'N/A'}\n`;
-      body += `Dispatch Date/Time: ${timeStr}\n\n`;
+      const items = [];
+      if (scope === 'mill') {
+        items.push({ facility: appState.facility, mill: appState.millName });
+      } else if (scope === 'facility') {
+        const mills = appState.facility === 'QPL' 
+          ? ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E']
+          : ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'];
+        mills.forEach(m => items.push({ facility: appState.facility, mill: m }));
+      } else {
+        ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E'].forEach(m => items.push({ facility: 'QPL', mill: m }));
+        ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'].forEach(m => items.push({ facility: 'SBPL', mill: m }));
+      }
 
-      body += `GLOBAL PARAMETERS:\n`;
-      body += `- Conduit Size: ${appState.conduitSize} in\n`;
-      body += `- Barometric Pressure: ${appState.barometricPressure} inHg\n`;
-      body += `- Ambient Temp: ${appState.ambientTemp} °F\n`;
-      body += `- Pitot Coefficient: ${appState.pitotCoefficient}\n\n`;
+      let activeReportCount = 0;
 
-      // Active metrics summary
-      const activeMetrics = metrics.filter(m => m.hasValidReadings);
-      const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
-      const avgMassFlow = totalMassFlow / (metrics.length || 1);
-      const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
-      const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+      items.forEach(({ facility, mill }) => {
+        const dataset = getDataset(facility, mill);
+        const size = parseFloat(dataset.conduitSize) || 20.5;
+        const baro = parseFloat(dataset.barometricPressure) || 29.60;
+        const ambient = parseFloat(dataset.ambientTemp) || 82.4;
+        const pitot = parseFloat(dataset.pitotCoefficient) || 0.94;
 
-      body += `SUMMARY METRICS:\n`;
-      body += `- Total Mass Flow Rate: ${totalMassFlow.toFixed(3)} k lb/hr\n`;
-      body += `- Average Mass Flow Rate: ${avgMassFlow.toFixed(3)} k lb/hr\n`;
-      body += `- Average Air Velocity: ${avgVelocity.toFixed(1)} fpm\n\n`;
+        const metrics = dataset.conduits.map(c => 
+          calculateConduitMetrics(c, size, baro, ambient, pitot)
+        );
 
-      body += `CONDUIT BREAKDOWN:\n`;
-      metrics.forEach((m) => {
-        const cData = appState.conduits.find((c) => c.id === m.id);
-        const dev = deviations[m.id] || 0;
-        const devPct = (dev * 100).toFixed(1);
-        const isWarn = Math.abs(dev) > 0.05;
+        const activeMetrics = metrics.filter(m => m.hasValidReadings);
+        if (activeMetrics.length === 0) return;
 
-        body += `Conduit ${m.id}:\n`;
-        if (!m.hasValidReadings) {
-          body += `  - STATUS: INACTIVE (No measurements recorded)\n\n`;
-          return;
-        }
-        body += `  - Static Pressure: ${cData.staticPressure || '0'} inWC\n`;
-        body += `  - Flue Gas Temp: ${cData.temperature || appState.ambientTemp} °F\n`;
-        body += `  - DP (Calculated): ${m.dp.toFixed(4)} inWC\n`;
-        body += `  - Flue Gas Density: ${m.density.toFixed(4)} lb/ft3\n`;
-        body += `  - Avg Air Velocity: ${m.avgVelocity.toFixed(1)} fpm\n`;
-        body += `  - Mass Flow Rate: ${m.massFlow.toFixed(3)} k lb/hr\n`;
-        body += `  - Deviation from Mean: ${devPct}% ${isWarn ? '⚠️ EXCEEDS DEVIANCE LIMIT (>5%)' : '(Normal)'}\n\n`;
+        activeReportCount++;
+
+        body += `--------------------------------------------------\n`;
+        body += `FACILITY: ${facility} | MILL: ${mill}\n`;
+        body += `--------------------------------------------------\n`;
+        body += `- Size: ${dataset.conduitSize} in | Baro: ${dataset.barometricPressure} inHg\n`;
+        body += `- Ambient: ${dataset.ambientTemp} °F | Pitot Coeff: ${dataset.pitotCoefficient}\n\n`;
+
+        const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+        const avgMassFlow = totalMassFlow / (metrics.length || 1);
+        const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+        const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+
+        body += `SUMMARY METRICS:\n`;
+        body += `  - Total Mass Flow: ${totalMassFlow.toFixed(3)} k lb/hr\n`;
+        body += `  - Average Mass Flow: ${avgMassFlow.toFixed(3)} k lb/hr\n`;
+        body += `  - Average Air Velocity: ${avgVelocity.toFixed(1)} fpm\n\n`;
+
+        const deviations = {};
+        metrics.forEach(m => {
+          deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+        });
+
+        body += `CONDUITS DETAILS:\n`;
+        metrics.forEach((m) => {
+          if (!m.hasValidReadings) return;
+          const cData = dataset.conduits.find((c) => c.id === m.id);
+          const dev = deviations[m.id] || 0;
+          const devPct = (dev * 100).toFixed(1);
+          const isWarn = Math.abs(dev) > 0.05;
+
+          body += `  * Conduit ${m.id}: Static ${cData.staticPressure || '0'} inWC | Temp ${cData.temperature || dataset.ambientTemp} °F | Vel ${m.avgVelocity.toFixed(0)} fpm | Flow ${m.massFlow.toFixed(3)} k lb/hr | Dev ${devPct}% ${isWarn ? '⚠️ (>5% Limit)' : '(OK)'}\n`;
+        });
+        body += `\n`;
       });
 
-      body += `INSTRUCTIONS TO RECEIVER:\n`;
-      body += `1. An official detailed CSV data sheet has been downloaded locally by the sender.\n`;
-      body += `2. Please request the sender to attach the downloaded file.\n`;
-      body += `\nSent via Field Engineer Toolbox System.`;
+      if (activeReportCount === 0) {
+        body += `No active isokinetic measurements found for the selected scope. Open Workspace to populate points.\n`;
+      }
 
+      body += `\nSent via Field Engineer Toolbox System.`;
       return body;
     }
 
-    function generateCSVContent(metrics, deviations) {
+    function generateCSVContentForScope(scope) {
       const rows = [];
       const timeStr = new Date().toLocaleString();
 
-      rows.push(['FIELD ENGINEER COAL SAMPLING REPORT']);
+      rows.push(['FIELD ENGINEER COAL SAMPLING REPORT - COMPILED SCOPE']);
       rows.push(['Generated At', timeStr]);
-      rows.push(['Facility', appState.facility]);
-      rows.push(['Mill Name', appState.millName]);
-      rows.push(['Conduit Size (in)', appState.conduitSize]);
-      rows.push(['Barometric Pressure (inHg)', appState.barometricPressure]);
-      rows.push(['Ambient Temp (°F)', appState.ambientTemp]);
-      rows.push(['Pitot Coefficient', appState.pitotCoefficient]);
+      rows.push(['Export Scope', scope === 'mill' ? 'Specific Mill Only' : (scope === 'facility' ? 'Whole Facility' : 'Whole Database')]);
       rows.push([]);
 
-      // Summaries
-      const activeMetrics = metrics.filter(m => m.hasValidReadings);
-      const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
-      const avgMassFlow = totalMassFlow / (metrics.length || 1);
-      const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
-      const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
-
-      rows.push(['SUMMARY TOTALS']);
-      rows.push(['Total Mass Flow Rate (k lb/hr)', totalMassFlow.toFixed(3)]);
-      rows.push(['Average Mass Flow Rate (k lb/hr)', avgMassFlow.toFixed(3)]);
-      rows.push(['Average Air Velocity (fpm)', avgVelocity.toFixed(1)]);
-      rows.push([]);
-
-      // Columns header
-      const conduitHeaders = ['Metric / Port Point', ...appState.conduits.map(c => `Conduit ${c.id}`)];
-      rows.push(conduitHeaders);
-
-      rows.push(['Static Pressure (inWC)', ...appState.conduits.map(c => c.staticPressure || '0')]);
-      rows.push(['Conduit Gas Temp (°F)', ...appState.conduits.map(c => c.temperature || appState.ambientTemp)]);
-      rows.push(['ASVH', ...metrics.map(m => m.hasValidReadings ? m.asvh.toFixed(4) : 'N/A')]);
-      rows.push(['DP (inWC)', ...metrics.map(m => m.hasValidReadings ? m.dp.toFixed(4) : 'N/A')]);
-      rows.push(['Density (lb/ft3)', ...metrics.map(m => m.hasValidReadings ? m.density.toFixed(4) : 'N/A')]);
-      rows.push(['Velocity (fpm)', ...metrics.map(m => m.hasValidReadings ? m.avgVelocity.toFixed(1) : '0')]);
-      rows.push(['Vol Flow (acfm)', ...metrics.map(m => m.hasValidReadings ? m.volFlow.toFixed(1) : '0')]);
-      rows.push(['Mass Flow (k lb/hr)', ...metrics.map(m => m.hasValidReadings ? m.massFlow.toFixed(3) : '0')]);
-      rows.push(['Deviation (%)', ...metrics.map(m => {
-        const dev = deviations[m.id] || 0;
-        return m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0%';
-      })]);
-      rows.push([]);
-
-      // Port points matrix
-      rows.push(['PORT READINGS MATRIX']);
-      for (let i = 0; i < 12; i++) {
-        rows.push([`Port 1 Point ${i + 1}`, ...appState.conduits.map(c => c.port1Readings[i] || '')]);
+      const items = [];
+      if (scope === 'mill') {
+        items.push({ facility: appState.facility, mill: appState.millName });
+      } else if (scope === 'facility') {
+        const mills = appState.facility === 'QPL' 
+          ? ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E']
+          : ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'];
+        mills.forEach(m => items.push({ facility: appState.facility, mill: m }));
+      } else {
+        ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E'].forEach(m => items.push({ facility: 'QPL', mill: m }));
+        ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'].forEach(m => items.push({ facility: 'SBPL', mill: m }));
       }
-      for (let i = 0; i < 12; i++) {
-        rows.push([`Port 2 Point ${i + 1}`, ...appState.conduits.map(c => c.port2Readings[i] || '')]);
-      }
+
+      items.forEach(({ facility, mill }) => {
+        const dataset = getDataset(facility, mill);
+        const size = parseFloat(dataset.conduitSize) || 20.5;
+        const baro = parseFloat(dataset.barometricPressure) || 29.60;
+        const ambient = parseFloat(dataset.ambientTemp) || 82.4;
+        const pitot = parseFloat(dataset.pitotCoefficient) || 0.94;
+
+        const metrics = dataset.conduits.map(c => 
+          calculateConduitMetrics(c, size, baro, ambient, pitot)
+        );
+
+        const activeMetrics = metrics.filter(m => m.hasValidReadings);
+        const hasData = activeMetrics.length > 0;
+
+        rows.push([`FACILITY: ${facility} | MILL: ${mill}`, hasData ? 'ACTIVE DATA' : 'EMPTY']);
+        rows.push(['Conduit Size (in)', dataset.conduitSize]);
+        rows.push(['Barometric Pressure (inHg)', dataset.barometricPressure]);
+        rows.push(['Ambient Temp (°F)', dataset.ambientTemp]);
+        rows.push(['Pitot Coefficient', dataset.pitotCoefficient]);
+
+        if (hasData) {
+          const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+          const avgMassFlow = totalMassFlow / (metrics.length || 1);
+          const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+          const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+
+          rows.push(['Total Mass Flow Rate (k lb/hr)', totalMassFlow.toFixed(3)]);
+          rows.push(['Average Mass Flow Rate (k lb/hr)', avgMassFlow.toFixed(3)]);
+          rows.push(['Average Air Velocity (fpm)', avgVelocity.toFixed(1)]);
+
+          const deviations = {};
+          metrics.forEach(m => {
+            deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+          });
+
+          const conduitHeaders = ['Metric / Port Point', ...dataset.conduits.map(c => `Conduit ${c.id}`)];
+          rows.push(conduitHeaders);
+          rows.push(['Static Pressure (inWC)', ...dataset.conduits.map(c => c.staticPressure || '0')]);
+          rows.push(['Conduit Gas Temp (°F)', ...dataset.conduits.map(c => c.temperature || dataset.ambientTemp)]);
+          rows.push(['DP (inWC)', ...metrics.map(m => m.hasValidReadings ? m.dp.toFixed(4) : 'N/A')]);
+          rows.push(['Density (lb/ft3)', ...metrics.map(m => m.hasValidReadings ? m.density.toFixed(4) : 'N/A')]);
+          rows.push(['Velocity (fpm)', ...metrics.map(m => m.hasValidReadings ? m.avgVelocity.toFixed(1) : '0')]);
+          rows.push(['Mass Flow (k lb/hr)', ...metrics.map(m => m.hasValidReadings ? m.massFlow.toFixed(3) : '0')]);
+          rows.push(['Deviation (%)', ...metrics.map(m => {
+            const dev = deviations[m.id] || 0;
+            return m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0%';
+          })]);
+
+          rows.push(['PORT 1 MATRIX']);
+          for (let i = 0; i < 12; i++) {
+            rows.push([`Point ${i + 1}`, ...dataset.conduits.map(c => c.port1Readings[i] || '')]);
+          }
+          rows.push(['PORT 2 MATRIX']);
+          for (let i = 0; i < 12; i++) {
+            rows.push([`Point ${i + 1}`, ...dataset.conduits.map(c => c.port2Readings[i] || '')]);
+          }
+        }
+        rows.push([]);
+        rows.push([]);
+      });
 
       return rows.map(r => 
         r.map(val => {
@@ -1261,72 +1468,298 @@
       ).join('\n');
     }
 
-    // Modal Triggers
-    const exportModal = document.getElementById('export-modal');
-    
-    document.getElementById('btn-trigger-export-modal').addEventListener('click', () => {
-      exportModal.classList.remove('hidden');
-      
-      const size = parseFloat(appState.conduitSize) || 20.5;
-      const baro = parseFloat(appState.barometricPressure) || 29.60;
-      const ambient = parseFloat(appState.ambientTemp) || 82.4;
-      const pitot = parseFloat(appState.pitotCoefficient) || 0.94;
+    function updateExportContent() {
+      // Highlights scope buttons
+      const btnMill = document.getElementById('btn-scope-mill');
+      const btnFac = document.getElementById('btn-scope-facility');
+      const btnAll = document.getElementById('btn-scope-all');
 
-      const metrics = appState.conduits.map(c => 
-        calculateConduitMetrics(c, size, baro, ambient, pitot)
-      );
+      btnMill.className = `p-3 border rounded-lg text-left transition-all cursor-pointer ${exportScope === 'mill' ? 'border-amber-500 bg-amber-500/10 text-amber-500' : 'border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec'}`;
+      btnFac.className = `p-3 border rounded-lg text-left transition-all cursor-pointer ${exportScope === 'facility' ? 'border-amber-500 bg-amber-500/10 text-amber-500' : 'border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec'}`;
+      btnAll.className = `p-3 border rounded-lg text-left transition-all cursor-pointer ${exportScope === 'all' ? 'border-amber-500 bg-amber-500/10 text-amber-500' : 'border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec'}`;
 
-      const activeMetrics = metrics.filter(m => m.hasValidReadings);
-      const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
-      const avgMassFlow = totalMassFlow / (metrics.length || 1);
-      
-      const deviations = {};
-      metrics.forEach(m => {
-        deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
-      });
+      // Update descriptors
+      document.getElementById('lbl-scope-mill-name').innerText = `${appState.facility} - ${appState.millName}`;
+      document.getElementById('lbl-scope-facility-name').innerText = `${appState.facility} Facility`;
 
-      const reportText = compilePlaintextSummary(metrics, deviations);
+      // Generate text preview
+      const reportText = compilePlaintextSummaryForScope(exportScope);
       document.getElementById('pre-report-preview').innerText = reportText;
 
-      // Email links
+      // Update email client targets
       const dateStr = new Date().toISOString().split('T')[0];
-      const subject = `Coal Sampling Field Report - ${appState.facility} [${appState.millName || 'Mill'}] - ${dateStr}`;
-      
+      const scopeLabel = exportScope === 'mill' ? `${appState.facility} [${appState.millName}]` : (exportScope === 'facility' ? `${appState.facility} Facility` : 'All Facilities');
+      const subject = `Coal Sampling Field Report - ${scopeLabel} - ${dateStr}`;
+
       document.getElementById('lnk-gmail').href = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(reportText)}`;
       document.getElementById('lnk-outlook').href = `https://outlook.live.com/default.aspx?rru=compose&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(reportText)}`;
       document.getElementById('lnk-mailto').href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(reportText)}`;
 
-      // Copy Summary Action
-      const copyBtn = document.getElementById('btn-copy-summary-standalone');
-      const copyLbl = document.getElementById('lbl-copy-btn');
-      
-      copyBtn.onclick = () => {
+      // Setup Click listeners
+      document.getElementById('btn-copy-summary-standalone').onclick = () => {
         navigator.clipboard.writeText(reportText);
-        copyLbl.innerText = 'Copied!';
-        setTimeout(() => copyLbl.innerText = 'Copy Summary', 2000);
+        document.getElementById('lbl-copy-btn').innerText = 'Copied!';
+        setTimeout(() => document.getElementById('lbl-copy-btn').innerText = 'Copy Summary', 2000);
       };
 
-      // Download CSV Action
       document.getElementById('btn-download-csv-standalone').onclick = () => {
-        const csv = generateCSVContent(metrics, deviations);
+        const csv = generateCSVContentForScope(exportScope);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        const filename = `coal_sampling_report_${appState.facility}_${appState.millName || 'Mill'}_${dateStr}.csv`;
+        const filename = `coal_sampling_${exportScope}_report_${appState.facility}_${dateStr}.csv`;
         link.setAttribute('download', filename);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       };
+    }
+
+    // Modal triggers
+    const exportModal = document.getElementById('export-modal');
+
+    document.getElementById('btn-trigger-export-modal').addEventListener('click', () => {
+      exportModal.classList.remove('hidden');
+      exportScope = 'mill'; // Default to active mill only on modal open
+      updateExportContent();
     });
 
     const closeModal = () => exportModal.classList.add('hidden');
     document.getElementById('btn-close-export').addEventListener('click', closeModal);
     document.getElementById('btn-close-export-footer').addEventListener('click', closeModal);
 
-    // Initial Render on Load
+    // Bind export scope buttons
+    document.getElementById('btn-scope-mill').addEventListener('click', () => {
+      exportScope = 'mill';
+      updateExportContent();
+    });
+    document.getElementById('btn-scope-facility').addEventListener('click', () => {
+      exportScope = 'facility';
+      updateExportContent();
+    });
+    document.getElementById('btn-scope-all').addEventListener('click', () => {
+      exportScope = 'all';
+      updateExportContent();
+    });
+
+
+    // Theme toggle mechanics
+    const btnThemeToggle = document.getElementById('btn-theme-toggle');
+    const themeIcon = document.getElementById('theme-toggle-icon');
+
+    function updateThemeUI() {
+      const isLight = document.documentElement.classList.contains('light');
+      if (isLight) {
+        themeIcon.setAttribute('data-lucide', 'moon');
+        appState.theme = 'light';
+      } else {
+        themeIcon.setAttribute('data-lucide', 'sun');
+        appState.theme = 'dark';
+      }
+      localStorage.setItem('theme', appState.theme);
+      lucide.createIcons();
+    }
+
+    btnThemeToggle.addEventListener('click', () => {
+      document.documentElement.classList.toggle('light');
+      updateThemeUI();
+    });
+
+
+    // Dashboard Registry Grid builder
+    function renderDashboardRegistry() {
+      const grid = document.getElementById('dashboard-registry-grid');
+      if (!grid) return;
+
+      let html = '';
+
+      const configs = [
+        { facility: 'QPL', mills: ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E'] },
+        { facility: 'SBPL', mills: ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'] }
+      ];
+
+      configs.forEach(({ facility, mills }) => {
+        mills.forEach(mill => {
+          const dataset = getDataset(facility, mill);
+          const size = parseFloat(dataset.conduitSize) || (facility === 'QPL' ? 20.5 : 24.0);
+          const baro = parseFloat(dataset.barometricPressure) || 29.60;
+          const ambient = parseFloat(dataset.ambientTemp) || 82.4;
+          const pitot = parseFloat(dataset.pitotCoefficient) || 0.94;
+
+          const metrics = dataset.conduits.map(c => 
+            calculateConduitMetrics(c, size, baro, ambient, pitot)
+          );
+
+          const activeMetrics = metrics.filter(m => m.hasValidReadings);
+          const hasData = activeMetrics.length > 0;
+
+          let statusBadge = '';
+          let dataDetails = '';
+
+          if (hasData) {
+            const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+            const avgMassFlow = totalMassFlow / (metrics.length || 1);
+            const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+            const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+
+            let maxDev = 0;
+            let exceeds = false;
+            metrics.forEach(m => {
+              if (m.hasValidReadings) {
+                const devVal = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+                if (Math.abs(devVal) > maxDev) maxDev = Math.abs(devVal);
+                if (Math.abs(devVal) > 0.05) exceeds = true;
+              }
+            });
+
+            if (exceeds) {
+              statusBadge = `
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <i data-lucide="alert-triangle" class="h-2.5 w-2.5 animate-pulse"></i> IMBALANCE (${(maxDev*100).toFixed(1)}%)
+                </span>`;
+            } else {
+              statusBadge = `
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <i data-lucide="check" class="h-2.5 w-2.5"></i> BALANCED
+                </span>`;
+            }
+
+            dataDetails = `
+              <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-borderSec text-[10px] font-mono text-appTextSec">
+                <div>Flow Rate: <span class="text-appText font-bold">${totalMassFlow.toFixed(3)} k lb/h</span></div>
+                <div>Avg Speed: <span class="text-appText font-bold">${avgVelocity.toFixed(0)} fpm</span></div>
+                <div>Conduits: <span class="text-appText font-bold">${activeMetrics.length} of ${metrics.length}</span></div>
+                <div>Avg Temp: <span class="text-appText font-bold">${ambient.toFixed(1)}°F</span></div>
+              </div>
+            `;
+          } else {
+            statusBadge = `
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-inputBg text-appTextTer border border-borderPrim">
+                EMPTY CACHE
+              </span>`;
+            dataDetails = `
+              <p class="text-[11px] text-appTextTer italic mt-1 font-mono">No physical sweeps recorded.</p>
+            `;
+          }
+
+          html += `
+            <div class="bg-cardBg border border-borderPrim rounded-xl p-4 flex flex-col justify-between hover:border-amber-500/30 transition-all shadow-sm">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono font-bold text-appText uppercase">${facility} - ${mill}</span>
+                  ${statusBadge}
+                </div>
+                ${dataDetails}
+              </div>
+              <div class="mt-4 flex items-center justify-end">
+                <button onclick="launchWorkspaceForMill('${facility}', '${mill}')" class="px-3 py-1.5 bg-inputBg hover:bg-cardBg border border-borderPrim hover:border-amber-500/30 hover:text-amber-500 text-xs font-mono rounded-md transition-all flex items-center gap-1 cursor-pointer">
+                  <span>Open Workspace</span>
+                  <i data-lucide="arrow-up-right" class="h-3 w-3"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        });
+      });
+
+      grid.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    // Direct mill workspace launcher from dashboard
+    window.launchWorkspaceForMill = function(facility, mill) {
+      appState.facility = facility;
+      appState.millName = mill;
+      
+      selectFacility(facility);
+      document.getElementById('param-mill').value = mill;
+      
+      document.getElementById('view-dashboard').classList.add('hidden');
+      document.getElementById('view-sampling').classList.remove('hidden');
+      updateLiveCalculations();
+    };
+
+
+    // State recovery setup
+    const recoveryBanner = document.getElementById('recovery-banner');
+    const recoveryTimestamp = document.getElementById('recovery-timestamp');
+
+    try {
+      const cachedSession = localStorage.getItem(STORAGE_KEY);
+      if (cachedSession) {
+        const parsed = JSON.parse(cachedSession);
+        if (parsed) {
+          // Backward compatibility upgrade for old caches
+          if (parsed.conduits && parsed.conduits.length > 0 && !parsed.datasets) {
+            parsed.datasets = {};
+            const key = `${parsed.facility || 'QPL'}_${parsed.millName || 'Mill A'}`;
+            parsed.datasets[key] = {
+              conduitSize: parsed.conduitSize || '20.5',
+              barometricPressure: parsed.barometricPressure || '29.60',
+              ambientTemp: parsed.ambientTemp || '82.4',
+              pitotCoefficient: parsed.pitotCoefficient || '0.94',
+              conduits: parsed.conduits
+            };
+          }
+
+          if (parsed.datasets) {
+            appState = parsed;
+            if (!appState.facility) appState.facility = 'QPL';
+            if (!appState.millName) appState.millName = 'Mill A';
+
+            const activeSet = getDataset(appState.facility, appState.millName);
+            appState.conduits = activeSet.conduits;
+
+            recoveryTimestamp.innerText = new Date(appState.lastUpdated).toLocaleString();
+            recoveryBanner.classList.remove('hidden');
+
+            document.getElementById('btn-recovery-keep').onclick = () => {
+              // Populate DOM fields with recovered dataset values
+              document.getElementById('param-size').value = activeSet.conduitSize;
+              document.getElementById('param-baro').value = activeSet.barometricPressure;
+              document.getElementById('param-ambient').value = activeSet.ambientTemp;
+              document.getElementById('param-pitot').value = activeSet.pitotCoefficient;
+              selectFacility(appState.facility);
+              document.getElementById('param-mill').value = appState.millName;
+
+              recoveryBanner.classList.add('hidden');
+              updateLiveCalculations();
+              renderDashboardRegistry();
+            };
+
+            document.getElementById('btn-recovery-clear').onclick = () => {
+              localStorage.removeItem(STORAGE_KEY);
+              initDefaultState('QPL');
+              recoveryBanner.classList.add('hidden');
+              updateLiveCalculations();
+              renderDashboardRegistry();
+            };
+          } else {
+            initDefaultState('QPL');
+          }
+        } else {
+          initDefaultState('QPL');
+        }
+      } else {
+        initDefaultState('QPL');
+      }
+    } catch (e) {
+      initDefaultState('QPL');
+    }
+
+    // Initial theme check
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+    updateThemeUI();
+
+    // Trigger initial calculations and directory rendering on load
     updateLiveCalculations();
+    renderDashboardRegistry();
   </script>
 </body>
 </html>
