@@ -10,6 +10,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
+  <!-- SheetJS Spreadsheet Engine (XLSX) CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -159,17 +162,17 @@
           <h4 class="text-amber-400 font-medium font-sans text-sm md:text-base">
             Previous Session Data Retrieved
           </h4>
-          <p class="text-neutral-400 text-xs md:text-sm mt-0.5">
+          <p class="text-appTextSec text-xs md:text-sm mt-0.5">
             System detected active isokinetic calculations cached from <span id="recovery-timestamp" class="font-mono text-amber-300 font-semibold">--</span>.
           </p>
         </div>
       </div>
       <div class="flex items-center gap-3 w-full md:w-auto justify-end shrink-0">
-        <button id="btn-recovery-clear" class="flex-1 md:flex-none px-4 py-2 bg-neutral-900 hover:bg-red-950/40 border border-neutral-800 hover:border-red-900/30 text-neutral-400 hover:text-red-400 rounded-md text-xs font-mono transition-colors flex items-center justify-center gap-1.5">
+        <button id="btn-recovery-clear" class="flex-1 md:flex-none px-4 py-2 bg-cardBg hover:bg-red-950/20 border border-borderPrim hover:border-red-900/30 text-appTextSec hover:text-red-400 rounded-md text-xs font-mono transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
           <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i>
           Start Fresh
         </button>
-        <button id="btn-recovery-keep" class="flex-1 md:flex-none px-4 py-2 bg-amber-500 text-neutral-950 hover:bg-amber-400 font-semibold rounded-md text-xs font-sans transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/10">
+        <button id="btn-recovery-keep" class="flex-1 md:flex-none px-4 py-2 bg-amber-500 text-neutral-950 hover:bg-amber-400 font-semibold rounded-md text-xs font-sans transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/10 cursor-pointer">
           <i data-lucide="check-circle" class="h-3.5 w-3.5"></i>
           Keep Data
         </button>
@@ -179,36 +182,36 @@
     <!-- View 1: Unified Dashboard -->
     <section id="view-dashboard" class="space-y-8 animate-fade-in">
       <!-- Ambient Hero Banner -->
-      <div class="relative border border-neutral-900 bg-neutral-900/20 rounded-2xl p-6 md:p-8 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="relative border border-borderPrim bg-cardBg/50 rounded-2xl p-6 md:p-8 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 transition-colors duration-200">
         <div class="space-y-3 z-10 max-w-xl">
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-400 text-xs font-mono rounded-full border border-amber-500/20">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-500 text-xs font-mono rounded-full border border-amber-500/20">
             <i data-lucide="activity" class="h-3 w-3 animate-pulse"></i> Thermal Plant Field Utility Suite
           </span>
-          <h2 class="text-2xl md:text-3xl text-white font-sans font-semibold tracking-tight">
+          <h2 class="text-2xl md:text-3xl text-appText font-sans font-semibold tracking-tight">
             High-Precision Sampling & Diagnostic Tools
           </h2>
-          <p class="text-neutral-400 text-sm leading-relaxed">
+          <p class="text-appTextSec text-sm leading-relaxed">
             Engineered specifically for heavy mechanical field specialists. This web-only suite resolves isokinetic flue sweeps, fluid dynamics, and head parameters with zero network latency.
           </p>
         </div>
-        <div class="shrink-0 font-mono text-[11px] text-neutral-500 space-y-1.5 bg-neutral-950/60 p-4 border border-neutral-900 rounded-xl z-10 w-full md:w-auto">
-          <div class="text-neutral-400 border-b border-neutral-900 pb-1.5 font-bold uppercase tracking-wider">System Hardware Info</div>
-          <div>CPU CORE EMULATION: <span class="text-white">Active</span></div>
-          <div>LOCAL DIRECT STORAGE: <span class="text-white">localStorage DB</span></div>
-          <div>TARGET DIRECTORY: <span class="text-amber-400">/index.html</span></div>
+        <div class="shrink-0 font-mono text-[11px] text-appTextSec space-y-1.5 bg-inputBg p-4 border border-borderPrim rounded-xl z-10 w-full md:w-auto shadow-sm">
+          <div class="text-appText border-b border-borderPrim pb-1.5 font-bold uppercase tracking-wider">System Hardware Info</div>
+          <div>CPU CORE EMULATION: <span class="text-amber-500 font-semibold">Active</span></div>
+          <div>LOCAL DIRECT STORAGE: <span class="text-appText font-semibold">localStorage DB</span></div>
+          <div>TARGET DIRECTORY: <span class="text-amber-500 font-semibold">/index.html</span></div>
         </div>
         <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-amber-500/5 to-transparent pointer-events-none"></div>
       </div>
 
       <!-- Modules List -->
       <div class="space-y-4">
-        <h3 class="text-xs font-mono font-bold text-neutral-400 uppercase tracking-wider">
+        <h3 class="text-xs font-mono font-bold text-appTextSec uppercase tracking-wider">
           Select Operational Module
         </h3>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Active Module -->
-          <div class="border border-amber-500/30 hover:border-amber-400/50 bg-neutral-900/60 hover:bg-neutral-900/90 rounded-xl p-5 flex flex-col justify-between gap-6 transition-all group shadow-lg shadow-amber-500/5">
+          <div class="border border-amber-500/30 hover:border-amber-400/50 bg-cardBg hover:bg-cardBg/80 rounded-xl p-5 flex flex-col justify-between gap-6 transition-all group shadow-lg shadow-amber-500/5">
             <div class="space-y-3">
               <div class="flex items-start justify-between">
                 <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
@@ -219,71 +222,71 @@
                 </span>
               </div>
               <div>
-                <h4 class="text-white font-sans font-semibold text-base group-hover:text-amber-400 transition-colors">
+                <h4 class="text-appText font-sans font-semibold text-base group-hover:text-amber-400 transition-colors">
                   Isokinetic Coal Sampling
                 </h4>
-                <p class="text-neutral-400 text-xs mt-1.5 leading-relaxed">
+                <p class="text-appTextSec text-xs mt-1.5 leading-relaxed">
                   Calculate average square velocity heads (ASVH), flue densities, volume flow ratios, and mass flow rates with deviation mapping.
                 </p>
               </div>
             </div>
-            <button id="btn-launch-coal" class="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/10">
+            <button id="btn-launch-coal" class="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/10 cursor-pointer">
               Launch Workspace
               <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
             </button>
           </div>
 
           <!-- Locked Modules -->
-          <div class="border border-neutral-900 bg-neutral-950/30 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
+          <div class="border border-borderPrim bg-cardBg/40 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
             <div class="space-y-3">
               <div class="flex items-start justify-between">
-                <div class="p-2.5 bg-neutral-900 border border-neutral-850 text-neutral-500 rounded-lg">
+                <div class="p-2.5 bg-inputBg border border-borderSec text-appTextTer rounded-lg">
                   <i data-lucide="settings" class="h-5 w-5"></i>
                 </div>
-                <span class="text-[10px] font-mono px-2 py-0.5 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded-full">Locked</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-inputBg text-appTextTer border border-borderPrim rounded-full">Locked</span>
               </div>
               <div>
-                <h4 class="text-neutral-400 font-sans font-semibold text-base">Inspection of Pump A</h4>
-                <p class="text-neutral-500 text-xs mt-1.5 leading-relaxed font-sans">Verify suction and discharge heads, compute NPSH, and plot efficiency performance envelopes.</p>
+                <h4 class="text-appTextSec font-sans font-semibold text-base">Inspection of Pump A</h4>
+                <p class="text-appTextTer text-xs mt-1.5 leading-relaxed font-sans">Verify suction and discharge heads, compute NPSH, and plot efficiency performance envelopes.</p>
               </div>
             </div>
-            <div class="w-full py-2 bg-neutral-900 border border-neutral-850 text-neutral-500 text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
+            <div class="w-full py-2 bg-inputBg border border-borderSec text-appTextTer text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
               <i data-lucide="lock" class="h-3.5 w-3.5"></i> System Lock (v2.7)
             </div>
           </div>
 
-          <div class="border border-neutral-900 bg-neutral-950/30 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
+          <div class="border border-borderPrim bg-cardBg/40 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
             <div class="space-y-3">
               <div class="flex items-start justify-between">
-                <div class="p-2.5 bg-neutral-900 border border-neutral-850 text-neutral-500 rounded-lg">
+                <div class="p-2.5 bg-inputBg border border-borderSec text-appTextTer rounded-lg">
                   <i data-lucide="layers" class="h-5 w-5"></i>
                 </div>
-                <span class="text-[10px] font-mono px-2 py-0.5 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded-full">Locked</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-inputBg text-appTextTer border border-borderPrim rounded-full">Locked</span>
               </div>
               <div>
-                <h4 class="text-neutral-400 font-sans font-semibold text-base">Boiler Feed Pump B Sweeps</h4>
-                <p class="text-neutral-500 text-xs mt-1.5 leading-relaxed font-sans">Assess continuous multi-stage thermal pump metrics, vibration thresholds, and turbine sweep logs.</p>
+                <h4 class="text-appTextSec font-sans font-semibold text-base">Boiler Feed Pump B Sweeps</h4>
+                <p class="text-appTextTer text-xs mt-1.5 leading-relaxed font-sans">Assess continuous multi-stage thermal pump metrics, vibration thresholds, and turbine sweep logs.</p>
               </div>
             </div>
-            <div class="w-full py-2 bg-neutral-900 border border-neutral-850 text-neutral-500 text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
+            <div class="w-full py-2 bg-inputBg border border-borderSec text-appTextTer text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
               <i data-lucide="lock" class="h-3.5 w-3.5"></i> System Lock (v2.7)
             </div>
           </div>
 
-          <div class="border border-neutral-900 bg-neutral-950/30 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
+          <div class="border border-borderPrim bg-cardBg/40 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
             <div class="space-y-3">
               <div class="flex items-start justify-between">
-                <div class="p-2.5 bg-neutral-900 border border-neutral-850 text-neutral-500 rounded-lg">
+                <div class="p-2.5 bg-inputBg border border-borderSec text-appTextTer rounded-lg">
                   <i data-lucide="activity" class="h-5 w-5"></i>
                 </div>
-                <span class="text-[10px] font-mono px-2 py-0.5 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded-full">Locked</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-inputBg text-appTextTer border border-borderPrim rounded-full">Locked</span>
               </div>
               <div>
-                <h4 class="text-neutral-400 font-sans font-semibold text-base">Condenser Air In-Leakage</h4>
-                <p class="text-neutral-500 text-xs mt-1.5 leading-relaxed">Audit vacuum decay times, compute mass leakage rates, and calculate condenser efficiency drop.</p>
+                <h4 class="text-appTextSec font-sans font-semibold text-base">Condenser Air In-Leakage</h4>
+                <p class="text-appTextTer text-xs mt-1.5 leading-relaxed">Audit vacuum decay times, compute mass leakage rates, and calculate condenser efficiency drop.</p>
               </div>
             </div>
-            <div class="w-full py-2 bg-neutral-900 border border-neutral-850 text-neutral-500 text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
+            <div class="w-full py-2 bg-inputBg border border-borderSec text-appTextTer text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
               <i data-lucide="lock" class="h-3.5 w-3.5"></i> System Lock (v2.8)
             </div>
           </div>
@@ -303,16 +306,17 @@
             Real-time local database sync
           </span>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="dashboard-registry-grid">
-          <!-- Populated by JavaScript -->
+        <!-- Grouped cached items similar to groupings of modules -->
+        <div class="space-y-6 w-full animate-fade-in" id="dashboard-registry-grid">
+          <!-- Populated by JavaScript, partitioned by Facility -->
         </div>
       </div>
 
       <!-- Quick Tutorial -->
-      <div class="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl space-y-4">
+      <div class="p-6 bg-cardBg border border-borderPrim rounded-2xl space-y-4 shadow-sm">
         <div class="flex items-center gap-2">
           <i data-lucide="book-open" class="text-amber-400 h-4.5 w-4.5"></i>
-          <h3 class="text-white font-sans font-semibold text-sm">
+          <h3 class="text-appText font-sans font-semibold text-sm">
             Field Engineer Fast-Track Guide (Isokinetic Sampling)
           </h3>
         </div>
@@ -322,7 +326,7 @@
               <span class="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[11px]">01</span>
               Configure Parameters
             </div>
-            <p class="text-neutral-400 text-xs leading-relaxed">
+            <p class="text-appTextSec text-xs leading-relaxed">
               Select your active site (QPL / SBPL) and Mill identifier. This automatically sizes the calculation array. Adjust conduit size, ambient temp, and barometric variables as required.
             </p>
           </div>
@@ -331,8 +335,8 @@
               <span class="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[11px]">02</span>
               Input Point Vectors
             </div>
-            <p class="text-neutral-400 text-xs leading-relaxed">
-              Type 12-point velocity head readouts directly for both Port 1 and Port 2. Use the <strong class="text-neutral-300 font-mono">Fill Demo Data</strong> action to instantly load pre-modeled, realistic physical values.
+            <p class="text-appTextSec text-xs leading-relaxed">
+              Type 12-point velocity head readouts directly for both Port 1 and Port 2. Use the <strong class="text-appText font-mono font-semibold">Fill Demo Data</strong> action to instantly load pre-modeled, realistic physical values.
             </p>
           </div>
           <div class="space-y-2">
@@ -340,8 +344,8 @@
               <span class="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[11px]">03</span>
               Monitor and Dispatch
             </div>
-            <p class="text-neutral-400 text-xs leading-relaxed">
-              Check the real-time deviation indicators to find distribution discrepancies. Open the Export Modal to obtain your structured spreadsheet .CSV and launch pre-addressed emails.
+            <p class="text-appTextSec text-xs leading-relaxed">
+              Check the real-time deviation indicators to find distribution discrepancies. Open the Export Modal to obtain your structured spreadsheet .XLSX and launch pre-addressed emails.
             </p>
           </div>
         </div>
@@ -352,16 +356,16 @@
     <section id="view-sampling" class="hidden space-y-6 animate-fade-in">
       <!-- Back back navigation and tools bar -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <button id="btn-back-dashboard" class="self-start inline-flex items-center gap-2 px-3 py-1.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-300 rounded-lg text-xs font-mono transition-colors">
+        <button id="btn-back-dashboard" class="self-start inline-flex items-center gap-2 px-3 py-1.5 bg-cardBg hover:bg-inputBg border border-borderPrim text-appTextSec rounded-lg text-xs font-mono transition-colors cursor-pointer">
           <i data-lucide="chevron-left" class="h-4 w-4 text-amber-400"></i>
           Back to Dashboard
         </button>
         <div class="flex items-center gap-2 self-end">
-          <button id="btn-bulk-demo" class="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-amber-400 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5">
+          <button id="btn-bulk-demo" class="px-3.5 py-1.5 bg-cardBg hover:bg-inputBg border border-borderPrim text-amber-500 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
             Fill All Demo Data
           </button>
-          <button id="btn-bulk-clear" class="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-red-400 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5">
+          <button id="btn-bulk-clear" class="px-3.5 py-1.5 bg-cardBg hover:bg-inputBg border border-borderPrim text-appTextSec hover:text-red-500 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i>
             Clear All Data
           </button>
@@ -369,23 +373,23 @@
       </div>
 
       <!-- Config Card -->
-      <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-6 shadow-xl shadow-black/30">
-        <div class="border-b border-neutral-800 pb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div class="bg-cardBg border border-borderPrim rounded-2xl p-6 space-y-6 shadow-md transition-colors duration-200">
+        <div class="border-b border-borderSec pb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div>
-            <h3 class="text-white font-sans font-semibold text-lg flex items-center gap-2">
+            <h3 class="text-appText font-sans font-semibold text-lg flex items-center gap-2">
               <i data-lucide="flame" class="text-amber-400 h-5 w-5"></i>
               Isokinetic Coal Sampling Configuration
             </h3>
-            <p class="text-neutral-400 text-xs mt-0.5">
+            <p class="text-appTextSec text-xs mt-0.5">
               Configure active facility, mill identification, and system constants below to resolve live gas density models.
             </p>
           </div>
           <!-- Facility Selection -->
-          <div class="flex items-center gap-2 bg-neutral-950 p-1 border border-neutral-800 rounded-lg shrink-0">
-            <button id="btn-fac-qpl" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md">
+          <div class="flex items-center gap-2 bg-inputBg p-1 border border-borderPrim rounded-lg shrink-0">
+            <button id="btn-fac-qpl" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md cursor-pointer">
               QPL Facility (5 Conduits)
             </button>
-            <button id="btn-fac-sbpl" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-neutral-400 hover:text-white hover:bg-neutral-900/60">
+            <button id="btn-fac-sbpl" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-appTextSec hover:text-appText hover:bg-cardBg/60 cursor-pointer">
               SBPL Facility (4 Conduits)
             </button>
           </div>
@@ -394,8 +398,8 @@
         <!-- Form Inputs Grid -->
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <div class="space-y-1.5">
-            <label class="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Mill Identifier</label>
-            <select id="param-mill" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-3 py-2 rounded-lg transition-colors cursor-pointer">
+            <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider">Mill Identifier</label>
+            <select id="param-mill" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-3 py-2 rounded-lg transition-colors cursor-pointer">
               <option value="Mill A">Mill A</option>
               <option value="Mill B">Mill B</option>
               <option value="Mill C">Mill C</option>
@@ -404,37 +408,37 @@
             </select>
           </div>
           <div class="space-y-1.5">
-            <label class="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Conduit Size (inches)</label>
-            <input id="param-size" type="text" value="20.5" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+            <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider">Conduit Size (inches)</label>
+            <input id="param-size" type="text" value="20.5" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
           </div>
           <div class="space-y-1.5">
-            <label class="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Barometric P. (inHg)</label>
-            <input id="param-baro" type="text" value="29.60" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+            <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider">Barometric P. (inHg)</label>
+            <input id="param-baro" type="text" value="29.60" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
           </div>
           <div class="space-y-1.5">
-            <label class="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Ambient Temp (°F)</label>
-            <input id="param-ambient" type="text" value="82.4" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+            <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider">Ambient Temp (°F)</label>
+            <input id="param-ambient" type="text" value="82.4" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
           </div>
           <div class="space-y-1.5">
-            <label class="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Pitot Coefficient</label>
-            <input id="param-pitot" type="text" value="0.94" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+            <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider">Pitot Coefficient</label>
+            <input id="param-pitot" type="text" value="0.94" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
           </div>
-          <div class="bg-neutral-950 border border-neutral-850 rounded-lg p-2.5 flex flex-col justify-center text-[10px] font-mono text-neutral-500 leading-normal">
-            <div class="text-neutral-400 font-bold uppercase mb-0.5">Physical fallbacks</div>
-            <div>Temp Default: <span id="lbl-fallback-temp" class="text-amber-400 font-bold">82.4°F</span></div>
-            <div>Area Calc: <span id="lbl-calculated-area" class="text-white">2.292 ft²</span></div>
+          <div class="bg-inputBg border border-borderSec rounded-lg p-2.5 flex flex-col justify-center text-[10px] font-mono text-appTextTer leading-normal">
+            <div class="text-appText font-bold uppercase mb-0.5">Physical fallbacks</div>
+            <div>Temp Default: <span id="lbl-fallback-temp" class="text-amber-500 font-bold">82.4°F</span></div>
+            <div>Area Calc: <span id="lbl-calculated-area" class="text-appText">2.292 ft²</span></div>
           </div>
         </div>
       </div>
 
       <!-- Layout Toggles and Horizontal Tab Selection -->
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
-        <div class="flex items-center gap-2 bg-neutral-950 p-1 border border-neutral-800 rounded-lg">
-          <button id="btn-layout-tabbed" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-neutral-800 text-amber-400 border border-neutral-700/60">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-cardBg border border-borderPrim rounded-2xl p-4">
+        <div class="flex items-center gap-2 bg-inputBg p-1 border border-borderPrim rounded-lg">
+          <button id="btn-layout-tabbed" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-cardBg text-amber-500 border border-borderSec cursor-pointer">
             <i data-lucide="list" class="h-3.5 w-3.5"></i>
             Tabbed View
           </button>
-          <button id="btn-layout-grid" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-neutral-400 hover:text-white">
+          <button id="btn-layout-grid" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-appTextSec hover:text-appText cursor-pointer">
             <i data-lucide="grid" class="h-3.5 w-3.5"></i>
             Side-by-Side (Grid)
           </button>
@@ -452,18 +456,18 @@
       </div>
 
       <!-- Summary Board -->
-      <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-6 shadow-xl shadow-black/30">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-neutral-850 pb-4 gap-4">
+      <div class="bg-cardBg border border-borderPrim rounded-2xl p-6 space-y-6 shadow-md transition-colors duration-200">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-borderSec pb-4 gap-4">
           <div>
-            <h3 class="text-white font-sans font-semibold text-lg flex items-center gap-2">
+            <h3 class="text-appText font-sans font-semibold text-lg flex items-center gap-2">
               <i data-lucide="check-circle-2" class="text-emerald-400 h-5 w-5"></i>
               Consolidated Summary Metrics Board
             </h3>
-            <p class="text-neutral-400 text-xs mt-0.5">
+            <p class="text-appTextSec text-xs mt-0.5">
               Continuous overall summaries and mass distributions resolved from active conduits.
             </p>
           </div>
-          <button id="btn-trigger-export-modal" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-amber-500/10">
+          <button id="btn-trigger-export-modal" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-amber-500/10 cursor-pointer">
             <i data-lucide="download" class="h-4 w-4"></i>
             Export & Dispatch Report
           </button>
@@ -471,44 +475,44 @@
 
         <!-- Consolidated metrics row -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="p-4 bg-neutral-950/60 border border-neutral-800 rounded-xl space-y-2">
-            <span class="text-[10px] font-mono text-neutral-500 uppercase tracking-wider block">Total Mass Flow Rate</span>
+          <div class="p-4 bg-inputBg border border-borderPrim rounded-xl space-y-2">
+            <span class="text-[10px] font-mono text-appTextTer uppercase tracking-wider block">Total Mass Flow Rate</span>
             <div class="flex items-baseline gap-1">
-              <span id="sum-total-mass-flow" class="text-2xl md:text-3xl font-mono font-bold text-white">0.000</span>
-              <span class="text-xs font-mono text-neutral-400">k lb/hr</span>
+              <span id="sum-total-mass-flow" class="text-2xl md:text-3xl font-mono font-bold text-appText">0.000</span>
+              <span class="text-xs font-mono text-appTextSec">k lb/hr</span>
             </div>
-            <p class="text-[11px] text-neutral-500 leading-normal">Aggregate coal dust conveyance flow calculated across active test pipes.</p>
+            <p class="text-[11px] text-appTextTer leading-normal">Aggregate coal dust conveyance flow calculated across active test pipes.</p>
           </div>
 
-          <div class="p-4 bg-neutral-950/60 border border-neutral-800 rounded-xl space-y-2">
-            <span class="text-[10px] font-mono text-neutral-500 uppercase tracking-wider block">Average Mass Flow Rate</span>
+          <div class="p-4 bg-inputBg border border-borderPrim rounded-xl space-y-2">
+            <span class="text-[10px] font-mono text-appTextTer uppercase tracking-wider block">Average Mass Flow Rate</span>
             <div class="flex items-baseline gap-1">
               <span id="sum-avg-mass-flow" class="text-2xl md:text-3xl font-mono font-bold text-amber-400">0.000</span>
-              <span class="text-xs font-mono text-neutral-400">k lb/hr</span>
+              <span class="text-xs font-mono text-appTextSec">k lb/hr</span>
             </div>
-            <p class="text-[11px] text-neutral-500 leading-normal">Arithmetic mean flow rate distributed per individual conduit pipe.</p>
+            <p class="text-[11px] text-appTextTer leading-normal">Arithmetic mean flow rate distributed per individual conduit pipe.</p>
           </div>
 
-          <div class="p-4 bg-neutral-950/60 border border-neutral-800 rounded-xl space-y-2">
-            <span class="text-[10px] font-mono text-neutral-500 uppercase tracking-wider block">Average Air Velocity</span>
+          <div class="p-4 bg-inputBg border border-borderPrim rounded-xl space-y-2">
+            <span class="text-[10px] font-mono text-appTextTer uppercase tracking-wider block">Average Air Velocity</span>
             <div class="flex items-baseline gap-1">
               <span id="sum-avg-velocity" class="text-2xl md:text-3xl font-mono font-bold text-emerald-400">0</span>
-              <span class="text-xs font-mono text-neutral-400">fpm</span>
+              <span class="text-xs font-mono text-appTextSec">fpm</span>
             </div>
-            <p class="text-[11px] text-neutral-500 leading-normal">Average gas stream speed resolved from valid isokinetic Pitot sweep measurements.</p>
+            <p class="text-[11px] text-appTextTer leading-normal">Average gas stream speed resolved from valid isokinetic Pitot sweep measurements.</p>
           </div>
         </div>
 
         <!-- Deviations Plotting -->
         <div class="space-y-4 pt-2">
           <div>
-            <h4 class="text-white font-sans font-semibold text-sm">Individual Conduit Mass Flow Deviations from Mean</h4>
-            <p class="text-neutral-400 text-xs mt-0.5">
+            <h4 class="text-appText font-sans font-semibold text-sm">Individual Conduit Mass Flow Deviations from Mean</h4>
+            <p class="text-appTextSec text-xs mt-0.5">
               Imbalances exceeding <span class="text-red-400 font-bold">±5.0%</span> are highlighted with amber alerts to prevent localized fuel starvation or line clogging.
             </p>
           </div>
           <!-- Dynamic deviation rows -->
-          <div id="deviations-graph-rows" class="p-4 bg-neutral-950 border border-neutral-850 rounded-xl space-y-4">
+          <div id="deviations-graph-rows" class="p-4 bg-inputBg border border-borderSec rounded-xl space-y-4">
             <!-- Populated by JavaScript -->
           </div>
         </div>
@@ -517,11 +521,11 @@
   </main>
 
   <!-- 4. Global Footer -->
-  <footer class="border-t border-neutral-900 bg-neutral-950 mt-12 py-6">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-neutral-500">
+  <footer class="border-t border-borderSec bg-cardBg mt-12 py-6">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-appTextTer">
       <div>
         &copy; 2026 Thermal Engineering Field Services Group. All calculations comply with ASME PTC 4.2 Coal Sampling standards.
-        <br/><span class="text-neutral-400 font-semibold mt-1 inline-block">Created by Christian de la Cruz</span>
+        <br/><span class="text-appTextSec font-semibold mt-1 inline-block">Created by Christian de la Cruz</span>
       </div>
       <div class="flex items-center gap-3">
         <span class="inline-flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2.5 py-0.5 rounded-full">
@@ -550,7 +554,7 @@
       <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
         <!-- Export Scope Selection -->
         <div class="bg-inputBg border border-borderPrim p-4 rounded-xl space-y-3">
-          <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider font-semibold">Choose Export Scope:</label>
+          <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider font-semibold">1. Choose Export Scope:</label>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button id="btn-scope-mill" class="p-3 border border-amber-500 bg-amber-500/10 text-amber-500 rounded-lg text-left transition-all cursor-pointer">
               <div class="font-bold text-xs flex items-center gap-1.5">
@@ -569,52 +573,78 @@
             <button id="btn-scope-all" class="p-3 border border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec rounded-lg text-left transition-all cursor-pointer">
               <div class="font-bold text-xs flex items-center gap-1.5">
                 <i data-lucide="globe" class="h-3.5 w-3.5"></i>
-                Whole Database
+                Whole Module (Both Facilities)
               </div>
-              <div class="text-[10px] text-appTextTer mt-1">Both Facilities (All Mills)</div>
+              <div class="text-[10px] text-appTextTer mt-1">Both Facilities (All Mills for this module)</div>
             </button>
           </div>
         </div>
 
-        <!-- Step 1: Download CSV -->
-        <div class="space-y-3 border-t border-borderSec pt-4">
-          <div class="flex items-center gap-2 text-sm font-sans font-medium text-appText">
-            <span class="w-5 h-5 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center text-xs border border-amber-500/20 font-mono">1</span>
-            <span>Primary Data Export</span>
-          </div>
-          <p class="text-appTextSec text-xs pl-7 leading-relaxed font-sans">
-            Export the raw 12-point velocity grid matrix, global barometric readings, flue density profiles, and computed deviations in standard CSV layout.
-          </p>
-          <div class="pl-7">
-            <button id="btn-download-csv-standalone" class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-sm transition-all shadow-md cursor-pointer">
-              <i data-lucide="download" class="h-4 w-4"></i>
-              Download Report (.CSV)
-            </button>
+        <!-- Simplification Choice: Choose 1 of 2 modes -->
+        <div class="space-y-4 pt-2">
+          <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider font-semibold">2. Choose Delivery Method:</label>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Option 1: Local Download -->
+            <div class="bg-inputBg border border-borderPrim rounded-xl p-5 flex flex-col justify-between space-y-4">
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-2 text-sm font-sans font-semibold text-appText">
+                  <i data-lucide="download" class="text-amber-500 h-4.5 w-4.5"></i>
+                  <span>Save to Local Drive</span>
+                </div>
+                <p class="text-appTextSec text-xs leading-relaxed font-sans">
+                  Export all computed parameters, points, and ASME velocity metrics into a high-fidelity spreadsheet file instantly.
+                </p>
+              </div>
+              <button id="btn-export-to-xlsx" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm">
+                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                Export & Download XLSX
+              </button>
+            </div>
+
+            <!-- Option 2: Dispatch via Email -->
+            <div class="bg-inputBg border border-borderPrim rounded-xl p-5 flex flex-col justify-between space-y-4">
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-2 text-sm font-sans font-semibold text-appText">
+                  <i data-lucide="mail" class="text-amber-500 h-4.5 w-4.5"></i>
+                  <span>Send via Email Client</span>
+                </div>
+                <p class="text-appTextSec text-xs leading-relaxed font-sans">
+                  Generate the spreadsheet behind the scenes, trigger download, and open pre-formatted compose window in your preferred platform.
+                </p>
+              </div>
+              <button id="btn-export-to-email" class="w-full py-2.5 bg-inputBg hover:bg-cardBg border border-borderPrim hover:border-amber-500/30 text-appText hover:text-amber-500 font-bold rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                <i data-lucide="send" class="h-4 w-4"></i>
+                Prepare & Send via Email
+              </button>
+            </div>
+
           </div>
         </div>
 
-        <div class="border-t border-borderSec"></div>
-
-        <!-- Step 2: Email Dispatcher -->
-        <div class="space-y-4">
-          <div class="flex items-center gap-2 text-sm font-sans font-medium text-appText">
-            <span class="w-5 h-5 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center text-xs border border-amber-500/20 font-mono">2</span>
-            <span>Structured Email Dispatch</span>
+        <!-- Interactive Email Drawer & Guidelines (Initially Hidden, Toggles Open when Prepare & Send is clicked) -->
+        <div id="email-platforms-container" class="hidden border border-borderPrim bg-inputBg/40 rounded-xl p-5 space-y-4 animate-fade-in">
+          <div class="flex items-start gap-2.5 text-amber-500">
+            <i data-lucide="info" class="h-5 w-5 shrink-0 mt-0.5"></i>
+            <div class="text-xs font-sans leading-normal">
+              <span class="font-semibold block text-appText text-sm mb-1">Step 1: Your XLSX File is Downloaded!</span>
+              We've generated and saved the spreadsheet in your Downloads folder.
+              <span class="font-semibold mt-2.5 block text-appText text-sm mb-1">Step 2: Open Email & Attach File</span>
+              Click any option below to open a pre-drafted email, then drag-and-drop or attach the file to dispatch.
+            </div>
           </div>
-          <p class="text-appTextSec text-xs pl-7 leading-relaxed">
-            Select an email endpoint to open a pre-formatted draft with all consolidated averages, individual velocities, and deviances. Drag-and-drop your downloaded CSV file directly into your draft!
-          </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pl-7">
-            <a id="lnk-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-inputBg hover:bg-cardBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
-              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <a id="lnk-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
               Gmail Webmail
             </a>
-            <a id="lnk-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-inputBg hover:bg-cardBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+            <a id="lnk-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
               <span class="w-2 h-2 rounded-full bg-blue-500"></span>
               Outlook Web
             </a>
-            <a id="lnk-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-inputBg hover:bg-cardBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+            <a id="lnk-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
               <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
               System Client
             </a>
@@ -623,20 +653,18 @@
 
         <div class="border-t border-borderSec"></div>
 
-        <!-- Quick Copy Preview -->
+        <!-- Plaintext Preview Box -->
         <div class="space-y-3">
-          <div class="flex items-center justify-between pl-7">
-            <span class="text-xs font-sans font-medium text-appTextSec">Plaintext Summary Preview</span>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-sans font-medium text-appTextSec">Plaintext Body Preview</span>
             <button id="btn-copy-summary-standalone" class="flex items-center gap-1.5 px-3 py-1 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded text-[11px] font-mono transition-colors cursor-pointer">
               <i data-lucide="copy" class="h-3 w-3"></i>
-              <span id="lbl-copy-btn">Copy Summary</span>
+              <span id="lbl-copy-btn">Copy Text Only</span>
             </button>
           </div>
-          <div class="pl-7">
-            <pre id="pre-report-preview" class="p-3 bg-inputBg border border-borderPrim rounded-lg text-[10px] font-mono text-appTextSec max-h-40 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
-              Summary loading...
-            </pre>
-          </div>
+          <pre id="pre-report-preview" class="p-3 bg-inputBg border border-borderPrim rounded-lg text-[10px] font-mono text-appTextSec max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
+            Summary loading...
+          </pre>
         </div>
       </div>
 
@@ -1376,14 +1404,9 @@
       return body;
     }
 
-    function generateCSVContentForScope(scope) {
-      const rows = [];
-      const timeStr = new Date().toLocaleString();
-
-      rows.push(['FIELD ENGINEER COAL SAMPLING REPORT - COMPILED SCOPE']);
-      rows.push(['Generated At', timeStr]);
-      rows.push(['Export Scope', scope === 'mill' ? 'Specific Mill Only' : (scope === 'facility' ? 'Whole Facility' : 'Whole Database')]);
-      rows.push([]);
+    function generateXLSXContentForScope(scope) {
+      const wb = XLSX.utils.book_new();
+      const dateStr = new Date().toISOString().split('T')[0];
 
       const items = [];
       if (scope === 'mill') {
@@ -1400,7 +1423,7 @@
 
       items.forEach(({ facility, mill }) => {
         const dataset = getDataset(facility, mill);
-        const size = parseFloat(dataset.conduitSize) || 20.5;
+        const size = parseFloat(dataset.conduitSize) || (facility === 'QPL' ? 20.5 : 24.0);
         const baro = parseFloat(dataset.barometricPressure) || 29.60;
         const ambient = parseFloat(dataset.ambientTemp) || 82.4;
         const pitot = parseFloat(dataset.pitotCoefficient) || 0.94;
@@ -1410,63 +1433,84 @@
         );
 
         const activeMetrics = metrics.filter(m => m.hasValidReadings);
-        const hasData = activeMetrics.length > 0;
+        const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+        const avgMassFlow = totalMassFlow / (metrics.length || 1);
+        const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+        const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
 
-        rows.push([`FACILITY: ${facility} | MILL: ${mill}`, hasData ? 'ACTIVE DATA' : 'EMPTY']);
-        rows.push(['Conduit Size (in)', dataset.conduitSize]);
-        rows.push(['Barometric Pressure (inHg)', dataset.barometricPressure]);
-        rows.push(['Ambient Temp (°F)', dataset.ambientTemp]);
-        rows.push(['Pitot Coefficient', dataset.pitotCoefficient]);
+        const deviations = {};
+        metrics.forEach(m => {
+          deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+        });
 
-        if (hasData) {
-          const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
-          const avgMassFlow = totalMassFlow / (metrics.length || 1);
-          const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
-          const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+        const rows = [
+          [`FIELD ENGINEER COAL SAMPLING REPORT - ${facility} ${mill}`],
+          [`Generated At: ${new Date().toLocaleString()}`],
+          [],
+          ['Global Facility Parameters', 'Value', 'Unit'],
+          ['Conduit Inside Diameter', size, 'inches'],
+          ['Barometric Pressure', baro, 'inHg'],
+          ['Ambient Temperature', ambient, '°F'],
+          ['Pitot Coefficient (Cp)', pitot, ''],
+          [],
+          ['Consolidated Performance Summary', 'Value', 'Unit'],
+          ['Total Mass Flow Rate', parseFloat(totalMassFlow.toFixed(3)), 'k lb/hr'],
+          ['Average Mass Flow Rate', parseFloat(avgMassFlow.toFixed(3)), 'k lb/hr'],
+          ['Average Gas Velocity', parseFloat(avgVelocity.toFixed(1)), 'fpm'],
+          [],
+          ['Conduit Multi-Point Matrix Details'],
+        ];
 
-          rows.push(['Total Mass Flow Rate (k lb/hr)', totalMassFlow.toFixed(3)]);
-          rows.push(['Average Mass Flow Rate (k lb/hr)', avgMassFlow.toFixed(3)]);
-          rows.push(['Average Air Velocity (fpm)', avgVelocity.toFixed(1)]);
+        // Headers row for conduits
+        const conduitHeaders = ['Metric / Port Point', ...dataset.conduits.map(c => `Conduit ${c.id}`)];
+        rows.push(conduitHeaders);
+        rows.push(['Static Pressure (inWC)', ...dataset.conduits.map(c => c.staticPressure ? parseFloat(c.staticPressure) : 0)]);
+        rows.push(['Gas Temperature (°F)', ...dataset.conduits.map(c => c.temperature ? parseFloat(c.temperature) : ambient)]);
+        rows.push(['DP (inWC)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.dp.toFixed(4)) : 'N/A')]);
+        rows.push(['Density (lb/ft3)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.density.toFixed(4)) : 'N/A')]);
+        rows.push(['Gas Velocity (fpm)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.avgVelocity.toFixed(1)) : 0)]);
+        rows.push(['Mass Flow (k lb/hr)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.massFlow.toFixed(3)) : 0)]);
+        rows.push(['Mean Deviation (%)', ...metrics.map(m => {
+          const dev = deviations[m.id] || 0;
+          return m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0%';
+        })]);
 
-          const deviations = {};
-          metrics.forEach(m => {
-            deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
-          });
-
-          const conduitHeaders = ['Metric / Port Point', ...dataset.conduits.map(c => `Conduit ${c.id}`)];
-          rows.push(conduitHeaders);
-          rows.push(['Static Pressure (inWC)', ...dataset.conduits.map(c => c.staticPressure || '0')]);
-          rows.push(['Conduit Gas Temp (°F)', ...dataset.conduits.map(c => c.temperature || dataset.ambientTemp)]);
-          rows.push(['DP (inWC)', ...metrics.map(m => m.hasValidReadings ? m.dp.toFixed(4) : 'N/A')]);
-          rows.push(['Density (lb/ft3)', ...metrics.map(m => m.hasValidReadings ? m.density.toFixed(4) : 'N/A')]);
-          rows.push(['Velocity (fpm)', ...metrics.map(m => m.hasValidReadings ? m.avgVelocity.toFixed(1) : '0')]);
-          rows.push(['Mass Flow (k lb/hr)', ...metrics.map(m => m.hasValidReadings ? m.massFlow.toFixed(3) : '0')]);
-          rows.push(['Deviation (%)', ...metrics.map(m => {
-            const dev = deviations[m.id] || 0;
-            return m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0%';
-          })]);
-
-          rows.push(['PORT 1 MATRIX']);
-          for (let i = 0; i < 12; i++) {
-            rows.push([`Point ${i + 1}`, ...dataset.conduits.map(c => c.port1Readings[i] || '')]);
-          }
-          rows.push(['PORT 2 MATRIX']);
-          for (let i = 0; i < 12; i++) {
-            rows.push([`Point ${i + 1}`, ...dataset.conduits.map(c => c.port2Readings[i] || '')]);
-          }
+        rows.push([], ['PORT 1 MATRIX READINGS (inWC)']);
+        for (let i = 0; i < 12; i++) {
+          rows.push([`Point ${i + 1}`, ...dataset.conduits.map(c => c.port1Readings[i] ? parseFloat(c.port1Readings[i]) : '')]);
         }
-        rows.push([]);
-        rows.push([]);
+
+        rows.push([], ['PORT 2 MATRIX READINGS (inWC)']);
+        for (let i = 0; i < 12; i++) {
+          rows.push([`Point ${i + 1}`, ...dataset.conduits.map(c => c.port2Readings[i] ? parseFloat(c.port2Readings[i]) : '')]);
+        }
+
+        // Convert rows to worksheet
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+
+        // Auto-fit column widths
+        const max_cols = rows.reduce((max, r) => Math.max(max, r.length), 0);
+        const wscols = [];
+        for (let c = 0; c < max_cols; c++) {
+          let max_len = 10;
+          rows.forEach(r => {
+            if (r[c] !== undefined && r[c] !== null) {
+              const valStr = String(r[c]);
+              if (valStr.length > max_len) max_len = valStr.length;
+            }
+          });
+          wscols.push({ wch: max_len + 3 });
+        }
+        ws['!cols'] = wscols;
+
+        // Add to workbook
+        const sheetName = `${facility}_${mill.replace(' ', '')}`.substring(0, 31);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
       });
 
-      return rows.map(r => 
-        r.map(val => {
-          const escaped = String(val).replace(/"/g, '""');
-          return escaped.includes(',') || escaped.includes('\n') || escaped.includes('"')
-            ? `"${escaped}"`
-            : escaped;
-        }).join(',')
-      ).join('\n');
+      // Write Workbook and trigger download
+      const filename = `coal_sampling_${scope}_report_${appState.facility}_${dateStr}.xlsx`;
+      XLSX.writeFile(wb, filename);
     }
 
     function updateExportContent() {
@@ -1500,20 +1544,21 @@
       document.getElementById('btn-copy-summary-standalone').onclick = () => {
         navigator.clipboard.writeText(reportText);
         document.getElementById('lbl-copy-btn').innerText = 'Copied!';
-        setTimeout(() => document.getElementById('lbl-copy-btn').innerText = 'Copy Summary', 2000);
+        setTimeout(() => document.getElementById('lbl-copy-btn').innerText = 'Copy Text Only', 2000);
       };
 
-      document.getElementById('btn-download-csv-standalone').onclick = () => {
-        const csv = generateCSVContentForScope(exportScope);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        const filename = `coal_sampling_${exportScope}_report_${appState.facility}_${dateStr}.csv`;
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      // Export directly to Excel
+      document.getElementById('btn-export-to-xlsx').onclick = () => {
+        generateXLSXContentForScope(exportScope);
+        document.getElementById('email-platforms-container').classList.add('hidden');
+      };
+
+      // Prepare & Send via Email: triggers XLSX generation, then opens pre-formatted email
+      document.getElementById('btn-export-to-email').onclick = () => {
+        // Trigger spreadsheet download in the background
+        generateXLSXContentForScope(exportScope);
+        // Toggle drawer open with guidelines
+        document.getElementById('email-platforms-container').classList.remove('hidden');
       };
     }
 
@@ -1522,6 +1567,7 @@
 
     document.getElementById('btn-trigger-export-modal').addEventListener('click', () => {
       exportModal.classList.remove('hidden');
+      document.getElementById('email-platforms-container').classList.add('hidden'); // Hide platform guidelines drawer initially
       exportScope = 'mill'; // Default to active mill only on modal open
       updateExportContent();
     });
@@ -1576,11 +1622,32 @@
       let html = '';
 
       const configs = [
-        { facility: 'QPL', mills: ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E'] },
-        { facility: 'SBPL', mills: ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'] }
+        { facility: 'QPL', name: 'QPL Facility Module', description: 'Quezon Power Ltd. | 5x Boiler Mills (Mill A to Mill E)', mills: ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E'] },
+        { facility: 'SBPL', name: 'SBPL Facility Module', description: 'San Buenaventura Power Ltd. Supercritical Boiler | 6x Mills (Mill A to Mill F)', mills: ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'] }
       ];
 
-      configs.forEach(({ facility, mills }) => {
+      configs.forEach(({ facility, name, description, mills }) => {
+        // Create a grouped panel card
+        html += `
+          <div class="bg-cardBg/30 border border-borderPrim rounded-2xl p-5 md:p-6 space-y-4 shadow-sm transition-colors duration-200">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-borderSec pb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20">
+                  <i data-lucide="factory" class="h-4.5 w-4.5"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-mono font-bold text-appText uppercase tracking-wider">${name}</h4>
+                  <p class="text-[10px] text-appTextTer">${description}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[9px] font-mono text-emerald-400">Cache Active</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        `;
+
         mills.forEach(mill => {
           const dataset = getDataset(facility, mill);
           const size = parseFloat(dataset.conduitSize) || (facility === 'QPL' ? 20.5 : 24.0);
@@ -1662,6 +1729,11 @@
             </div>
           `;
         });
+
+        html += `
+            </div>
+          </div>
+        `;
       });
 
       grid.innerHTML = html;
