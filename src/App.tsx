@@ -33,6 +33,10 @@ import { calculateAllMetrics, generateDemoReadings } from './utils/calculations'
 import { StateRecoveryBanner } from './components/StateRecoveryBanner';
 import { ConduitColumn } from './components/ConduitColumn';
 import { ExportModal } from './components/ExportModal';
+import { PumpAWorkspace } from './components/PumpAWorkspace';
+import { PumpBSweepsWorkspace } from './components/PumpBSweepsWorkspace';
+import { AirLeakageWorkspace } from './components/AirLeakageWorkspace';
+import { NeonSaveWidget } from './components/NeonSaveWidget';
 
 const STORAGE_KEY = 'field_engineer_toolbox_session';
 
@@ -62,7 +66,7 @@ function getInitialSession(facility: 'QPL' | 'SBPL' = 'QPL'): SessionState {
 }
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<'dashboard' | 'sampling'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'sampling' | 'pumpA' | 'pumpBSweeps' | 'airLeakage'>('dashboard');
   const [session, setSession] = useState<SessionState>(() => getInitialSession('QPL'));
   const [layoutMode, setLayoutMode] = useState<'tabbed' | 'grid'>('tabbed');
   const [activeConduitId, setActiveConduitId] = useState<number>(1);
@@ -105,6 +109,9 @@ export default function App() {
           text: string;
           timestamp: string;
           dateString: string;
+          module?: string;
+          title?: string;
+          data?: any;
         };
       }
     } catch (e) {
@@ -501,79 +508,94 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Locked Module: Pump A */}
-                <div className="border border-neutral-900 bg-neutral-950/30 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden group">
+                {/* Active Module: Pump A */}
+                <div className="border border-amber-500/30 hover:border-amber-400/50 bg-neutral-900/60 hover:bg-neutral-900/90 rounded-xl p-5 flex flex-col justify-between gap-6 transition-all group shadow-lg shadow-amber-500/5">
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
-                      <div className="p-2.5 bg-neutral-900 border border-neutral-850 text-neutral-500 rounded-lg">
+                      <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
                         <Settings className="h-5 w-5" />
                       </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded-full">
-                        Locked
+                      <span className="text-[10px] font-mono px-2 py-0.5 bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 rounded-full font-semibold">
+                        Ready
                       </span>
                     </div>
                     <div>
-                      <h4 className="text-neutral-400 font-sans font-semibold text-base">
+                      <h4 className="text-white font-sans font-semibold text-base group-hover:text-amber-400 transition-colors">
                         Inspection of Pump A
                       </h4>
-                      <p className="text-neutral-500 text-xs mt-1.5 leading-relaxed">
+                      <p className="text-neutral-400 text-xs mt-1.5 leading-relaxed">
                         Verify suction and discharge heads, compute net positive suction head (NPSH), and plot efficiency performance envelopes.
                       </p>
                     </div>
                   </div>
-                  <div className="w-full py-2 bg-neutral-900 border border-neutral-850 text-neutral-500 text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
-                    <Lock className="h-3.5 w-3.5" /> System Lock (v2.7)
-                  </div>
+                  <button
+                    onClick={() => setCurrentView('pumpA')}
+                    className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all group-hover:translate-y-[-2px] shadow-sm shadow-amber-500/10"
+                    id="btn-launch-pump-a"
+                  >
+                    Launch Workspace
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
                 </div>
 
-                {/* Locked Module: Pump B Sweeps */}
-                <div className="border border-neutral-900 bg-neutral-950/30 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden group">
+                {/* Active Module: Pump B Sweeps */}
+                <div className="border border-amber-500/30 hover:border-amber-400/50 bg-neutral-900/60 hover:bg-neutral-900/90 rounded-xl p-5 flex flex-col justify-between gap-6 transition-all group shadow-lg shadow-amber-500/5">
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
-                      <div className="p-2.5 bg-neutral-900 border border-neutral-850 text-neutral-500 rounded-lg">
+                      <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
                         <Layers className="h-5 w-5" />
                       </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded-full">
-                        Locked
+                      <span className="text-[10px] font-mono px-2 py-0.5 bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 rounded-full font-semibold">
+                        Ready
                       </span>
                     </div>
                     <div>
-                      <h4 className="text-neutral-400 font-sans font-semibold text-base">
+                      <h4 className="text-white font-sans font-semibold text-base group-hover:text-amber-400 transition-colors">
                         Boiler Feed Pump B Sweeps
                       </h4>
-                      <p className="text-neutral-500 text-xs mt-1.5 leading-relaxed">
+                      <p className="text-neutral-400 text-xs mt-1.5 leading-relaxed">
                         Assess continuous multi-stage thermal pump metrics, vibration thresholds, and turbine sweep logs.
                       </p>
                     </div>
                   </div>
-                  <div className="w-full py-2 bg-neutral-900 border border-neutral-850 text-neutral-500 text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
-                    <Lock className="h-3.5 w-3.5" /> System Lock (v2.7)
-                  </div>
+                  <button
+                    onClick={() => setCurrentView('pumpBSweeps')}
+                    className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all group-hover:translate-y-[-2px] shadow-sm shadow-amber-500/10"
+                    id="btn-launch-pump-b"
+                  >
+                    Launch Workspace
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
                 </div>
 
-                {/* Locked Module: Condenser Air In-Leakage */}
-                <div className="border border-neutral-900 bg-neutral-950/30 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden group">
+                {/* Active Module: Condenser Air In-Leakage */}
+                <div className="border border-amber-500/30 hover:border-amber-400/50 bg-neutral-900/60 hover:bg-neutral-900/90 rounded-xl p-5 flex flex-col justify-between gap-6 transition-all group shadow-lg shadow-amber-500/5">
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
-                      <div className="p-2.5 bg-neutral-900 border border-neutral-850 text-neutral-500 rounded-lg">
+                      <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
                         <Activity className="h-5 w-5" />
                       </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded-full">
-                        Locked
+                      <span className="text-[10px] font-mono px-2 py-0.5 bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 rounded-full font-semibold">
+                        Ready
                       </span>
                     </div>
                     <div>
-                      <h4 className="text-neutral-400 font-sans font-semibold text-base">
+                      <h4 className="text-white font-sans font-semibold text-base group-hover:text-amber-400 transition-colors">
                         Condenser Air In-Leakage
                       </h4>
-                      <p className="text-neutral-500 text-xs mt-1.5 leading-relaxed">
+                      <p className="text-neutral-400 text-xs mt-1.5 leading-relaxed">
                         Audit vacuum decay times, compute mass leakage rates, and calculate efficiency drop impact from condenser fouling.
                       </p>
                     </div>
                   </div>
-                  <div className="w-full py-2 bg-neutral-900 border border-neutral-850 text-neutral-500 text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
-                    <Lock className="h-3.5 w-3.5" /> System Lock (v2.8)
-                  </div>
+                  <button
+                    onClick={() => setCurrentView('airLeakage')}
+                    className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all group-hover:translate-y-[-2px] shadow-sm shadow-amber-500/10"
+                    id="btn-launch-air-leakage"
+                  >
+                    Launch Workspace
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
                 </div>
 
               </div>
@@ -1013,7 +1035,7 @@ export default function App() {
                         return (
                           <div
                             key={log.id}
-                            className="p-4 bg-neutral-950 border border-neutral-850/40 hover:border-neutral-800 rounded-xl flex flex-col gap-2 transition-all hover:bg-neutral-950/80 group animate-fade-in"
+                            className="p-4 bg-neutral-950 border border-neutral-850/40 hover:border-neutral-800 rounded-xl flex flex-col gap-2.5 transition-all hover:bg-neutral-950/80 group animate-fade-in text-left"
                           >
                             {/* Top Meta Header */}
                             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-900/60 pb-2">
@@ -1026,7 +1048,7 @@ export default function App() {
                                     {parsed.user}
                                   </span>
                                   <span className="text-[10px] text-neutral-400 flex items-center gap-1">
-                                    <Briefcase className="h-2.5 w-2.5" /> {parsed.role}
+                                    <Briefcase className="h-2.5 w-2.5 text-neutral-500" /> {parsed.role}
                                   </span>
                                 </div>
                               </div>
@@ -1044,14 +1066,39 @@ export default function App() {
                               </div>
                             </div>
 
-                            {/* Description & Text Body */}
+                            {/* Module Name and Title */}
                             <div className="space-y-1">
-                              <div className="text-[10px] font-mono text-amber-500/95 font-bold uppercase tracking-wider">
-                                {parsed.description}
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/25 rounded-md uppercase">
+                                  {parsed.module || 'System Log'}
+                                </span>
+                                {parsed.title && (
+                                  <span className="text-xs font-sans font-bold text-white">
+                                    {parsed.title}
+                                  </span>
+                                )}
                               </div>
-                              <p className="text-xs text-neutral-300 leading-relaxed font-sans break-words whitespace-pre-wrap selection:bg-amber-500/20">
-                                {parsed.text}
+
+                              <p className="text-xs text-neutral-300 leading-relaxed font-sans break-words whitespace-pre-wrap selection:bg-amber-500/20 pt-1">
+                                {parsed.description}
                               </p>
+
+                              {parsed.data && (
+                                <details className="mt-2 text-[10px] font-mono text-neutral-500 border-t border-neutral-900/50 pt-2 cursor-pointer select-none">
+                                  <summary className="hover:text-neutral-300 transition-colors list-none flex items-center gap-1">
+                                    <span>▶</span> View Raw State Vector
+                                  </summary>
+                                  <pre className="mt-1.5 p-2 bg-neutral-950/90 border border-neutral-900 rounded-md overflow-x-auto text-[9px] leading-normal select-text">
+                                    {JSON.stringify(parsed.data, null, 2)}
+                                  </pre>
+                                </details>
+                              )}
+
+                              {!parsed.data && parsed.text && (
+                                <p className="text-[11px] text-neutral-400 leading-relaxed font-sans break-words whitespace-pre-wrap pt-1 border-t border-neutral-900/40 mt-1">
+                                  {parsed.text}
+                                </p>
+                              )}
                             </div>
 
                             {/* Dynamic stamp details */}
@@ -1563,7 +1610,80 @@ export default function App() {
                 </div>
               </div>
             </div>
+
+            {/* Save to Database Integration */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              <div className="lg:col-span-2 bg-neutral-900 border border-neutral-850/80 rounded-2xl p-6 flex flex-col justify-between space-y-4 shadow-xl">
+                <div>
+                  <h4 className="text-white font-sans font-semibold text-base flex items-center gap-2">
+                    <Database className="h-5 w-5 text-amber-400" />
+                    Continuous Sampling Archival Info
+                  </h4>
+                  <p className="text-neutral-400 text-xs mt-2 leading-relaxed">
+                    Once the sampling runs across all conduits have been fully resolved and balanced, you can archive this calculation model directly to our secure centralized database cluster.
+                  </p>
+                  <p className="text-neutral-500 text-xs mt-2 leading-relaxed">
+                    Saves include: total and individual flow metrics, static and barometric pressures, port readings, and ambient values. You can overwrite previous entries for today or save additional records to maintain multiple tests.
+                  </p>
+                </div>
+                <div className="p-4 bg-neutral-950 rounded-xl border border-neutral-850/60 flex items-center gap-3">
+                  <div className="p-2 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg shrink-0">
+                    <Activity className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="text-[11px] font-mono text-neutral-400">
+                    <span className="text-white font-bold block uppercase mb-0.5">Live Data Vector</span>
+                    Total Mass Flow: <strong className="text-amber-400">{summary.totalMassFlow.toFixed(3)} k lb/hr</strong> | Conduits Active: <strong className="text-white">{session.conduits.length}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-1">
+                <NeonSaveWidget
+                  moduleName="Isokinetic Coal Sampling"
+                  moduleData={{
+                    facility: session.facility,
+                    millName: session.millName,
+                    conduitSize: session.conduitSize,
+                    barometricPressure: session.barometricPressure,
+                    ambientTemp: session.ambientTemp,
+                    pitotCoefficient: session.pitotCoefficient,
+                    totalMassFlow: summary.totalMassFlow.toFixed(3),
+                    avgMassFlow: summary.avgMassFlow.toFixed(3),
+                    avgVelocity: summary.avgVelocity.toFixed(0),
+                  }}
+                  teamLogs={teamLogs}
+                  onSaveSuccess={fetchTeamLogs}
+                />
+              </div>
+            </div>
           </div>
+        )}
+
+        {/* 3.1 Pump A Workspace */}
+        {currentView === 'pumpA' && (
+          <PumpAWorkspace
+            onBack={() => setCurrentView('dashboard')}
+            teamLogs={teamLogs}
+            onSaveSuccess={fetchTeamLogs}
+          />
+        )}
+
+        {/* 3.2 Pump B Sweeps Workspace */}
+        {currentView === 'pumpBSweeps' && (
+          <PumpBSweepsWorkspace
+            onBack={() => setCurrentView('dashboard')}
+            teamLogs={teamLogs}
+            onSaveSuccess={fetchTeamLogs}
+          />
+        )}
+
+        {/* 3.3 Condenser Air In-Leakage Workspace */}
+        {currentView === 'airLeakage' && (
+          <AirLeakageWorkspace
+            onBack={() => setCurrentView('dashboard')}
+            teamLogs={teamLogs}
+            onSaveSuccess={fetchTeamLogs}
+          />
         )}
 
       </main>
