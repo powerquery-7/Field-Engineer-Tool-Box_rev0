@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, RotateCcw, Activity, Info } from 'lucide-react';
+import { ChevronLeft, RotateCcw, Activity, Info, Check, Database, RefreshCw } from 'lucide-react';
 import { NeonSaveWidget } from './NeonSaveWidget';
 
 interface AirLeakageWorkspaceProps {
@@ -16,6 +16,9 @@ export function AirLeakageWorkspace({ onBack, teamLogs, onSaveSuccess }: AirLeak
 
   const [leakageRate, setLeakageRate] = useState(0);
   const [coalPenalty, setCoalPenalty] = useState(0);
+
+  const [isQuickSaving, setIsQuickSaving] = useState(false);
+  const [isQuickSuccess, setIsQuickSuccess] = useState(false);
 
   useEffect(() => {
     const t = parseFloat(decayTime) || 1.0;
@@ -44,6 +47,39 @@ export function AirLeakageWorkspace({ onBack, teamLogs, onSaveSuccess }: AirLeak
     setVolume('12000');
   };
 
+  const handleQuickSave = async () => {
+    setIsQuickSaving(true);
+    const operatorName = localStorage.getItem('neo_operator_name') || 'Christian de la Cruz';
+    const payload = {
+      user: operatorName,
+      role: 'Field Operations',
+      module: 'Condenser Air In-Leakage',
+      title: 'Air In-Leakage - Quick Upload',
+      description: 'Quick 1-click snapshot save.',
+      text: `[Condenser Air In-Leakage] Decay Time: ${decayTime} min | Initial Vacuum: ${initVacuum} inHg | Final Vacuum: ${finalVacuum} inHg | Vol: ${volume} ft³ | Leakage Rate: ${leakageRate.toFixed(2)} SCFM | Heat Rate Penalty: +${coalPenalty.toFixed(3)}%`,
+      timestamp: new Date().toISOString(),
+      dateString: new Date().toISOString().split('T')[0],
+      data: moduleData
+    };
+
+    try {
+      const response = await fetch('/api/save-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: JSON.stringify(payload) }),
+      });
+      if (!response.ok) throw new Error('Failed to save');
+      setIsQuickSuccess(true);
+      await onSaveSuccess();
+      setTimeout(() => setIsQuickSuccess(false), 4000);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload to database: ' + err);
+    } finally {
+      setIsQuickSaving(false);
+    }
+  };
+
   const moduleData = {
     decayTimeMinutes: decayTime,
     initialVacuumInHg: initVacuum,
@@ -64,13 +100,30 @@ export function AirLeakageWorkspace({ onBack, teamLogs, onSaveSuccess }: AirLeak
           Back to Dashboard
         </button>
 
-        <button
-          onClick={handleReset}
-          className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-400 hover:text-white text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          Reset Defaults
-        </button>
+        <div className="flex items-center gap-2 self-end">
+          <button
+            onClick={handleQuickSave}
+            disabled={isQuickSaving}
+            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            {isQuickSaving ? (
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            ) : isQuickSuccess ? (
+              <Check className="h-3.5 w-3.5 text-emerald-300" />
+            ) : (
+              <Database className="h-3.5 w-3.5" />
+            )}
+            {isQuickSaving ? 'Uploading...' : isQuickSuccess ? 'Uploaded to DB!' : 'Upload to Neon DB'}
+          </button>
+
+          <button
+            onClick={handleReset}
+            className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-400 hover:text-white text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset Defaults
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

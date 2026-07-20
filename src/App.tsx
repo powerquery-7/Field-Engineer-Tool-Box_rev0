@@ -215,6 +215,56 @@ export default function App() {
     }
   };
 
+  // Quick Upload for Isokinetic Coal Sampling
+  const [isQuickSaving, setIsQuickSaving] = useState(false);
+  const [isQuickSuccess, setIsQuickSuccess] = useState(false);
+
+  const handleIsokineticQuickUpload = async () => {
+    setIsQuickSaving(true);
+    const operatorName = localStorage.getItem('neo_operator_name') || 'Christian de la Cruz';
+    
+    const moduleData = {
+      facility: session.facility,
+      millName: session.millName,
+      conduitSize: session.conduitSize,
+      barometricPressure: session.barometricPressure,
+      ambientTemp: session.ambientTemp,
+      pitotCoefficient: session.pitotCoefficient,
+      totalMassFlow: summary.totalMassFlow.toFixed(3),
+      avgMassFlow: summary.avgMassFlow.toFixed(3),
+      avgVelocity: summary.avgVelocity.toFixed(0)
+    };
+
+    const payload = {
+      user: operatorName,
+      role: 'Field Operations',
+      module: 'Isokinetic Coal Sampling',
+      title: `Isokinetic Sampling - ${session.facility} (Mill ${session.millName})`,
+      description: 'Quick 1-click snapshot save.',
+      text: `[Isokinetic Coal Sampling] Facility: ${session.facility} | Mill Name: ${session.millName} | Conduit Size: ${session.conduitSize}" | Barometric Pressure: ${session.barometricPressure} inHg | Total Mass Flow Rate: ${summary.totalMassFlow.toFixed(3)} lb/hr | Avg Velocity: ${summary.avgVelocity.toFixed(0)} ft/s`,
+      timestamp: new Date().toISOString(),
+      dateString: getTodayString(),
+      data: moduleData
+    };
+
+    try {
+      const response = await fetch('/api/save-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: JSON.stringify(payload) }),
+      });
+      if (!response.ok) throw new Error('Failed to save');
+      setIsQuickSuccess(true);
+      await fetchTeamLogs();
+      setTimeout(() => setIsQuickSuccess(false), 4000);
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to upload to database: ' + err.message);
+    } finally {
+      setIsQuickSaving(false);
+    }
+  };
+
   // Fetch logs on mount
   useEffect(() => {
     fetchTeamLogs();
@@ -1154,6 +1204,21 @@ export default function App() {
 
               <div className="flex items-center gap-2 self-end">
                 <button
+                  onClick={handleIsokineticQuickUpload}
+                  disabled={isQuickSaving}
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                  id="btn-header-quick-upload"
+                >
+                  {isQuickSaving ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : isQuickSuccess ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-300" />
+                  ) : (
+                    <Database className="h-3.5 w-3.5" />
+                  )}
+                  {isQuickSaving ? 'Uploading...' : isQuickSuccess ? 'Uploaded!' : 'Upload to Neon DB'}
+                </button>
+                <button
                   onClick={handleFillAllConduits}
                   className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-amber-400 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5"
                   id="btn-fill-all-demo"
@@ -1438,14 +1503,32 @@ export default function App() {
                   </p>
                 </div>
 
-                <button
-                  onClick={() => setIsExportOpen(true)}
-                  className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-amber-500/10"
-                  id="btn-open-export-modal"
-                >
-                  <Download className="h-4 w-4" />
-                  Export & Dispatch Report
-                </button>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={handleIsokineticQuickUpload}
+                    disabled={isQuickSaving}
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/15 cursor-pointer"
+                    id="btn-quick-upload-neon"
+                  >
+                    {isQuickSaving ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : isQuickSuccess ? (
+                      <Check className="h-4 w-4 text-emerald-300" />
+                    ) : (
+                      <Database className="h-4 w-4" />
+                    )}
+                    {isQuickSaving ? 'Uploading...' : isQuickSuccess ? 'Uploaded to DB!' : 'Upload to Neon DB'}
+                  </button>
+
+                  <button
+                    onClick={() => setIsExportOpen(true)}
+                    className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-amber-500/10"
+                    id="btn-open-export-modal"
+                  >
+                    <Download className="h-4 w-4" />
+                    Export & Dispatch Report
+                  </button>
+                </div>
               </div>
 
               {/* KPI metrics row */}

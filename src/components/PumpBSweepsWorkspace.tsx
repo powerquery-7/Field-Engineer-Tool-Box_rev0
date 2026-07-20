@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, RotateCcw, Activity, ShieldAlert, Cpu } from 'lucide-react';
+import { ChevronLeft, RotateCcw, Activity, ShieldAlert, Cpu, Check, Database, RefreshCw } from 'lucide-react';
 import { NeonSaveWidget } from './NeonSaveWidget';
 
 interface PumpBSweepsWorkspaceProps {
@@ -17,6 +17,9 @@ export function PumpBSweepsWorkspace({ onBack, teamLogs, onSaveSuccess }: PumpBS
 
   const [maxVib, setMaxVib] = useState(0);
   const [vibStatus, setVibStatus] = useState<'Normal' | 'Warning' | 'Critical'>('Normal');
+
+  const [isQuickSaving, setIsQuickSaving] = useState(false);
+  const [isQuickSuccess, setIsQuickSuccess] = useState(false);
 
   useEffect(() => {
     const v1 = parseFloat(vibStage1) || 0;
@@ -41,6 +44,39 @@ export function PumpBSweepsWorkspace({ onBack, teamLogs, onSaveSuccess }: PumpBS
     setVacuum('25.8');
   };
 
+  const handleQuickSave = async () => {
+    setIsQuickSaving(true);
+    const operatorName = localStorage.getItem('neo_operator_name') || 'Christian de la Cruz';
+    const payload = {
+      user: operatorName,
+      role: 'Field Operations',
+      module: 'Boiler Feed Pump B Sweeps',
+      title: 'Pump B Sweeps - Quick Upload',
+      description: 'Quick 1-click snapshot save.',
+      text: `[Boiler Feed Pump B Sweeps] Rotor Speed: ${speed} RPM | Vib S1: ${vibStage1} mils | Vib S2: ${vibStage2} mils | Seal Temp: ${sealTemp} °F | Vacuum: ${vacuum} inHg | Peak Vib: ${maxVib.toFixed(2)} mils`,
+      timestamp: new Date().toISOString(),
+      dateString: new Date().toISOString().split('T')[0],
+      data: moduleData
+    };
+
+    try {
+      const response = await fetch('/api/save-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: JSON.stringify(payload) }),
+      });
+      if (!response.ok) throw new Error('Failed to save');
+      setIsQuickSuccess(true);
+      await onSaveSuccess();
+      setTimeout(() => setIsQuickSuccess(false), 4000);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload to database: ' + err);
+    } finally {
+      setIsQuickSaving(false);
+    }
+  };
+
   const moduleData = {
     turbineSpeedRpm: speed,
     stage1VibrationMils: vibStage1,
@@ -62,13 +98,30 @@ export function PumpBSweepsWorkspace({ onBack, teamLogs, onSaveSuccess }: PumpBS
           Back to Dashboard
         </button>
 
-        <button
-          onClick={handleReset}
-          className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-400 hover:text-white text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          Reset Defaults
-        </button>
+        <div className="flex items-center gap-2 self-end">
+          <button
+            onClick={handleQuickSave}
+            disabled={isQuickSaving}
+            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            {isQuickSaving ? (
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            ) : isQuickSuccess ? (
+              <Check className="h-3.5 w-3.5 text-emerald-300" />
+            ) : (
+              <Database className="h-3.5 w-3.5" />
+            )}
+            {isQuickSaving ? 'Uploading...' : isQuickSuccess ? 'Uploaded to DB!' : 'Upload to Neon DB'}
+          </button>
+
+          <button
+            onClick={handleReset}
+            className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-400 hover:text-white text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset Defaults
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

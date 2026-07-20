@@ -1,0 +1,3224 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Field Engineer Toolbox</title>
+  
+  <!-- Inter & JetBrains Mono Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- SheetJS Spreadsheet Engine (XLSX) CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          },
+          colors: {
+            appBg: 'var(--bg-app)',
+            appText: 'var(--text-primary)',
+            appTextSec: 'var(--text-secondary)',
+            appTextTer: 'var(--text-tertiary)',
+            cardBg: 'var(--bg-card)',
+            inputBg: 'var(--bg-input)',
+            borderPrim: 'var(--border-primary)',
+            borderSec: 'var(--border-secondary)',
+            headerBg: 'var(--header-bg)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Inline Theme Initer -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      if (savedTheme === 'light') {
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <style>
+    :root {
+      --bg-app: #050505;
+      --text-primary: #f5f5f5;
+      --text-secondary: #a3a3a3;
+      --text-tertiary: #525252;
+      --bg-card: #0f0f0f;
+      --bg-input: #050505;
+      --border-primary: #1c1c1c;
+      --border-secondary: #0d0d0d;
+      --header-bg: rgba(13, 13, 13, 0.6);
+      --card-shadow: rgba(0, 0, 0, 0.8);
+    }
+
+    html.light {
+      --bg-app: #f8fafc;
+      --text-primary: #0f172a;
+      --text-secondary: #1e293b;
+      --text-tertiary: #475569;
+      --bg-card: #ffffff;
+      --bg-input: #f1f5f9;
+      --border-primary: #cbd5e1;
+      --border-secondary: #f1f5f9;
+      --header-bg: rgba(255, 255, 255, 0.85);
+      --card-shadow: rgba(148, 163, 184, 0.1);
+    }
+
+    /* Custom Scrollbar for precise grid design */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0a0a0a;
+    }
+    html.light ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #262626;
+      border-radius: 3px;
+    }
+    html.light ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #404040;
+    }
+    html.light ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Simple fade in animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="bg-appBg text-appText min-h-screen flex flex-col font-sans selection:bg-amber-500 selection:text-neutral-950 transition-colors duration-200">
+
+  <!-- 1. Global Header -->
+  <header class="border-b border-borderSec bg-headerBg backdrop-blur-md sticky top-0 z-40 transition-colors duration-200">
+    <div class="w-full max-w-full mx-auto px-4 lg:px-8 xl:px-12 py-3 md:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <div class="p-2.5 bg-inputBg border border-borderPrim rounded-lg shadow-inner text-amber-500">
+          <i data-lucide="cpu" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-appText font-mono font-bold text-base md:text-lg tracking-tight">
+              Field Engineer Toolbox System
+            </h1>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 bg-inputBg border border-borderPrim text-appTextSec rounded">
+              v2.7 (JS)
+            </span>
+          </div>
+          <p class="text-appTextTer text-[10px] md:text-xs uppercase tracking-wider flex items-center gap-2 mt-0.5 font-mono">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Local Engines Active
+            <span class="text-appTextTer/40">|</span>
+            Operating in Offline Direct Repository Mode
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+        <!-- Theme Toggle Button -->
+        <button id="btn-theme-toggle" class="p-2 bg-inputBg border border-borderPrim rounded-lg hover:bg-cardBg text-amber-500 hover:text-amber-400 transition-colors flex items-center justify-center cursor-pointer" title="Toggle Light/Dark Theme">
+          <i data-lucide="sun" class="h-4 w-4" id="theme-toggle-icon"></i>
+        </button>
+
+        <!-- Cache Status -->
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-inputBg border border-borderPrim rounded-lg text-[11px] font-mono">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-appTextSec uppercase">Local Cache:</span>
+          <span class="text-emerald-500 font-semibold">Active</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 w-full max-w-full mx-auto p-4 md:p-6 lg:p-8 xl:px-12 space-y-6">
+
+    <!-- Active State Recovery Banner -->
+    <div id="recovery-banner" class="hidden border border-amber-500/30 bg-amber-950/20 backdrop-blur-md rounded-lg p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in">
+      <div class="flex items-start gap-3">
+        <div class="p-2 bg-amber-500/10 text-amber-400 rounded-lg shrink-0">
+          <i data-lucide="alert-triangle" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <h4 class="text-amber-400 font-medium font-sans text-sm md:text-base">
+            Previous Session Data Retrieved
+          </h4>
+          <p class="text-appTextSec text-xs md:text-sm mt-0.5">
+            System detected active isokinetic calculations cached from <span id="recovery-timestamp" class="font-mono text-amber-300 font-semibold">--</span>.
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 w-full md:w-auto justify-end shrink-0">
+        <button id="btn-recovery-clear" class="flex-1 md:flex-none px-4 py-2 bg-cardBg hover:bg-red-950/20 border border-borderPrim hover:border-red-900/30 text-appTextSec hover:text-red-400 rounded-md text-xs font-mono transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+          <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i>
+          Start Fresh
+        </button>
+        <button id="btn-recovery-keep" class="flex-1 md:flex-none px-4 py-2 bg-amber-500 text-neutral-950 hover:bg-amber-400 font-semibold rounded-md text-xs font-sans transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/10 cursor-pointer">
+          <i data-lucide="check-circle" class="h-3.5 w-3.5"></i>
+          Keep Data
+        </button>
+      </div>
+    </div>
+
+    <!-- View 1: Unified Dashboard -->
+    <section id="view-dashboard" class="space-y-8 animate-fade-in">
+      <!-- Ambient Hero Banner -->
+      <div class="relative border border-borderPrim bg-cardBg/50 rounded-2xl p-6 md:p-8 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 transition-colors duration-200">
+        <div class="space-y-3 z-10 max-w-xl">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-500 text-xs font-mono rounded-full border border-amber-500/20">
+            <i data-lucide="activity" class="h-3 w-3 animate-pulse"></i> Thermal Plant Field Utility Suite
+          </span>
+          <h2 class="text-2xl md:text-3xl text-appText font-sans font-semibold tracking-tight">
+            High-Precision Sampling & Diagnostic Tools
+          </h2>
+          <p class="text-appTextSec text-sm leading-relaxed">
+            Engineered specifically for heavy mechanical field specialists. This web-only suite resolves isokinetic flue sweeps, fluid dynamics, and head parameters with zero network latency.
+          </p>
+        </div>
+        <div class="shrink-0 font-mono text-[11px] text-appTextSec space-y-1.5 bg-inputBg p-4 border border-borderPrim rounded-xl z-10 w-full md:w-auto shadow-sm">
+          <div class="text-appText border-b border-borderPrim pb-1.5 font-bold uppercase tracking-wider">System Hardware Info</div>
+          <div>CPU CORE EMULATION: <span class="text-amber-500 font-semibold">Active</span></div>
+          <div>LOCAL DIRECT STORAGE: <span class="text-appText font-semibold">localStorage DB</span></div>
+          <div>TARGET DIRECTORY: <span class="text-amber-500 font-semibold">/index.html</span></div>
+        </div>
+        <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-amber-500/5 to-transparent pointer-events-none"></div>
+      </div>
+
+      <!-- Modules List -->
+      <div class="space-y-4">
+        <h3 class="text-xs font-mono font-bold text-appTextSec uppercase tracking-wider">
+          Select Operational Module
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Active Module -->
+          <div class="border border-amber-500/30 hover:border-amber-400/50 bg-cardBg hover:bg-cardBg/80 rounded-xl p-5 flex flex-col justify-between gap-6 transition-all group shadow-lg shadow-amber-500/5">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
+                  <i data-lucide="flame" class="h-5 w-5"></i>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 rounded-full font-semibold">
+                  Ready
+                </span>
+              </div>
+              <div>
+                <h4 class="text-appText font-sans font-semibold text-base group-hover:text-amber-400 transition-colors">
+                  Isokinetic Coal Sampling
+                </h4>
+                <p class="text-appTextSec text-xs mt-1.5 leading-relaxed">
+                  Calculate average square velocity heads (ASVH), flue densities, volume flow ratios, and mass flow rates with deviation mapping.
+                </p>
+              </div>
+            </div>
+            <button id="btn-launch-coal" class="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/10 cursor-pointer">
+              Launch Workspace
+              <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+            </button>
+          </div>
+
+          <!-- Unlocked Pump Module -->
+          <div class="border border-amber-500/30 hover:border-amber-400/50 bg-cardBg hover:bg-cardBg/80 rounded-xl p-5 flex flex-col justify-between gap-6 transition-all group shadow-lg shadow-amber-500/5">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
+                  <i data-lucide="settings" class="h-5 w-5"></i>
+                </div>
+                <span id="lbl-pump-status-badge" class="text-[10px] font-mono px-2 py-0.5 bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 rounded-full font-semibold">
+                  Ready
+                </span>
+              </div>
+              <div>
+                <h4 class="text-appText font-sans font-semibold text-base group-hover:text-amber-400 transition-colors">
+                  Pump Performance Test
+                </h4>
+                <p class="text-appTextSec text-xs mt-1.5 leading-relaxed">
+                  Verify suction and discharge heads, compute NPSH available, evaluate pump water horsepower, and log multi-pump systems across facilities.
+                </p>
+              </div>
+            </div>
+            <button id="btn-launch-pump" class="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/10 cursor-pointer">
+              Launch Workspace
+              <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+            </button>
+          </div>
+
+          <div class="border border-borderPrim bg-cardBg/40 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="p-2.5 bg-inputBg border border-borderSec text-appTextTer rounded-lg">
+                  <i data-lucide="layers" class="h-5 w-5"></i>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-inputBg text-appTextTer border border-borderPrim rounded-full">Locked</span>
+              </div>
+              <div>
+                <h4 class="text-appTextSec font-sans font-semibold text-base">Boiler Feed Pump B Sweeps</h4>
+                <p class="text-appTextTer text-xs mt-1.5 leading-relaxed font-sans">Assess continuous multi-stage thermal pump metrics, vibration thresholds, and turbine sweep logs.</p>
+              </div>
+            </div>
+            <div class="w-full py-2 bg-inputBg border border-borderSec text-appTextTer text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
+              <i data-lucide="lock" class="h-3.5 w-3.5"></i> System Lock (v2.7)
+            </div>
+          </div>
+
+          <div class="border border-borderPrim bg-cardBg/40 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="p-2.5 bg-inputBg border border-borderSec text-appTextTer rounded-lg">
+                  <i data-lucide="activity" class="h-5 w-5"></i>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-inputBg text-appTextTer border border-borderPrim rounded-full">Locked</span>
+              </div>
+              <div>
+                <h4 class="text-appTextSec font-sans font-semibold text-base">Condenser Air In-Leakage</h4>
+                <p class="text-appTextTer text-xs mt-1.5 leading-relaxed">Audit vacuum decay times, compute mass leakage rates, and calculate condenser efficiency drop.</p>
+              </div>
+            </div>
+            <div class="w-full py-2 bg-inputBg border border-borderSec text-appTextTer text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
+              <i data-lucide="lock" class="h-3.5 w-3.5"></i> System Lock (v2.8)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Facilities & Mills Cache Registry -->
+      <div class="space-y-4 pt-4 border-t border-borderSec">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div class="space-y-0.5">
+            <h3 class="text-xs font-mono font-bold text-appTextSec uppercase tracking-wider">
+              Cached Facilities & Mills Sweep Directory
+            </h3>
+            <p class="text-appTextTer text-[11px]">Real-time offline cache records and balance index for boiler feeds.</p>
+          </div>
+          <span class="text-[10px] font-mono text-amber-500 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
+            Real-time local database sync
+          </span>
+        </div>
+        <!-- Grouped cached items similar to groupings of modules -->
+        <div class="space-y-6 w-full animate-fade-in" id="dashboard-registry-grid">
+          <!-- Populated by JavaScript, partitioned by Facility -->
+        </div>
+      </div>
+
+      <!-- Quick Tutorial -->
+      <div class="p-6 bg-cardBg border border-borderPrim rounded-2xl space-y-4 shadow-sm">
+        <div class="flex items-center gap-2">
+          <i data-lucide="book-open" class="text-amber-400 h-4.5 w-4.5"></i>
+          <h3 class="text-appText font-sans font-semibold text-sm">
+            Field Engineer Fast-Track Guide (Isokinetic Sampling)
+          </h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase">
+              <span class="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[11px]">01</span>
+              Configure Parameters
+            </div>
+            <p class="text-appTextSec text-xs leading-relaxed">
+              Select your active site (QPL / SBPL) and Mill identifier. This automatically sizes the calculation array. Adjust conduit size, ambient temp, and barometric variables as required.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase">
+              <span class="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[11px]">02</span>
+              Input Point Vectors
+            </div>
+            <p class="text-appTextSec text-xs leading-relaxed">
+              Type 12-point velocity head readouts directly for both Port 1 and Port 2. Use the <strong class="text-appText font-mono font-semibold">Fill Demo Data</strong> action to instantly load pre-modeled, realistic physical values.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase">
+              <span class="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[11px]">03</span>
+              Monitor and Dispatch
+            </div>
+            <p class="text-appTextSec text-xs leading-relaxed">
+              Check the real-time deviation indicators to find distribution discrepancies. Open the Export Modal to obtain your structured spreadsheet .XLSX and launch pre-addressed emails.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 2: Isokinetic Coal Sampling Workspace -->
+    <section id="view-sampling" class="hidden space-y-6 animate-fade-in">
+      <!-- Back back navigation and tools bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <button id="btn-back-dashboard" class="self-start inline-flex items-center gap-2 px-3 py-1.5 bg-cardBg hover:bg-inputBg border border-borderPrim text-appTextSec rounded-lg text-xs font-mono transition-colors cursor-pointer">
+          <i data-lucide="chevron-left" class="h-4 w-4 text-amber-400"></i>
+          Back to Dashboard
+        </button>
+        <div class="flex items-center gap-2 self-end">
+          <button id="btn-bulk-demo" class="px-3.5 py-1.5 bg-cardBg hover:bg-inputBg border border-borderPrim text-amber-500 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+            Fill All Demo Data
+          </button>
+          <button id="btn-bulk-clear" class="px-3.5 py-1.5 bg-cardBg hover:bg-inputBg border border-borderPrim text-appTextSec hover:text-red-500 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i>
+            Clear All Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Config Card -->
+      <div class="bg-cardBg border border-borderPrim rounded-2xl p-6 space-y-6 shadow-md transition-colors duration-200">
+        <div class="border-b border-borderSec pb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-appText font-sans font-semibold text-lg flex items-center gap-2">
+              <i data-lucide="flame" class="text-amber-400 h-5 w-5"></i>
+              Isokinetic Coal Sampling Configuration
+            </h3>
+            <p class="text-appTextSec text-xs mt-0.5">
+              Configure active facility, mill identification, and system constants below to resolve live gas density models.
+            </p>
+          </div>
+          <!-- Facility Selection -->
+          <div class="flex items-center gap-2 bg-inputBg p-1 border border-borderPrim rounded-lg shrink-0">
+            <button id="btn-fac-qpl" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md cursor-pointer">
+              QPL Facility (5 Conduits)
+            </button>
+            <button id="btn-fac-sbpl" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-appTextSec hover:text-appText hover:bg-cardBg/60 cursor-pointer">
+              SBPL Facility (4 Conduits)
+            </button>
+          </div>
+        </div>
+
+        <!-- Form Inputs Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider">Mill Identifier</label>
+            <select id="param-mill" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-3 py-2 rounded-lg transition-colors cursor-pointer">
+              <option value="Mill A">Mill A</option>
+              <option value="Mill B">Mill B</option>
+              <option value="Mill C">Mill C</option>
+              <option value="Mill D">Mill D</option>
+              <option value="Mill E">Mill E</option>
+            </select>
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider">Conduit Size (inches)</label>
+            <input id="param-size" type="text" value="20.5" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider">Barometric P. (inHg)</label>
+            <input id="param-baro" type="text" value="29.60" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider">Ambient Temp (°F)</label>
+            <input id="param-ambient" type="text" value="82.4" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider">Pitot Coefficient</label>
+            <input id="param-pitot" type="text" value="0.94" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+          </div>
+          <div class="bg-inputBg border border-borderSec rounded-lg p-2.5 flex flex-col justify-center text-[10px] font-mono text-appTextTer leading-normal">
+            <div class="text-appText font-bold uppercase mb-0.5">Physical fallbacks</div>
+            <div>Temp Default: <span id="lbl-fallback-temp" class="text-amber-500 font-bold">82.4°F</span></div>
+            <div>Area Calc: <span id="lbl-calculated-area" class="text-appText">2.292 ft²</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layout Toggles and Horizontal Tab Selection -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-cardBg border border-borderPrim rounded-2xl p-4">
+        <div class="flex items-center gap-2 bg-inputBg p-1 border border-borderPrim rounded-lg">
+          <button id="btn-layout-tabbed" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-cardBg text-amber-500 border border-borderSec cursor-pointer">
+            <i data-lucide="list" class="h-3.5 w-3.5"></i>
+            Tabbed View
+          </button>
+          <button id="btn-layout-grid" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-appTextSec hover:text-appText cursor-pointer">
+            <i data-lucide="grid" class="h-3.5 w-3.5"></i>
+            Side-by-Side (Grid)
+          </button>
+        </div>
+
+        <!-- Dynamic horizontal tab container (Only visible in Tabbed layout mode) -->
+        <div id="conduit-tabs-row" class="flex flex-wrap gap-2 w-full sm:w-auto">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Conduit Columns Container -->
+      <div id="conduits-render-container" class="w-full">
+        <!-- Render columns dynamically either centered or side-by-side -->
+      </div>
+
+      <!-- Summary Board -->
+      <div class="bg-cardBg border border-borderPrim rounded-2xl p-6 space-y-6 shadow-md transition-colors duration-200">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-borderSec pb-4 gap-4">
+          <div>
+            <h3 class="text-appText font-sans font-semibold text-lg flex items-center gap-2">
+              <i data-lucide="check-circle-2" class="text-emerald-400 h-5 w-5"></i>
+              Consolidated Summary Metrics Board
+            </h3>
+            <p class="text-appTextSec text-xs mt-0.5">
+              Continuous overall summaries and mass distributions resolved from active conduits.
+            </p>
+          </div>
+          <button id="btn-trigger-export-modal" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-amber-500/10 cursor-pointer">
+            <i data-lucide="download" class="h-4 w-4"></i>
+            Export & Dispatch Report
+          </button>
+        </div>
+
+        <!-- Consolidated metrics row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="p-4 bg-inputBg border border-borderPrim rounded-xl space-y-2">
+            <span class="text-[10px] font-mono text-appTextTer uppercase tracking-wider block">Total Mass Flow Rate</span>
+            <div class="flex items-baseline gap-1">
+              <span id="sum-total-mass-flow" class="text-2xl md:text-3xl font-mono font-bold text-appText">0.000</span>
+              <span class="text-xs font-mono text-appTextSec">k lb/hr</span>
+            </div>
+            <p class="text-[11px] text-appTextTer leading-normal">Aggregate coal dust conveyance flow calculated across active test pipes.</p>
+          </div>
+
+          <div class="p-4 bg-inputBg border border-borderPrim rounded-xl space-y-2">
+            <span class="text-[10px] font-mono text-appTextTer uppercase tracking-wider block">Average Mass Flow Rate</span>
+            <div class="flex items-baseline gap-1">
+              <span id="sum-avg-mass-flow" class="text-2xl md:text-3xl font-mono font-bold text-amber-400">0.000</span>
+              <span class="text-xs font-mono text-appTextSec">k lb/hr</span>
+            </div>
+            <p class="text-[11px] text-appTextTer leading-normal">Arithmetic mean flow rate distributed per individual conduit pipe.</p>
+          </div>
+
+          <div class="p-4 bg-inputBg border border-borderPrim rounded-xl space-y-2">
+            <span class="text-[10px] font-mono text-appTextTer uppercase tracking-wider block">Average Air Velocity</span>
+            <div class="flex items-baseline gap-1">
+              <span id="sum-avg-velocity" class="text-2xl md:text-3xl font-mono font-bold text-emerald-400">0</span>
+              <span class="text-xs font-mono text-appTextSec">fpm</span>
+            </div>
+            <p class="text-[11px] text-appTextTer leading-normal">Average gas stream speed resolved from valid isokinetic Pitot sweep measurements.</p>
+          </div>
+        </div>
+
+        <!-- Deviations Plotting -->
+        <div class="space-y-4 pt-2">
+          <div>
+            <h4 class="text-appText font-sans font-semibold text-sm">Individual Conduit Mass Flow Deviations from Mean</h4>
+            <p class="text-appTextSec text-xs mt-0.5">
+              Imbalances exceeding <span class="text-red-400 font-bold">±5.0%</span> are highlighted with amber alerts to prevent localized fuel starvation or line clogging.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 3: Pump Performance Test Workspace -->
+    <section id="view-pump" class="hidden space-y-6 animate-fade-in">
+      <!-- Back navigation and tools bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <button id="btn-back-pump-dashboard" class="self-start inline-flex items-center gap-2 px-3 py-1.5 bg-cardBg hover:bg-inputBg border border-borderPrim text-appTextSec rounded-lg text-xs font-mono transition-colors cursor-pointer">
+          <i data-lucide="chevron-left" class="h-4 w-4 text-amber-400"></i>
+          Back to Dashboard
+        </button>
+        <div class="flex items-center gap-2 self-end">
+          <button id="btn-pump-bulk-demo" class="px-3.5 py-1.5 bg-cardBg hover:bg-inputBg border border-borderPrim text-amber-500 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+            Fill All Pump Demo Data
+          </button>
+          <button id="btn-pump-bulk-clear" class="px-3.5 py-1.5 bg-cardBg hover:bg-inputBg border border-borderPrim text-appTextSec hover:text-red-500 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i>
+            Clear All Pump Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Config Card -->
+      <div class="bg-cardBg border border-borderPrim rounded-2xl p-6 space-y-6 shadow-md transition-colors duration-200">
+        <div class="border-b border-borderSec pb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-appText font-sans font-semibold text-lg flex items-center gap-2">
+              <i data-lucide="settings" class="text-amber-400 h-5 w-5"></i>
+              Pump Performance Configuration
+            </h3>
+            <p class="text-appTextSec text-xs mt-0.5">
+              Verify suction and discharge pressure readings, evaluate velocity head profiles, compute NPSH availability, and generate full ASME compliance spreadsheets.
+            </p>
+          </div>
+          <!-- Facility Selection for Pumps -->
+          <div class="flex items-center gap-2 bg-inputBg p-1 border border-borderPrim rounded-lg shrink-0">
+            <button id="btn-pump-fac-qpl" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md cursor-pointer">
+              QPL Facility (10 Pumps)
+            </button>
+            <button id="btn-pump-fac-sbpl" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-appTextSec hover:text-appText hover:bg-cardBg/60 cursor-pointer">
+              SBPL Facility (10 Pumps)
+            </button>
+          </div>
+        </div>
+
+        <!-- Pump Selector Buttons Group (10 pumps placeholder for now) -->
+        <div class="space-y-2">
+          <label class="block text-[11px] font-mono text-appTextSec uppercase tracking-wider font-semibold">Select Pump Unit under Test:</label>
+          <div id="pump-selector-grid" class="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Pump Inspection Board -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Inputs Panel (Left Column) -->
+        <div class="lg:col-span-5 bg-cardBg border border-borderPrim rounded-2xl p-6 space-y-6 shadow-md">
+          <div class="border-b border-borderSec pb-3">
+            <h4 class="text-appText font-sans font-semibold text-sm flex items-center gap-2">
+              <i data-lucide="edit-3" class="text-amber-400 h-4.5 w-4.5"></i>
+              <span id="lbl-active-pump-inputs-title">Inspection Inputs: Boiler Feed Pump P-101</span>
+            </h4>
+            <p class="text-appTextTer text-[11px]">Edit physical manometer readings and design parameters directly.</p>
+          </div>
+
+          <div class="space-y-5">
+            <!-- Suction Section -->
+            <div class="bg-inputBg/40 border border-borderPrim rounded-xl p-4 space-y-4">
+              <div class="text-[10px] font-mono text-amber-500 uppercase tracking-wider font-bold border-b border-borderSec/50 pb-1.5">Suction Inlet Conditions</div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Gauge Press (psi)</label>
+                  <input id="input-pump-ps" type="number" step="0.1" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Pipe Diam (in)</label>
+                  <input id="input-pump-ds" type="number" step="0.1" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Elevation (ft)</label>
+                  <input id="input-pump-zs" type="number" step="0.1" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Discharge Section -->
+            <div class="bg-inputBg/40 border border-borderPrim rounded-xl p-4 space-y-4">
+              <div class="text-[10px] font-mono text-amber-500 uppercase tracking-wider font-bold border-b border-borderSec/50 pb-1.5">Discharge Outlet Conditions</div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Gauge Press (psi)</label>
+                  <input id="input-pump-pd" type="number" step="0.1" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Pipe Diam (in)</label>
+                  <input id="input-pump-dd" type="number" step="0.1" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Elevation (ft)</label>
+                  <input id="input-pump-zd" type="number" step="0.1" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Flow & Power parameters -->
+            <div class="bg-inputBg/40 border border-borderPrim rounded-xl p-4 space-y-4">
+              <div class="text-[10px] font-mono text-amber-500 uppercase tracking-wider font-bold border-b border-borderSec/50 pb-1.5">System Operating Capacity</div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Discharge Flow (gpm)</label>
+                  <input id="input-pump-q" type="number" step="5" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Shaft Input Power (hp)</label>
+                  <input id="input-pump-pin" type="number" step="1" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Liquid Properties Section -->
+            <div class="bg-inputBg/40 border border-borderPrim rounded-xl p-4 space-y-4">
+              <div class="text-[10px] font-mono text-amber-500 uppercase tracking-wider font-bold border-b border-borderSec/50 pb-1.5">Liquid & Fluid Constants</div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Specific Gravity</label>
+                  <input id="input-pump-sg" type="number" step="0.01" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Temp (°F)</label>
+                  <input id="input-pump-temp" type="number" step="1" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Vapor P. (psia)</label>
+                  <input id="input-pump-pv" type="number" step="0.01" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calculated Metrics Board (Right Column) -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Efficiency circular indicator card -->
+            <div class="bg-cardBg border border-borderPrim rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 shadow-md relative overflow-hidden">
+              <div class="absolute right-0 top-0 text-[10px] font-mono text-appTextTer bg-inputBg border-b border-l border-borderPrim px-2.5 py-1 rounded-bl-lg">ASME PTC 8.2</div>
+              <h4 class="text-xs font-mono font-bold text-appTextSec uppercase tracking-wider">Hydraulic Efficiency</h4>
+              
+              <div class="relative w-36 h-36 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90">
+                  <circle cx="72" cy="72" r="60" stroke="currentColor" class="text-borderPrim" stroke-width="8" fill="transparent" />
+                  <circle id="pump-efficiency-circle" cx="72" cy="72" r="60" stroke="currentColor" class="text-amber-500" stroke-width="8" fill="transparent" stroke-dasharray="377" stroke-dashoffset="100" stroke-linecap="round" />
+                </svg>
+                <div class="absolute flex flex-col items-center justify-center">
+                  <span id="pump-efficiency-value" class="text-2xl font-sans font-bold text-appText">75.4%</span>
+                  <span id="pump-efficiency-label" class="text-[9px] font-mono text-emerald-400 font-bold tracking-wider uppercase mt-0.5">EXCELLENT</span>
+                </div>
+              </div>
+
+              <div class="space-y-1 text-left w-full border-t border-borderSec pt-3">
+                <div class="flex justify-between text-[11px] font-mono text-appTextSec">
+                  <span>Shaft Input:</span>
+                  <span id="lbl-pump-power-in" class="text-appText">45.0 hp</span>
+                </div>
+                <div class="flex justify-between text-[11px] font-mono text-appTextSec">
+                  <span>Fluid Output:</span>
+                  <span id="lbl-pump-power-out" class="text-amber-400 font-semibold">33.9 hp</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TDH and Head Profiles card -->
+            <div class="bg-cardBg border border-borderPrim rounded-2xl p-6 space-y-4 shadow-md flex flex-col justify-between">
+              <div class="space-y-1">
+                <span class="text-[10px] font-mono text-amber-500 uppercase tracking-wider font-semibold">Pump Head Resolution</span>
+                <h4 class="text-lg font-sans font-semibold text-appText">Total Dynamic Head (TDH)</h4>
+              </div>
+
+              <div class="flex items-baseline gap-2 py-2">
+                <span id="pump-tdh-value" class="text-4xl font-sans font-bold text-amber-500">254.2</span>
+                <span class="text-sm font-mono text-appTextSec">ft column</span>
+              </div>
+
+              <div class="space-y-2 border-t border-borderSec pt-4 text-xs font-mono">
+                <div class="flex items-center justify-between">
+                  <span class="text-appTextSec">Suction Head (Hs):</span>
+                  <span id="pump-suction-head" class="text-appText font-bold">28.5 ft</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-appTextSec">Discharge Head (Hd):</span>
+                  <span id="pump-discharge-head" class="text-appText font-bold">282.7 ft</span>
+                </div>
+                <div class="flex items-center justify-between border-t border-dashed border-borderSec/50 pt-1.5 mt-1">
+                  <span class="text-appTextTer">Net Differential Press:</span>
+                  <span id="pump-diff-press" class="text-appTextSec font-semibold">108.0 psi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- NPSH Available card -->
+            <div class="bg-cardBg border border-borderPrim rounded-2xl p-6 space-y-4 shadow-md flex flex-col justify-between">
+              <div class="space-y-1">
+                <span class="text-[10px] font-mono text-amber-500 uppercase tracking-wider font-semibold">Inlet Cavitation Guard</span>
+                <h4 class="text-lg font-sans font-semibold text-appText">NPSH Available (NPSHa)</h4>
+              </div>
+
+              <div class="flex items-baseline gap-2 py-2">
+                <span id="pump-npsha-value" class="text-4xl font-sans font-bold text-appText">61.2</span>
+                <span class="text-sm font-mono text-appTextSec">ft abs</span>
+              </div>
+
+              <div class="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs font-sans font-semibold animate-pulse" id="pump-cavitation-badge">
+                <i data-lucide="check-circle" class="h-4.5 w-4.5 shrink-0"></i>
+                <span id="pump-cavitation-text">SAFE: NPSHa &gt; NPSHr limit of 8.0 ft</span>
+              </div>
+            </div>
+
+            <!-- Flow rates & velocity heads -->
+            <div class="bg-cardBg border border-borderPrim rounded-2xl p-6 space-y-4 shadow-md flex flex-col justify-between">
+              <div class="space-y-1.5">
+                <span class="text-[10px] font-mono text-appTextTer uppercase tracking-wider font-semibold">Velocity Head Details</span>
+                <h4 class="text-xs font-sans font-bold text-appTextSec uppercase">Line Velocities & Kinetic Energy</h4>
+              </div>
+
+              <div class="space-y-3 font-mono text-xs">
+                <div class="space-y-1 bg-inputBg p-2.5 rounded-lg border border-borderPrim">
+                  <div class="flex justify-between text-appTextSec text-[11px]">
+                    <span>Suction Velocity:</span>
+                    <span id="pump-suction-vel" class="text-appText font-bold">5.1 fps</span>
+                  </div>
+                  <div class="flex justify-between text-appTextTer text-[10px]">
+                    <span>Suction Vel. Head (hvs):</span>
+                    <span id="pump-suction-vel-head" class="text-appText">0.40 ft</span>
+                  </div>
+                </div>
+
+                <div class="space-y-1 bg-inputBg p-2.5 rounded-lg border border-borderPrim">
+                  <div class="flex justify-between text-appTextSec text-[11px]">
+                    <span>Discharge Velocity:</span>
+                    <span id="pump-discharge-vel" class="text-appText font-bold">11.5 fps</span>
+                  </div>
+                  <div class="flex justify-between text-appTextTer text-[10px]">
+                    <span>Discharge Vel. Head (hvd):</span>
+                    <span id="pump-discharge-vel-head" class="text-appText">2.05 ft</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Pump Facility Registry Board -->
+      <div class="bg-cardBg border border-borderPrim rounded-2xl p-6 space-y-4 shadow-md">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-borderSec pb-3">
+          <div>
+            <h4 class="text-appText font-sans font-semibold text-sm">Pump Performance Comparative Registry</h4>
+            <p class="text-appTextSec text-xs mt-0.5">Summary metrics and inspection records for all 10 local facility pumps.</p>
+          </div>
+          
+          <div class="flex items-center gap-2 self-end sm:self-auto">
+            <button id="btn-pump-export-xlsx" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm shadow-amber-500/10">
+              <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+              Export to XLSX
+            </button>
+            <button id="btn-pump-export-email" class="px-3.5 py-1.5 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec hover:text-amber-500 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="send" class="h-4 w-4"></i>
+              Send via Email
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Email Drawer for Pumps (Initially Hidden) -->
+        <div id="pump-email-container" class="hidden border border-borderPrim bg-inputBg/40 rounded-xl p-5 space-y-4 animate-fade-in">
+          <div class="flex items-start gap-2.5 text-amber-500">
+            <i data-lucide="info" class="h-5 w-5 shrink-0 mt-0.5"></i>
+            <div class="text-xs font-sans leading-normal">
+              <span class="font-semibold block text-appText text-sm mb-1">Step 1: Your Pumps Performance Spreadsheet is Downloaded!</span>
+              The high-fidelity .XLSX workbook has been compiled and saved to your Downloads.
+              <span class="font-semibold mt-2.5 block text-appText text-sm mb-1">Step 2: Choose Email Target & Attach Document</span>
+              Click an email client below to open a pre-written draft, then drag-and-drop the exported sheet to complete.
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <a id="lnk-pump-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              Gmail Compose
+            </a>
+            <a id="lnk-pump-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              Outlook Mail
+            </a>
+            <a id="lnk-pump-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              System Mailto
+            </a>
+          </div>
+        </div>
+
+        <!-- Plaintext summary container -->
+        <div id="pump-pre-container" class="hidden space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-sans font-medium text-appTextSec">Plaintext Report Draft Preview</span>
+            <button id="btn-copy-pump-text" class="flex items-center gap-1 px-2.5 py-1 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec text-[10px] font-mono rounded transition-colors cursor-pointer">
+              <i data-lucide="copy" class="h-3 w-3"></i>
+              <span id="lbl-copy-pump-text-btn">Copy Text</span>
+            </button>
+          </div>
+          <pre id="pre-pump-report-preview" class="p-3 bg-inputBg border border-borderPrim rounded-lg text-[10px] font-mono text-appTextSec max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
+            Loading report draft...
+          </pre>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs font-mono">
+            <thead>
+              <tr class="border-b border-borderPrim text-appTextTer bg-inputBg/50 text-[10px] uppercase tracking-wider">
+                <th class="py-3 px-4 font-bold">Pump Unit Identifier</th>
+                <th class="py-3 px-4 font-bold text-right">Flow (gpm)</th>
+                <th class="py-3 px-4 font-bold text-right">Suction H. (ft)</th>
+                <th class="py-3 px-4 font-bold text-right">Discharge H. (ft)</th>
+                <th class="py-3 px-4 font-bold text-right">Total TDH (ft)</th>
+                <th class="py-3 px-4 font-bold text-right">Fluid HP</th>
+                <th class="py-3 px-4 font-bold text-right">Efficiency (%)</th>
+                <th class="py-3 px-4 font-bold text-right">NPSHa (ft)</th>
+                <th class="py-3 px-4 font-bold text-center">Status</th>
+                <th class="py-3 px-4 font-bold text-center">Inspect</th>
+              </tr>
+            </thead>
+            <tbody id="pump-registry-table-body" class="divide-y divide-borderSec/55">
+              <!-- Populated dynamically by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 4. Global Footer -->
+  <footer class="border-t border-borderSec bg-cardBg mt-12 py-6">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-appTextTer">
+      <div>
+        &copy; 2026 Thermal Engineering Field Services Group. All calculations comply with ASME PTC 4.2 Coal Sampling standards.
+        <br/><span class="text-appTextSec font-semibold mt-1 inline-block">Created by Christian de la Cruz</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2.5 py-0.5 rounded-full">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1"></span>
+          SECURE STANDALONE WEB REPO
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 5. Export Report Modal -->
+  <div id="export-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+    <div class="relative w-full max-w-2xl bg-cardBg border border-borderPrim rounded-xl overflow-hidden shadow-2xl shadow-black/80 transition-colors duration-200">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-borderSec bg-cardBg/50">
+        <div class="flex items-center gap-2">
+          <i data-lucide="mail" class="text-amber-500 h-5 w-5"></i>
+          <h3 class="text-appText font-sans font-semibold text-lg">Export and Dispatch Report</h3>
+        </div>
+        <button id="btn-close-export" class="p-1.5 text-appTextSec hover:text-appText hover:bg-inputBg rounded-lg transition-colors cursor-pointer">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+        <!-- Export Scope Selection -->
+        <div class="bg-inputBg border border-borderPrim p-4 rounded-xl space-y-3">
+          <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider font-semibold">1. Choose Export Scope:</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button id="btn-scope-mill" class="p-3 border border-amber-500 bg-amber-500/10 text-amber-500 rounded-lg text-left transition-all cursor-pointer">
+              <div class="font-bold text-xs flex items-center gap-1.5">
+                <i data-lucide="target" class="h-3.5 w-3.5 text-amber-500"></i>
+                Active Mill Only
+              </div>
+              <div class="text-[10px] text-appTextSec mt-1" id="lbl-scope-mill-name">QPL - Mill A</div>
+            </button>
+            <button id="btn-scope-facility" class="p-3 border border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec rounded-lg text-left transition-all cursor-pointer">
+              <div class="font-bold text-xs flex items-center gap-1.5">
+                <i data-lucide="factory" class="h-3.5 w-3.5"></i>
+                Active Facility All
+              </div>
+              <div class="text-[10px] text-appTextTer mt-1" id="lbl-scope-facility-name">QPL (All Mills)</div>
+            </button>
+            <button id="btn-scope-all" class="p-3 border border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec rounded-lg text-left transition-all cursor-pointer">
+              <div class="font-bold text-xs flex items-center gap-1.5">
+                <i data-lucide="globe" class="h-3.5 w-3.5"></i>
+                Whole Module (Both Facilities)
+              </div>
+              <div class="text-[10px] text-appTextTer mt-1">Both Facilities (All Mills for this module)</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Simplification Choice: Choose 1 of 2 modes -->
+        <div class="space-y-4 pt-2">
+          <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider font-semibold">2. Choose Delivery Method:</label>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Option 1: Local Download -->
+            <div class="bg-inputBg border border-borderPrim rounded-xl p-5 flex flex-col justify-between space-y-4">
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-2 text-sm font-sans font-semibold text-appText">
+                  <i data-lucide="download" class="text-amber-500 h-4.5 w-4.5"></i>
+                  <span>Save to Local Drive</span>
+                </div>
+                <p class="text-appTextSec text-xs leading-relaxed font-sans">
+                  Export all computed parameters, points, and ASME velocity metrics into a high-fidelity spreadsheet file instantly.
+                </p>
+              </div>
+              <button id="btn-export-to-xlsx" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm">
+                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                Export & Download XLSX
+              </button>
+            </div>
+
+            <!-- Option 2: Dispatch via Email -->
+            <div class="bg-inputBg border border-borderPrim rounded-xl p-5 flex flex-col justify-between space-y-4">
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-2 text-sm font-sans font-semibold text-appText">
+                  <i data-lucide="mail" class="text-amber-500 h-4.5 w-4.5"></i>
+                  <span>Send via Email Client</span>
+                </div>
+                <p class="text-appTextSec text-xs leading-relaxed font-sans">
+                  Generate the spreadsheet behind the scenes, trigger download, and open pre-formatted compose window in your preferred platform.
+                </p>
+              </div>
+              <button id="btn-export-to-email" class="w-full py-2.5 bg-inputBg hover:bg-cardBg border border-borderPrim hover:border-amber-500/30 text-appText hover:text-amber-500 font-bold rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                <i data-lucide="send" class="h-4 w-4"></i>
+                Prepare & Send via Email
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Interactive Email Drawer & Guidelines (Initially Hidden, Toggles Open when Prepare & Send is clicked) -->
+        <div id="email-platforms-container" class="hidden border border-borderPrim bg-inputBg/40 rounded-xl p-5 space-y-4 animate-fade-in">
+          <div class="flex items-start gap-2.5 text-amber-500">
+            <i data-lucide="info" class="h-5 w-5 shrink-0 mt-0.5"></i>
+            <div class="text-xs font-sans leading-normal">
+              <span class="font-semibold block text-appText text-sm mb-1">Step 1: Your XLSX File is Downloaded!</span>
+              We've generated and saved the spreadsheet in your Downloads folder.
+              <span class="font-semibold mt-2.5 block text-appText text-sm mb-1">Step 2: Open Email & Attach File</span>
+              Click any option below to open a pre-drafted email, then drag-and-drop or attach the file to dispatch.
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <a id="lnk-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              Gmail Webmail
+            </a>
+            <a id="lnk-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              Outlook Web
+            </a>
+            <a id="lnk-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              System Client
+            </a>
+          </div>
+        </div>
+
+        <div class="border-t border-borderSec"></div>
+
+        <!-- Plaintext Preview Box -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-sans font-medium text-appTextSec">Plaintext Body Preview</span>
+            <button id="btn-copy-summary-standalone" class="flex items-center gap-1.5 px-3 py-1 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded text-[11px] font-mono transition-colors cursor-pointer">
+              <i data-lucide="copy" class="h-3 w-3"></i>
+              <span id="lbl-copy-btn">Copy Text Only</span>
+            </button>
+          </div>
+          <pre id="pre-report-preview" class="p-3 bg-inputBg border border-borderPrim rounded-lg text-[10px] font-mono text-appTextSec max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
+            Summary loading...
+          </pre>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end px-6 py-4 bg-inputBg/40 border-t border-borderSec">
+        <button id="btn-close-export-footer" class="px-4 py-2 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded-lg text-xs font-mono transition-colors cursor-pointer">
+          Close Dialog
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 6. Clear Confirmation Modal -->
+  <div id="clear-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+    <div class="relative w-full max-w-md bg-cardBg border border-borderPrim rounded-xl overflow-hidden shadow-2xl shadow-black/80 p-6 space-y-6 transition-colors duration-200">
+      <div class="flex items-center gap-3 border-b border-borderSec pb-3">
+        <div class="p-2 bg-red-500/10 text-red-500 rounded-lg shrink-0">
+          <i data-lucide="trash-2" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <h3 class="text-appText font-sans font-semibold text-base">Confirm Data Reset</h3>
+          <p class="text-appTextTer text-xs font-mono">Irreversible Field Purge</p>
+        </div>
+      </div>
+      
+      <p class="text-appTextSec text-xs leading-relaxed">
+        Choose how you would like to purge the recorded isokinetic measurements and start with a fresh sweep matrix:
+      </p>
+
+      <div class="flex flex-col gap-2.5">
+        <button id="btn-clear-current-mill" class="w-full py-2.5 px-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 font-mono text-xs rounded-lg transition-colors flex items-center justify-between cursor-pointer">
+          <span>Clear Current Mill (<span id="lbl-clear-current-name">--</span>)</span>
+          <i data-lucide="corner-down-right" class="h-3.5 w-3.5"></i>
+        </button>
+        <button id="btn-clear-all-database" class="w-full py-2.5 px-4 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg transition-colors flex items-center justify-between shadow-md cursor-pointer">
+          <span>Clear Entire System Cache</span>
+          <i data-lucide="alert-octagon" class="h-3.5 w-3.5"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-borderSec">
+        <button id="btn-cancel-clear" class="px-4 py-2 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded-lg text-xs font-mono transition-colors cursor-pointer">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Pump Clear Confirmation Modal -->
+  <div id="pump-clear-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+    <div class="relative w-full max-w-md bg-cardBg border border-borderPrim rounded-xl overflow-hidden shadow-2xl shadow-black/80 p-6 space-y-6 transition-colors duration-200">
+      <div class="flex items-center gap-3 border-b border-borderSec pb-3">
+        <div class="p-2 bg-red-500/10 text-red-500 rounded-lg shrink-0">
+          <i data-lucide="trash-2" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <h3 class="text-appText font-sans font-semibold text-base">Confirm Pump Reset</h3>
+          <p class="text-appTextTer text-xs font-mono">Irreversible Field Purge</p>
+        </div>
+      </div>
+      
+      <p class="text-appTextSec text-xs leading-relaxed">
+        Choose how you would like to purge the recorded pump inspection metrics and start fresh:
+      </p>
+
+      <div class="flex flex-col gap-2.5">
+        <button id="btn-pump-clear-active" class="w-full py-2.5 px-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 text-red-400 font-mono text-xs rounded-lg transition-colors flex items-center justify-between cursor-pointer">
+          <span>Clear Active Unit (<span id="lbl-pump-clear-current-name">--</span>)</span>
+          <i data-lucide="corner-down-right" class="h-3.5 w-3.5"></i>
+        </button>
+        <button id="btn-pump-clear-facility" class="w-full py-2.5 px-4 bg-red-500/15 hover:bg-red-500/25 border border-red-500/40 hover:border-red-500/60 text-red-400 font-mono text-xs rounded-lg transition-colors flex items-center justify-between cursor-pointer">
+          <span>Clear Active Facility (<span id="lbl-pump-clear-fac-name">--</span>)</span>
+          <i data-lucide="layers" class="h-3.5 w-3.5"></i>
+        </button>
+        <button id="btn-pump-clear-all" class="w-full py-2.5 px-4 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg transition-colors flex items-center justify-between shadow-md cursor-pointer">
+          <span>Clear Entire Pump Database</span>
+          <i data-lucide="alert-octagon" class="h-3.5 w-3.5"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-borderSec">
+        <button id="btn-pump-cancel-clear" class="px-4 py-2 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded-lg text-xs font-mono transition-colors cursor-pointer">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Pump Export and Dispatch Modal -->
+  <div id="pump-export-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+    <div class="relative w-full max-w-2xl bg-cardBg border border-borderPrim rounded-xl overflow-hidden shadow-2xl shadow-black/80 transition-colors duration-200">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-borderSec bg-cardBg/50">
+        <div class="flex items-center gap-2">
+          <i data-lucide="mail" class="text-amber-500 h-5 w-5"></i>
+          <h3 class="text-appText font-sans font-semibold text-lg">Export Pump Report</h3>
+        </div>
+        <button id="btn-pump-close-export" class="p-1.5 text-appTextSec hover:text-appText hover:bg-inputBg rounded-lg transition-colors cursor-pointer">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="px-6 py-6 space-y-6 max-h-[70vh] overflow-y-auto">
+        
+        <!-- Step 1: Select Scope -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-mono font-bold text-appTextSec uppercase tracking-wider">Step 1: Choose Export Scope</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            
+            <button id="btn-pump-scope-unit" class="p-3 border border-amber-500 bg-amber-500/10 text-amber-500 rounded-lg text-left transition-all cursor-pointer flex flex-col justify-between h-24">
+              <div>
+                <span class="block text-xs font-semibold uppercase">Single Pump</span>
+                <span id="lbl-pump-scope-unit-name" class="block text-[10px] opacity-80 mt-1 truncate font-mono">--</span>
+              </div>
+              <span class="text-[9px] font-mono border-t border-amber-500/20 pt-1.5 mt-2 block">1 Unit Worksheet</span>
+            </button>
+
+            <button id="btn-pump-scope-facility" class="p-3 border border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec rounded-lg text-left transition-all cursor-pointer flex flex-col justify-between h-24">
+              <div>
+                <span class="block text-xs font-semibold uppercase">Active Facility</span>
+                <span id="lbl-pump-scope-facility-name" class="block text-[10px] opacity-80 mt-1 font-mono">--</span>
+              </div>
+              <span class="text-[9px] font-mono border-t border-borderSec pt-1.5 mt-2 block">10 Units Worksheet</span>
+            </button>
+
+            <button id="btn-pump-scope-all" class="p-3 border border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec rounded-lg text-left transition-all cursor-pointer flex flex-col justify-between h-24">
+              <div>
+                <span class="block text-xs font-semibold uppercase">Whole Database</span>
+                <span class="block text-[10px] opacity-80 mt-1">All Facilities</span>
+              </div>
+              <span class="text-[9px] font-mono border-t border-borderSec pt-1.5 mt-2 block">20 Units Matrix</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Choose Dispatch Method -->
+        <div class="space-y-4">
+          <h4 class="text-xs font-mono font-bold text-appTextSec uppercase tracking-wider">Step 2: Choose Dispatch Method</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <button id="btn-pump-export-to-xlsx" class="flex items-center gap-3 p-4 bg-amber-500 hover:bg-amber-400 text-neutral-950 rounded-xl transition-all font-bold cursor-pointer shadow-md shadow-amber-500/10 text-left">
+              <div class="p-2.5 bg-neutral-950/10 rounded-lg">
+                <i data-lucide="file-spreadsheet" class="h-6 w-6"></i>
+              </div>
+              <div>
+                <span class="block text-sm">Export to XLSX</span>
+                <span class="block text-[10px] font-mono font-normal opacity-85">Download directly to local drive</span>
+              </div>
+            </button>
+
+            <button id="btn-pump-export-to-email" class="flex items-center gap-3 p-4 bg-inputBg hover:bg-cardBg border border-borderPrim text-appText hover:text-amber-500 rounded-xl transition-all font-bold cursor-pointer text-left">
+              <div class="p-2.5 bg-cardBg rounded-lg border border-borderPrim">
+                <i data-lucide="send" class="h-6 w-6 text-amber-500"></i>
+              </div>
+              <div>
+                <span class="block text-sm">Prepare Email Draft</span>
+                <span class="block text-[10px] font-mono font-normal text-appTextSec">Export XLSX & open mail client</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Inline platforms selection drawer (appears when Prepare Email is selected) -->
+        <div id="pump-modal-email-drawer" class="hidden border border-borderPrim bg-inputBg/40 rounded-xl p-5 space-y-4 animate-fade-in">
+          <div class="flex items-start gap-2.5 text-amber-500">
+            <i data-lucide="info" class="h-5 w-5 shrink-0 mt-0.5"></i>
+            <div class="text-xs font-sans leading-normal text-appTextSec">
+              <span class="font-semibold block text-appText text-sm mb-1">Step 1: Your High-Fidelity Spreadsheet has been generated!</span>
+              We have generated your customized ASME performance workbook and triggered a local download.
+              <span class="font-semibold mt-2.5 block text-appText text-sm mb-1">Step 2: Dispatch through your preferred platform</span>
+              Choose an email client below to launch a draft pre-populated with calculated statistics. Simply drag and drop the downloaded sheet from your system folder.
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <a id="lnk-pump-modal-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              Gmail Compose
+            </a>
+            <a id="lnk-pump-modal-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              Outlook Web
+            </a>
+            <a id="lnk-pump-modal-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              System Mailto
+            </a>
+          </div>
+        </div>
+
+        <div class="border-t border-borderSec"></div>
+
+        <!-- Plaintext Preview Box -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-sans font-medium text-appTextSec">Calculated Report Body Preview</span>
+            <button id="btn-pump-modal-copy-text" class="flex items-center gap-1.5 px-3 py-1 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded text-[11px] font-mono transition-colors cursor-pointer">
+              <i data-lucide="copy" class="h-3 w-3"></i>
+              <span id="lbl-pump-modal-copy-btn-lbl">Copy Text Only</span>
+            </button>
+          </div>
+          <pre id="pre-pump-modal-report-preview" class="p-3 bg-inputBg border border-borderPrim rounded-lg text-[10px] font-mono text-appTextSec max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
+            Loading draft body...
+          </pre>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end px-6 py-4 bg-inputBg/40 border-t border-borderSec">
+        <button id="btn-pump-close-export-footer" class="px-4 py-2 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded-lg text-xs font-mono transition-colors cursor-pointer">
+          Close Dialog
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Vanilla JavaScript App Engine -->
+  <script>
+    // State representation with multi-facility and multi-mill dataset caching
+    let appState = {
+      theme: 'dark',
+      facility: 'QPL', // Active facility: 'QPL' or 'SBPL'
+      millName: 'Mill A', // Active mill
+      datasets: {}, // Key: `facility_millName` -> { conduitSize, barometricPressure, ambientTemp, pitotCoefficient, conduits: [] }
+      startTime: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+    };
+
+    let layoutMode = 'tabbed'; // 'tabbed' or 'grid'
+    let activeConduitId = 1;
+
+    // LocalStorage keys
+    const STORAGE_KEY = 'field_engineer_toolbox_standalone_session';
+
+    // Get default conduits array
+    function createDefaultConduits(facility) {
+      const count = facility === 'QPL' ? 5 : 4;
+      return Array.from({ length: count }).map((_, i) => ({
+        id: i + 1,
+        staticPressure: '',
+        temperature: '',
+        port1Readings: Array(12).fill(''),
+        port2Readings: Array(12).fill(''),
+      }));
+    }
+
+    // Retrieve or initialize dataset for facility + mill combo
+    function getDataset(facility, millName) {
+      const key = `${facility}_${millName}`;
+      if (!appState.datasets[key]) {
+        appState.datasets[key] = {
+          conduitSize: facility === 'QPL' ? '20.5' : '24.0',
+          barometricPressure: '29.60',
+          ambientTemp: '82.4',
+          pitotCoefficient: '0.94',
+          conduits: createDefaultConduits(facility)
+        };
+      }
+      return appState.datasets[key];
+    }
+
+    // Initialize state
+    function initDefaultState(facility = 'QPL') {
+      appState.facility = facility;
+      appState.millName = 'Mill A';
+      appState.datasets = {};
+      
+      // Seed initial datasets for both facilities
+      const qplMills = ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E'];
+      const sbplMills = ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'];
+
+      qplMills.forEach(m => getDataset('QPL', m));
+      sbplMills.forEach(m => getDataset('SBPL', m));
+
+      // Bind current active conduit reference
+      appState.conduits = getDataset(facility, 'Mill A').conduits;
+      appState.startTime = new Date().toISOString();
+      appState.lastUpdated = new Date().toISOString();
+    }
+
+    // Save state helper
+    function saveState() {
+      appState.lastUpdated = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      updateLiveCalculations();
+      renderDashboardRegistry();
+    }
+
+    // Generate random demo readings
+    function generateDemoReadings() {
+      const readings = [];
+      for (let i = 0; i < 12; i++) {
+        const val = 0.150 + Math.random() * 0.300;
+        readings.push(val.toFixed(3));
+      }
+      return readings;
+    }
+
+    // Run ASME calculations on a single conduit
+    function calculateConduitMetrics(conduit, size, baro, ambient, pitot) {
+      const allReadings = [...conduit.port1Readings, ...conduit.port2Readings];
+      const validReadings = allReadings
+        .map(parseFloat)
+        .filter(val => !isNaN(val) && val !== 0);
+
+      const count = validReadings.length;
+      const hasValidReadings = count > 0;
+
+      let asvh = 0;
+      if (hasValidReadings) {
+        const sumSquares = validReadings.reduce((sum, v) => sum + v * v, 0);
+        asvh = sumSquares / count;
+      }
+
+      const dp = 1.573 * (asvh * asvh) * (pitot * pitot);
+
+      const pStatic = parseFloat(conduit.staticPressure) || 0;
+      const tF = parseFloat(conduit.temperature) || ambient;
+
+      const tempFactor = 530 / (460 + tF);
+      const pressFactor = (29.92 + pStatic / 13.6) / 29.92;
+      const density = tempFactor * pressFactor * 0.075;
+
+      const radius = size / 2;
+      const areaSqIn = Math.PI * radius * radius;
+      const areaSqFt = areaSqIn / 144;
+
+      let avgVelocity = 0;
+      if (density > 0 && hasValidReadings) {
+        avgVelocity = ((1096 * asvh) / Math.sqrt(density)) * pitot;
+      }
+
+      const volFlow = avgVelocity * areaSqFt;
+      const massFlow = (volFlow * density * 60) / 1000;
+
+      return {
+        id: conduit.id,
+        asvh,
+        dp,
+        density,
+        areaSqFt,
+        avgVelocity,
+        volFlow,
+        massFlow,
+        hasValidReadings
+      };
+    }
+
+    // Master updates of DOM calculations
+    function updateLiveCalculations() {
+      const dataset = getDataset(appState.facility, appState.millName);
+      const size = parseFloat(dataset.conduitSize) || 20.5;
+      const baro = parseFloat(dataset.barometricPressure) || 29.60;
+      const ambient = parseFloat(dataset.ambientTemp) || 82.4;
+      const pitot = parseFloat(dataset.pitotCoefficient) || 0.94;
+
+      // Update physical fallbacks preview labels
+      document.getElementById('lbl-fallback-temp').innerText = `${ambient.toFixed(1)}°F`;
+      const calculatedArea = (Math.PI * (size / 2) * (size / 2)) / 144;
+      document.getElementById('lbl-calculated-area').innerText = `${calculatedArea.toFixed(3)} ft²`;
+
+      // Recalculate each conduit
+      const metrics = appState.conduits.map(c => 
+        calculateConduitMetrics(c, size, baro, ambient, pitot)
+      );
+
+      // Active ones
+      const activeMetrics = metrics.filter(m => m.hasValidReadings);
+      const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+      const avgMassFlow = totalMassFlow / (metrics.length || 1);
+      
+      const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+      const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+
+      // Render Consolidated summary metrics board
+      document.getElementById('sum-total-mass-flow').innerText = totalMassFlow.toFixed(3);
+      document.getElementById('sum-avg-mass-flow').innerText = avgMassFlow.toFixed(3);
+      document.getElementById('sum-avg-velocity').innerText = avgVelocity.toFixed(0);
+
+      // Calculate Deviations
+      const deviations = {};
+      metrics.forEach(m => {
+        deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+      });
+
+      // Update dynamic conduit inputs & layout
+      renderConduitInputs(metrics, deviations, ambient);
+
+      // Render tab highlights
+      renderConduitTabs();
+
+      // Render deviations bar graph chart
+      renderDeviationsGraph(metrics, deviations);
+    }
+
+    // Render horizontal tabs row
+    function renderConduitTabs() {
+      const tabRow = document.getElementById('conduit-tabs-row');
+      if (!tabRow) return;
+
+      if (layoutMode !== 'tabbed') {
+        tabRow.innerHTML = '';
+        return;
+      }
+
+      tabRow.innerHTML = appState.conduits.map(c => {
+        // Check if has any value inputted
+        const hasData = c.staticPressure !== '' || c.temperature !== '' || c.port1Readings.some(v => v !== '') || c.port2Readings.some(v => v !== '');
+        const isActive = activeConduitId === c.id;
+
+        return `
+          <button onclick="setActiveConduit(${c.id})" class="px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-2 border cursor-pointer ${
+            isActive
+              ? 'bg-amber-500 text-neutral-950 border-amber-500 shadow-md'
+              : 'bg-inputBg text-appTextSec hover:text-appText border-borderPrim hover:bg-cardBg'
+          }">
+            Conduit ${c.id}
+            ${hasData ? `<span class="w-2 h-2 rounded-full ${isActive ? 'bg-neutral-950' : 'bg-emerald-500 shadow-sm'}"></span>` : ''}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function setActiveConduit(id) {
+      activeConduitId = id;
+      updateLiveCalculations();
+    }
+
+    // Render Input Columns depending on view mode
+    function renderConduitInputs(metrics, deviations, ambientTemp) {
+      const container = document.getElementById('conduits-render-container');
+      if (!container) return;
+
+      let conduitsToRender = appState.conduits;
+      
+      // Filter out if in tabbed mode
+      if (layoutMode === 'tabbed') {
+        conduitsToRender = appState.conduits.filter(c => c.id === activeConduitId);
+      }
+
+      let html = '';
+      
+      if (layoutMode === 'grid') {
+        html += `<div class="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0"><div class="flex gap-6 min-w-[1200px] select-none">`;
+      } else {
+        html += `<div class="max-w-md mx-auto w-full animate-fade-in">`;
+      }
+
+      conduitsToRender.forEach(c => {
+        const m = metrics.find(met => met.id === c.id);
+        const dev = deviations[c.id] || 0;
+        const isWarn = Math.abs(dev) > 0.05 && m.hasValidReadings;
+        const widthPercent = Math.min(50, Math.abs(dev) * 500);
+
+        html += `
+          <div class="flex flex-col bg-cardBg border border-borderPrim rounded-xl overflow-hidden shadow-xl shadow-borderPrim/10 ${layoutMode === 'grid' ? 'w-[300px] shrink-0' : ''}">
+            <!-- Conduit title bar -->
+            <div class="px-4 py-3 bg-inputBg/80 border-b border-borderPrim flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span class="text-sm font-mono font-bold text-appText">CONDUIT ${c.id}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="fillConduitDemo(${c.id})" title="Populate demo data" class="p-1 text-appTextSec hover:text-amber-500 hover:bg-inputBg rounded transition-colors cursor-pointer">
+                  <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+                </button>
+                <button onclick="clearConduit(${c.id})" title="Reset conduit values" class="p-1 text-appTextSec hover:text-red-500 hover:bg-inputBg rounded transition-colors cursor-pointer">
+                  <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Parameters -->
+            <div class="p-4 bg-inputBg/40 border-b border-borderPrim grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider mb-1">
+                  Static P. (inWC)
+                </label>
+                <input type="text" placeholder="0.00" value="${c.staticPressure}" oninput="updateConduitField(${c.id}, 'staticPressure', this.value)" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider mb-1">
+                  Gas Temp (°F)
+                </label>
+                <input type="text" placeholder="${ambientTemp} (ambient)" value="${c.temperature}" oninput="updateConduitField(${c.id}, 'temperature', this.value)" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
+              </div>
+            </div>
+
+            <!-- 12-point matrix -->
+            <div class="p-4 flex-1 space-y-3">
+              <div class="grid grid-cols-3 text-center text-[10px] font-mono font-bold text-appTextTer uppercase tracking-wider pb-1 border-b border-borderPrim">
+                <span>Port 1</span>
+                <span>Point</span>
+                <span>Port 2</span>
+              </div>
+              
+              <div class="space-y-1.5 max-h-[380px] overflow-y-auto pr-1">
+                ${Array.from({ length: 12 }).map((_, idx) => {
+                  const pt = idx + 1;
+                  return `
+                    <div class="grid grid-cols-3 items-center gap-1.5">
+                      <input type="text" placeholder="0.000" value="${c.port1Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port1', ${idx}, this.value)" class="bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
+                      <div class="text-center font-mono text-[10px] text-appTextTer bg-inputBg/60 py-1 border border-borderPrim/50 rounded">${pt}</div>
+                      <input type="text" placeholder="0.000" value="${c.port2Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port2', ${idx}, this.value)" class="bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Live Calculated Conduit results -->
+            <div class="p-4 bg-inputBg/80 border-t border-borderPrim space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono text-appTextSec uppercase">Mass Flow Rate</span>
+                <span class="text-xs font-mono font-bold text-appText">
+                  ${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/hr` : '0.000 k lb/hr'}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono text-appTextSec uppercase">Avg Velocity</span>
+                <span class="text-xs font-mono text-appTextSec">
+                  ${m.hasValidReadings ? `${m.avgVelocity.toFixed(0)} fpm` : '0 fpm'}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono text-appTextSec uppercase">Gas Density</span>
+                <span class="text-xs font-mono text-appTextTer">
+                  ${m.hasValidReadings ? `${m.density.toFixed(4)} lb/ft³` : 'N/A'}
+                </span>
+              </div>
+
+              <div class="pt-2 border-t border-borderPrim/50 flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono text-appTextSec uppercase">Mean Deviation</span>
+                  <span class="text-xs font-mono font-semibold ${isWarn ? 'text-red-500' : 'text-emerald-500'}">
+                    ${m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0.0%'}
+                  </span>
+                </div>
+
+                <!-- deviation visual miniature line -->
+                ${m.hasValidReadings ? `
+                  <div class="w-full h-1 bg-inputBg rounded-full overflow-hidden mt-1 relative">
+                    <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarn ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${widthPercent}%; ${dev >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
+                    <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim"></div>
+                  </div>
+                ` : ''}
+
+                ${isWarn ? `
+                  <div class="mt-1.5 flex items-center gap-1 text-[9px] font-mono text-red-500 leading-tight">
+                    <i data-lucide="alert-triangle" class="h-3.5 w-3.5 text-red-500 shrink-0"></i>
+                    <span>Imbalance exceeds 5% threshold!</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      if (layoutMode === 'grid') {
+        html += `</div></div>`;
+      } else {
+        html += `</div>`;
+      }
+
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    // Render Deviations bar charts
+    function renderDeviationsGraph(metrics, deviations) {
+      const graphContainer = document.getElementById('deviations-graph-rows');
+      if (!graphContainer) return;
+
+      graphContainer.innerHTML = appState.conduits.map(c => {
+        const m = metrics.find(met => met.id === c.id);
+        const devVal = deviations[c.id] || 0;
+        const devPctStr = (devVal * 100).toFixed(1);
+        const isExceeds = Math.abs(devVal) > 0.05 && m.hasValidReadings;
+        const normalizedWidth = Math.min(50, Math.abs(devVal) * 100);
+
+        return `
+          <div class="grid grid-cols-1 md:grid-cols-12 items-center gap-3">
+            <div class="md:col-span-2 flex items-center justify-between md:justify-start gap-2">
+              <span class="text-xs font-mono font-bold text-appText">Conduit ${c.id}</span>
+              ${!m.hasValidReadings ? `
+                <span class="text-[10px] font-mono text-appTextTer">(No Data)</span>
+              ` : isExceeds ? `
+                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded">EXCEEDS</span>
+              ` : `
+                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded">BALANCED</span>
+              `}
+            </div>
+
+            <div class="md:col-span-2 text-right text-xs font-mono text-appTextSec md:pr-4">
+              ${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/h` : '0.000'}
+            </div>
+
+            <!-- deviation range bar -->
+            <div class="md:col-span-6 relative h-6 bg-inputBg border border-borderPrim rounded-lg overflow-hidden flex items-center">
+              <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim z-10"></div>
+              <div class="absolute left-[25%] top-0 bottom-0 w-[1px] bg-borderPrim/30 border-dashed"></div>
+              <div class="absolute left-[75%] top-0 bottom-0 w-[1px] bg-borderPrim/30 border-dashed"></div>
+
+              ${m.hasValidReadings ? `
+                <div class="absolute h-full transition-all duration-300 ${
+                  isExceeds ? 'bg-gradient-to-r from-red-500/10 to-red-500' : 'bg-gradient-to-r from-emerald-500/10 to-emerald-500'
+                }" style="width: ${normalizedWidth}%; ${devVal < 0 ? 'right: 50%' : 'left: 50%'}"></div>
+              ` : ''}
+
+              <div class="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[10px] font-mono z-20">
+                <span class="text-appTextTer">-50%</span>
+                <span class="text-appTextTer">0%</span>
+                <span class="text-appTextTer">+50%</span>
+              </div>
+            </div>
+
+            <div class="md:col-span-2 text-right font-mono text-xs font-semibold">
+              ${m.hasValidReadings ? `
+                <span class="${isExceeds ? 'text-red-500' : 'text-emerald-500'}">
+                  ${devVal >= 0 ? '+' : ''}${devPctStr}%
+                </span>
+              ` : '<span class="text-appTextTer">0.0%</span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    // Input state mutations handlers
+    window.updateConduitField = function(id, field, value) {
+      const conduit = appState.conduits.find(c => c.id === id);
+      if (conduit) {
+        conduit[field] = value;
+        saveState();
+      }
+    };
+
+    window.updateConduitPortReading = function(id, port, index, value) {
+      const conduit = appState.conduits.find(c => c.id === id);
+      if (conduit) {
+        const readings = port === 'port1' ? conduit.port1Readings : conduit.port2Readings;
+        readings[index] = value;
+        saveState();
+      }
+    };
+
+    window.fillConduitDemo = function(id) {
+      const conduit = appState.conduits.find(c => c.id === id);
+      if (conduit) {
+        conduit.port1Readings = generateDemoReadings();
+        conduit.port2Readings = generateDemoReadings();
+        conduit.staticPressure = (Math.random() * -3.0 - 0.5).toFixed(2);
+        conduit.temperature = (120 + Math.random() * 40).toFixed(1);
+        saveState();
+      }
+    };
+
+    window.clearConduit = function(id) {
+      const conduit = appState.conduits.find(c => c.id === id);
+      if (conduit) {
+        conduit.port1Readings = Array(12).fill('');
+        conduit.port2Readings = Array(12).fill('');
+        conduit.staticPressure = '';
+        conduit.temperature = '';
+        saveState();
+      }
+    };
+
+    // Bulk actions
+    document.getElementById('btn-bulk-demo').addEventListener('click', () => {
+      appState.conduits.forEach(c => {
+        c.port1Readings = generateDemoReadings();
+        c.port2Readings = generateDemoReadings();
+        c.staticPressure = (Math.random() * -3.0 - 0.5).toFixed(2);
+        c.temperature = (120 + Math.random() * 40).toFixed(1);
+      });
+      saveState();
+    });
+
+    // Custom confirmation modals trigger
+    const clearConfirmModal = document.getElementById('clear-confirm-modal');
+    const lblClearCurrentName = document.getElementById('lbl-clear-current-name');
+
+    document.getElementById('btn-bulk-clear').addEventListener('click', () => {
+      lblClearCurrentName.innerText = `${appState.facility} - ${appState.millName}`;
+      clearConfirmModal.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-cancel-clear').addEventListener('click', () => {
+      clearConfirmModal.classList.add('hidden');
+    });
+
+    document.getElementById('btn-clear-current-mill').addEventListener('click', () => {
+      const activeSet = getDataset(appState.facility, appState.millName);
+      activeSet.conduits = createDefaultConduits(appState.facility);
+      appState.conduits = activeSet.conduits;
+      saveState();
+      clearConfirmModal.classList.add('hidden');
+      updateLiveCalculations();
+      renderDashboardRegistry();
+    });
+
+    document.getElementById('btn-clear-all-database').addEventListener('click', () => {
+      initDefaultState(appState.facility);
+      saveState();
+      clearConfirmModal.classList.add('hidden');
+      updateLiveCalculations();
+      renderDashboardRegistry();
+    });
+
+
+    // Facility toggle actions
+    const btnQpl = document.getElementById('btn-fac-qpl');
+    const btnSbpl = document.getElementById('btn-fac-sbpl');
+
+    function populateMillDropdown(facility) {
+      const select = document.getElementById('param-mill');
+      const mills = facility === 'QPL' 
+        ? ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E']
+        : ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'];
+        
+      select.innerHTML = mills.map(m => `<option value="${m}">${m}</option>`).join('');
+      
+      // Keep millName within bounds
+      if (facility === 'QPL' && appState.millName === 'Mill F') {
+        appState.millName = 'Mill A';
+      }
+      select.value = appState.millName;
+    }
+
+    function selectFacility(facility) {
+      appState.facility = facility;
+      populateMillDropdown(facility);
+
+      const activeSet = getDataset(facility, appState.millName);
+      appState.conduits = activeSet.conduits;
+
+      // Update form fields
+      document.getElementById('param-size').value = activeSet.conduitSize;
+      document.getElementById('param-baro').value = activeSet.barometricPressure;
+      document.getElementById('param-ambient').value = activeSet.ambientTemp;
+      document.getElementById('param-pitot').value = activeSet.pitotCoefficient;
+
+      // Update button highlights
+      if (facility === 'QPL') {
+        btnQpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md cursor-pointer";
+        btnSbpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-appTextSec hover:text-appText hover:bg-inputBg cursor-pointer";
+      } else {
+        btnSbpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md cursor-pointer";
+        btnQpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-appTextSec hover:text-appText hover:bg-inputBg cursor-pointer";
+      }
+
+      saveState();
+    }
+
+    btnQpl.addEventListener('click', () => selectFacility('QPL'));
+    btnSbpl.addEventListener('click', () => selectFacility('SBPL'));
+
+    // Global parameters binding
+    document.getElementById('param-mill').addEventListener('change', (e) => {
+      appState.millName = e.target.value;
+      const activeSet = getDataset(appState.facility, appState.millName);
+      appState.conduits = activeSet.conduits;
+
+      // Update form fields
+      document.getElementById('param-size').value = activeSet.conduitSize;
+      document.getElementById('param-baro').value = activeSet.barometricPressure;
+      document.getElementById('param-ambient').value = activeSet.ambientTemp;
+      document.getElementById('param-pitot').value = activeSet.pitotCoefficient;
+
+      saveState();
+    });
+
+    document.getElementById('param-size').addEventListener('input', (e) => {
+      getDataset(appState.facility, appState.millName).conduitSize = e.target.value;
+      saveState();
+    });
+    document.getElementById('param-baro').addEventListener('input', (e) => {
+      getDataset(appState.facility, appState.millName).barometricPressure = e.target.value;
+      saveState();
+    });
+    document.getElementById('param-ambient').addEventListener('input', (e) => {
+      getDataset(appState.facility, appState.millName).ambientTemp = e.target.value;
+      saveState();
+    });
+    document.getElementById('param-pitot').addEventListener('input', (e) => {
+      getDataset(appState.facility, appState.millName).pitotCoefficient = e.target.value;
+      saveState();
+    });
+
+    // Layout togglers
+    const tabbedLayoutBtn = document.getElementById('btn-layout-tabbed');
+    const gridLayoutBtn = document.getElementById('btn-layout-grid');
+
+    tabbedLayoutBtn.addEventListener('click', () => {
+      layoutMode = 'tabbed';
+      tabbedLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-neutral-800 text-amber-400 border border-neutral-700/60 cursor-pointer";
+      gridLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-appTextSec hover:text-appText cursor-pointer";
+      updateLiveCalculations();
+    });
+
+    gridLayoutBtn.addEventListener('click', () => {
+      layoutMode = 'grid';
+      gridLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-neutral-800 text-amber-400 border border-neutral-700/60 cursor-pointer";
+      tabbedLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-appTextSec hover:text-appText cursor-pointer";
+      updateLiveCalculations();
+    });
+
+    // Navigation togglers
+    document.getElementById('btn-launch-coal').addEventListener('click', () => {
+      document.getElementById('view-dashboard').classList.add('hidden');
+      document.getElementById('view-sampling').classList.remove('hidden');
+    });
+
+    document.getElementById('btn-back-dashboard').addEventListener('click', () => {
+      document.getElementById('view-dashboard').classList.remove('hidden');
+      document.getElementById('view-sampling').classList.add('hidden');
+      renderDashboardRegistry();
+    });
+
+    // Export reports generation compiled selectors
+    let exportScope = 'mill';
+
+    function compilePlaintextSummaryForScope(scope) {
+      const timeStr = new Date().toLocaleString();
+      let body = `FIELD ENGINEER COAL SAMPLING REPORT - COMPILED SUMMARY\n`;
+      body += `==================================================\n`;
+      body += `Generated At: ${timeStr}\n`;
+      body += `Selected Scope: ${scope === 'mill' ? 'Active Mill Only' : (scope === 'facility' ? 'Facility Wide' : 'Entire System Database')}\n\n`;
+
+      const items = [];
+      if (scope === 'mill') {
+        items.push({ facility: appState.facility, mill: appState.millName });
+      } else if (scope === 'facility') {
+        const mills = appState.facility === 'QPL' 
+          ? ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E']
+          : ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'];
+        mills.forEach(m => items.push({ facility: appState.facility, mill: m }));
+      } else {
+        ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E'].forEach(m => items.push({ facility: 'QPL', mill: m }));
+        ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'].forEach(m => items.push({ facility: 'SBPL', mill: m }));
+      }
+
+      let activeReportCount = 0;
+
+      items.forEach(({ facility, mill }) => {
+        const dataset = getDataset(facility, mill);
+        const size = parseFloat(dataset.conduitSize) || 20.5;
+        const baro = parseFloat(dataset.barometricPressure) || 29.60;
+        const ambient = parseFloat(dataset.ambientTemp) || 82.4;
+        const pitot = parseFloat(dataset.pitotCoefficient) || 0.94;
+
+        const metrics = dataset.conduits.map(c => 
+          calculateConduitMetrics(c, size, baro, ambient, pitot)
+        );
+
+        const activeMetrics = metrics.filter(m => m.hasValidReadings);
+        if (activeMetrics.length === 0) return;
+
+        activeReportCount++;
+
+        body += `--------------------------------------------------\n`;
+        body += `FACILITY: ${facility} | MILL: ${mill}\n`;
+        body += `--------------------------------------------------\n`;
+        body += `- Size: ${dataset.conduitSize} in | Baro: ${dataset.barometricPressure} inHg\n`;
+        body += `- Ambient: ${dataset.ambientTemp} °F | Pitot Coeff: ${dataset.pitotCoefficient}\n\n`;
+
+        const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+        const avgMassFlow = totalMassFlow / (metrics.length || 1);
+        const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+        const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+
+        body += `SUMMARY METRICS:\n`;
+        body += `  - Total Mass Flow: ${totalMassFlow.toFixed(3)} k lb/hr\n`;
+        body += `  - Average Mass Flow: ${avgMassFlow.toFixed(3)} k lb/hr\n`;
+        body += `  - Average Air Velocity: ${avgVelocity.toFixed(1)} fpm\n\n`;
+
+        const deviations = {};
+        metrics.forEach(m => {
+          deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+        });
+
+        body += `CONDUITS DETAILS:\n`;
+        metrics.forEach((m) => {
+          if (!m.hasValidReadings) return;
+          const cData = dataset.conduits.find((c) => c.id === m.id);
+          const dev = deviations[m.id] || 0;
+          const devPct = (dev * 100).toFixed(1);
+          const isWarn = Math.abs(dev) > 0.05;
+
+          body += `  * Conduit ${m.id}: Static ${cData.staticPressure || '0'} inWC | Temp ${cData.temperature || dataset.ambientTemp} °F | Vel ${m.avgVelocity.toFixed(0)} fpm | Flow ${m.massFlow.toFixed(3)} k lb/hr | Dev ${devPct}% ${isWarn ? '⚠️ (>5% Limit)' : '(OK)'}\n`;
+        });
+        body += `\n`;
+      });
+
+      if (activeReportCount === 0) {
+        body += `No active isokinetic measurements found for the selected scope. Open Workspace to populate points.\n`;
+      }
+
+      body += `\nSent via Field Engineer Toolbox System.`;
+      return body;
+    }
+
+    function generateXLSXContentForScope(scope) {
+      const wb = XLSX.utils.book_new();
+      const dateStr = new Date().toISOString().split('T')[0];
+
+      const items = [];
+      if (scope === 'mill') {
+        items.push({ facility: appState.facility, mill: appState.millName });
+      } else if (scope === 'facility') {
+        const mills = appState.facility === 'QPL' 
+          ? ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E']
+          : ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'];
+        mills.forEach(m => items.push({ facility: appState.facility, mill: m }));
+      } else {
+        ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E'].forEach(m => items.push({ facility: 'QPL', mill: m }));
+        ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'].forEach(m => items.push({ facility: 'SBPL', mill: m }));
+      }
+
+      items.forEach(({ facility, mill }) => {
+        const dataset = getDataset(facility, mill);
+        const size = parseFloat(dataset.conduitSize) || (facility === 'QPL' ? 20.5 : 24.0);
+        const baro = parseFloat(dataset.barometricPressure) || 29.60;
+        const ambient = parseFloat(dataset.ambientTemp) || 82.4;
+        const pitot = parseFloat(dataset.pitotCoefficient) || 0.94;
+
+        const metrics = dataset.conduits.map(c => 
+          calculateConduitMetrics(c, size, baro, ambient, pitot)
+        );
+
+        const activeMetrics = metrics.filter(m => m.hasValidReadings);
+        const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+        const avgMassFlow = totalMassFlow / (metrics.length || 1);
+        const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+        const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+
+        const deviations = {};
+        metrics.forEach(m => {
+          deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+        });
+
+        const rows = [
+          [`FIELD ENGINEER COAL SAMPLING REPORT - ${facility} ${mill}`],
+          [`Generated At: ${new Date().toLocaleString()}`],
+          [],
+          ['Global Facility Parameters', 'Value', 'Unit'],
+          ['Conduit Inside Diameter', size, 'inches'],
+          ['Barometric Pressure', baro, 'inHg'],
+          ['Ambient Temperature', ambient, '°F'],
+          ['Pitot Coefficient (Cp)', pitot, ''],
+          [],
+          ['Consolidated Performance Summary', 'Value', 'Unit'],
+          ['Total Mass Flow Rate', parseFloat(totalMassFlow.toFixed(3)), 'k lb/hr'],
+          ['Average Mass Flow Rate', parseFloat(avgMassFlow.toFixed(3)), 'k lb/hr'],
+          ['Average Gas Velocity', parseFloat(avgVelocity.toFixed(1)), 'fpm'],
+          [],
+          ['Conduit Multi-Point Matrix Details'],
+        ];
+
+        // Headers row for conduits
+        const conduitHeaders = ['Metric / Port Point', ...dataset.conduits.map(c => `Conduit ${c.id}`)];
+        rows.push(conduitHeaders);
+        rows.push(['Static Pressure (inWC)', ...dataset.conduits.map(c => c.staticPressure ? parseFloat(c.staticPressure) : 0)]);
+        rows.push(['Gas Temperature (°F)', ...dataset.conduits.map(c => c.temperature ? parseFloat(c.temperature) : ambient)]);
+        rows.push(['DP (inWC)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.dp.toFixed(4)) : 'N/A')]);
+        rows.push(['Density (lb/ft3)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.density.toFixed(4)) : 'N/A')]);
+        rows.push(['Gas Velocity (fpm)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.avgVelocity.toFixed(1)) : 0)]);
+        rows.push(['Mass Flow (k lb/hr)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.massFlow.toFixed(3)) : 0)]);
+        rows.push(['Mean Deviation (%)', ...metrics.map(m => {
+          const dev = deviations[m.id] || 0;
+          return m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0%';
+        })]);
+
+        rows.push([], ['PORT 1 MATRIX READINGS (inWC)']);
+        for (let i = 0; i < 12; i++) {
+          rows.push([`Point ${i + 1}`, ...dataset.conduits.map(c => c.port1Readings[i] ? parseFloat(c.port1Readings[i]) : '')]);
+        }
+
+        rows.push([], ['PORT 2 MATRIX READINGS (inWC)']);
+        for (let i = 0; i < 12; i++) {
+          rows.push([`Point ${i + 1}`, ...dataset.conduits.map(c => c.port2Readings[i] ? parseFloat(c.port2Readings[i]) : '')]);
+        }
+
+        // Convert rows to worksheet
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+
+        // Auto-fit column widths
+        const max_cols = rows.reduce((max, r) => Math.max(max, r.length), 0);
+        const wscols = [];
+        for (let c = 0; c < max_cols; c++) {
+          let max_len = 10;
+          rows.forEach(r => {
+            if (r[c] !== undefined && r[c] !== null) {
+              const valStr = String(r[c]);
+              if (valStr.length > max_len) max_len = valStr.length;
+            }
+          });
+          wscols.push({ wch: max_len + 3 });
+        }
+        ws['!cols'] = wscols;
+
+        // Add to workbook
+        const sheetName = `${facility}_${mill.replace(' ', '')}`.substring(0, 31);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      });
+
+      // Write Workbook and trigger download
+      const filename = `coal_sampling_${scope}_report_${appState.facility}_${dateStr}.xlsx`;
+      XLSX.writeFile(wb, filename);
+    }
+
+    function updateExportContent() {
+      // Highlights scope buttons
+      const btnMill = document.getElementById('btn-scope-mill');
+      const btnFac = document.getElementById('btn-scope-facility');
+      const btnAll = document.getElementById('btn-scope-all');
+
+      btnMill.className = `p-3 border rounded-lg text-left transition-all cursor-pointer ${exportScope === 'mill' ? 'border-amber-500 bg-amber-500/10 text-amber-500' : 'border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec'}`;
+      btnFac.className = `p-3 border rounded-lg text-left transition-all cursor-pointer ${exportScope === 'facility' ? 'border-amber-500 bg-amber-500/10 text-amber-500' : 'border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec'}`;
+      btnAll.className = `p-3 border rounded-lg text-left transition-all cursor-pointer ${exportScope === 'all' ? 'border-amber-500 bg-amber-500/10 text-amber-500' : 'border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec'}`;
+
+      // Update descriptors
+      document.getElementById('lbl-scope-mill-name').innerText = `${appState.facility} - ${appState.millName}`;
+      document.getElementById('lbl-scope-facility-name').innerText = `${appState.facility} Facility`;
+
+      // Generate text preview
+      const reportText = compilePlaintextSummaryForScope(exportScope);
+      document.getElementById('pre-report-preview').innerText = reportText;
+
+      // Update email client targets
+      const dateStr = new Date().toISOString().split('T')[0];
+      const scopeLabel = exportScope === 'mill' ? `${appState.facility} [${appState.millName}]` : (exportScope === 'facility' ? `${appState.facility} Facility` : 'All Facilities');
+      const subject = `Coal Sampling Field Report - ${scopeLabel} - ${dateStr}`;
+
+      document.getElementById('lnk-gmail').href = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(reportText)}`;
+      document.getElementById('lnk-outlook').href = `https://outlook.live.com/default.aspx?rru=compose&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(reportText)}`;
+      document.getElementById('lnk-mailto').href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(reportText)}`;
+
+      // Setup Click listeners
+      document.getElementById('btn-copy-summary-standalone').onclick = () => {
+        navigator.clipboard.writeText(reportText);
+        document.getElementById('lbl-copy-btn').innerText = 'Copied!';
+        setTimeout(() => document.getElementById('lbl-copy-btn').innerText = 'Copy Text Only', 2000);
+      };
+
+      // Export directly to Excel
+      document.getElementById('btn-export-to-xlsx').onclick = () => {
+        generateXLSXContentForScope(exportScope);
+        document.getElementById('email-platforms-container').classList.add('hidden');
+      };
+
+      // Prepare & Send via Email: triggers XLSX generation, then opens pre-formatted email
+      document.getElementById('btn-export-to-email').onclick = () => {
+        // Trigger spreadsheet download in the background
+        generateXLSXContentForScope(exportScope);
+        // Toggle drawer open with guidelines
+        document.getElementById('email-platforms-container').classList.remove('hidden');
+      };
+    }
+
+    // Modal triggers
+    const exportModal = document.getElementById('export-modal');
+
+    document.getElementById('btn-trigger-export-modal').addEventListener('click', () => {
+      exportModal.classList.remove('hidden');
+      document.getElementById('email-platforms-container').classList.add('hidden'); // Hide platform guidelines drawer initially
+      exportScope = 'mill'; // Default to active mill only on modal open
+      updateExportContent();
+    });
+
+    const closeModal = () => exportModal.classList.add('hidden');
+    document.getElementById('btn-close-export').addEventListener('click', closeModal);
+    document.getElementById('btn-close-export-footer').addEventListener('click', closeModal);
+
+    // Bind export scope buttons
+    document.getElementById('btn-scope-mill').addEventListener('click', () => {
+      exportScope = 'mill';
+      updateExportContent();
+    });
+    document.getElementById('btn-scope-facility').addEventListener('click', () => {
+      exportScope = 'facility';
+      updateExportContent();
+    });
+    document.getElementById('btn-scope-all').addEventListener('click', () => {
+      exportScope = 'all';
+      updateExportContent();
+    });
+
+
+    // Theme toggle mechanics
+    const btnThemeToggle = document.getElementById('btn-theme-toggle');
+    const themeIcon = document.getElementById('theme-toggle-icon');
+
+    function updateThemeUI() {
+      const isLight = document.documentElement.classList.contains('light');
+      if (isLight) {
+        themeIcon.setAttribute('data-lucide', 'moon');
+        appState.theme = 'light';
+      } else {
+        themeIcon.setAttribute('data-lucide', 'sun');
+        appState.theme = 'dark';
+      }
+      localStorage.setItem('theme', appState.theme);
+      lucide.createIcons();
+    }
+
+    btnThemeToggle.addEventListener('click', () => {
+      document.documentElement.classList.toggle('light');
+      updateThemeUI();
+    });
+
+
+    // Dashboard Registry Grid builder
+    function renderDashboardRegistry() {
+      const grid = document.getElementById('dashboard-registry-grid');
+      if (!grid) return;
+
+      let html = '';
+
+      const configs = [
+        { facility: 'QPL', name: 'QPL Facility Module', description: 'Quezon Power Ltd. | 5x Boiler Mills (Mill A to Mill E)', mills: ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E'] },
+        { facility: 'SBPL', name: 'SBPL Facility Module', description: 'San Buenaventura Power Ltd. Supercritical Boiler | 6x Mills (Mill A to Mill F)', mills: ['Mill A', 'Mill B', 'Mill C', 'Mill D', 'Mill E', 'Mill F'] }
+      ];
+
+      configs.forEach(({ facility, name, description, mills }) => {
+        // Create a grouped panel card
+        html += `
+          <div class="bg-cardBg/30 border border-borderPrim rounded-2xl p-5 md:p-6 space-y-4 shadow-sm transition-colors duration-200">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-borderSec pb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20">
+                  <i data-lucide="factory" class="h-4.5 w-4.5"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-mono font-bold text-appText uppercase tracking-wider">${name}</h4>
+                  <p class="text-[10px] text-appTextTer">${description}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[9px] font-mono text-emerald-400">Cache Active</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        `;
+
+        mills.forEach(mill => {
+          const dataset = getDataset(facility, mill);
+          const size = parseFloat(dataset.conduitSize) || (facility === 'QPL' ? 20.5 : 24.0);
+          const baro = parseFloat(dataset.barometricPressure) || 29.60;
+          const ambient = parseFloat(dataset.ambientTemp) || 82.4;
+          const pitot = parseFloat(dataset.pitotCoefficient) || 0.94;
+
+          const metrics = dataset.conduits.map(c => 
+            calculateConduitMetrics(c, size, baro, ambient, pitot)
+          );
+
+          const activeMetrics = metrics.filter(m => m.hasValidReadings);
+          const hasData = activeMetrics.length > 0;
+
+          let statusBadge = '';
+          let dataDetails = '';
+
+          if (hasData) {
+            const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+            const avgMassFlow = totalMassFlow / (metrics.length || 1);
+            const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+            const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+
+            let maxDev = 0;
+            let exceeds = false;
+            metrics.forEach(m => {
+              if (m.hasValidReadings) {
+                const devVal = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+                if (Math.abs(devVal) > maxDev) maxDev = Math.abs(devVal);
+                if (Math.abs(devVal) > 0.05) exceeds = true;
+              }
+            });
+
+            if (exceeds) {
+              statusBadge = `
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <i data-lucide="alert-triangle" class="h-2.5 w-2.5 animate-pulse"></i> IMBALANCE (${(maxDev*100).toFixed(1)}%)
+                </span>`;
+            } else {
+              statusBadge = `
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <i data-lucide="check" class="h-2.5 w-2.5"></i> BALANCED
+                </span>`;
+            }
+
+            dataDetails = `
+              <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-borderSec text-[10px] font-mono text-appTextSec">
+                <div>Flow Rate: <span class="text-appText font-bold">${totalMassFlow.toFixed(3)} k lb/h</span></div>
+                <div>Avg Speed: <span class="text-appText font-bold">${avgVelocity.toFixed(0)} fpm</span></div>
+                <div>Conduits: <span class="text-appText font-bold">${activeMetrics.length} of ${metrics.length}</span></div>
+                <div>Avg Temp: <span class="text-appText font-bold">${ambient.toFixed(1)}°F</span></div>
+              </div>
+            `;
+          } else {
+            statusBadge = `
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-inputBg text-appTextTer border border-borderPrim">
+                EMPTY CACHE
+              </span>`;
+            dataDetails = `
+              <p class="text-[11px] text-appTextTer italic mt-1 font-mono">No physical sweeps recorded.</p>
+            `;
+          }
+
+          html += `
+            <div class="bg-cardBg border border-borderPrim rounded-xl p-4 flex flex-col justify-between hover:border-amber-500/30 transition-all shadow-sm">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono font-bold text-appText uppercase">${facility} - ${mill}</span>
+                  ${statusBadge}
+                </div>
+                ${dataDetails}
+              </div>
+              <div class="mt-4 flex items-center justify-end">
+                <button onclick="launchWorkspaceForMill('${facility}', '${mill}')" class="px-3 py-1.5 bg-inputBg hover:bg-cardBg border border-borderPrim hover:border-amber-500/30 hover:text-amber-500 text-xs font-mono rounded-md transition-all flex items-center gap-1 cursor-pointer">
+                  <span>Open Workspace</span>
+                  <i data-lucide="arrow-up-right" class="h-3 w-3"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        html += `
+            </div>
+          </div>
+        `;
+      });
+
+      grid.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    // Direct mill workspace launcher from dashboard
+    window.launchWorkspaceForMill = function(facility, mill) {
+      appState.facility = facility;
+      appState.millName = mill;
+      
+      selectFacility(facility);
+      document.getElementById('param-mill').value = mill;
+      
+      document.getElementById('view-dashboard').classList.add('hidden');
+      document.getElementById('view-sampling').classList.remove('hidden');
+      updateLiveCalculations();
+    };
+
+
+    // State recovery setup
+    const recoveryBanner = document.getElementById('recovery-banner');
+    const recoveryTimestamp = document.getElementById('recovery-timestamp');
+
+    try {
+      const cachedSession = localStorage.getItem(STORAGE_KEY);
+      if (cachedSession) {
+        const parsed = JSON.parse(cachedSession);
+        if (parsed) {
+          // Backward compatibility upgrade for old caches
+          if (parsed.conduits && parsed.conduits.length > 0 && !parsed.datasets) {
+            parsed.datasets = {};
+            const key = `${parsed.facility || 'QPL'}_${parsed.millName || 'Mill A'}`;
+            parsed.datasets[key] = {
+              conduitSize: parsed.conduitSize || '20.5',
+              barometricPressure: parsed.barometricPressure || '29.60',
+              ambientTemp: parsed.ambientTemp || '82.4',
+              pitotCoefficient: parsed.pitotCoefficient || '0.94',
+              conduits: parsed.conduits
+            };
+          }
+
+          if (parsed.datasets) {
+            appState = parsed;
+            if (!appState.facility) appState.facility = 'QPL';
+            if (!appState.millName) appState.millName = 'Mill A';
+
+            const activeSet = getDataset(appState.facility, appState.millName);
+            appState.conduits = activeSet.conduits;
+
+            recoveryTimestamp.innerText = new Date(appState.lastUpdated).toLocaleString();
+            recoveryBanner.classList.remove('hidden');
+
+            document.getElementById('btn-recovery-keep').onclick = () => {
+              // Populate DOM fields with recovered dataset values
+              document.getElementById('param-size').value = activeSet.conduitSize;
+              document.getElementById('param-baro').value = activeSet.barometricPressure;
+              document.getElementById('param-ambient').value = activeSet.ambientTemp;
+              document.getElementById('param-pitot').value = activeSet.pitotCoefficient;
+              selectFacility(appState.facility);
+              document.getElementById('param-mill').value = appState.millName;
+
+              recoveryBanner.classList.add('hidden');
+              updateLiveCalculations();
+              renderDashboardRegistry();
+            };
+
+            document.getElementById('btn-recovery-clear').onclick = () => {
+              localStorage.removeItem(STORAGE_KEY);
+              initDefaultState('QPL');
+              recoveryBanner.classList.add('hidden');
+              updateLiveCalculations();
+              renderDashboardRegistry();
+            };
+          } else {
+            initDefaultState('QPL');
+          }
+        } else {
+          initDefaultState('QPL');
+        }
+      } else {
+        initDefaultState('QPL');
+      }
+    } catch (e) {
+      initDefaultState('QPL');
+    }
+
+    // ==========================================
+    // PUMP PERFORMANCE MODULE CORE IMPLEMENTATION
+    // ==========================================
+    const PUMP_METADATA = {
+      QPL: [
+        { id: 1, name: 'Boiler Feed Pump P-101', short: 'BFP-101' },
+        { id: 2, name: 'Condensate Pump P-102', short: 'CP-102' },
+        { id: 3, name: 'Circulating Water Pump P-103', short: 'CWP-103' },
+        { id: 4, name: 'Service Water Pump P-104', short: 'SWP-104' },
+        { id: 5, name: 'Ash Slurry Pump P-105', short: 'ASP-105' },
+        { id: 6, name: 'Fuel Oil Pump P-106', short: 'FOP-106' },
+        { id: 7, name: 'Chemical Feed Pump P-107', short: 'CFP-107' },
+        { id: 8, name: 'Raw Water Pump P-108', short: 'RWP-108' },
+        { id: 9, name: 'Drain Pump P-109', short: 'DP-109' },
+        { id: 10, name: 'Fire Water Pump P-110', short: 'FWP-110' },
+      ],
+      SBPL: [
+        { id: 1, name: 'Supercritical Feed Pump P-201', short: 'SFP-201' },
+        { id: 2, name: 'Hotwell Extraction Pump P-202', short: 'HEP-202' },
+        { id: 3, name: 'Condenser Booster Pump P-203', short: 'CBP-203' },
+        { id: 4, name: 'Auxiliary Feed Pump P-204', short: 'AFP-204' },
+        { id: 5, name: 'Vacuum Priming Pump P-205', short: 'VPP-205' },
+        { id: 6, name: 'Bearing Cooling Pump P-206', short: 'BCP-206' },
+        { id: 7, name: 'Sump Drainage Pump P-207', short: 'SDP-207' },
+        { id: 8, name: 'Clarified Water Pump P-208', short: 'CWP-208' },
+        { id: 9, name: 'Lube Oil Pump P-209', short: 'LOP-209' },
+        { id: 10, name: 'Deluge Spray Pump P-210', short: 'DSP-210' },
+      ]
+    };
+
+    let pumpState = {
+      facility: 'QPL',
+      activePumpId: 1,
+      pumps: {}
+    };
+
+    const PUMP_STORAGE_KEY = 'field_engineer_pump_performance_session';
+
+    function createDefaultPumpData(facility, id) {
+      const isFeedPump = (id === 1 || id === 4);
+      const isWaterPump = (id === 2 || id === 3 || id === 8 || id === 10);
+      
+      let ps = isFeedPump ? 25.0 : (isWaterPump ? 8.0 : 12.0);
+      let pd = isFeedPump ? 320.0 : (isWaterPump ? 60.0 : 90.0);
+      let q = isFeedPump ? 600.0 : (isWaterPump ? 1200.0 : 350.0);
+      let pin = isFeedPump ? 160.0 : (isWaterPump ? 50.0 : 25.0);
+      let ds = isFeedPump ? 8.0 : (isWaterPump ? 12.0 : 6.0);
+      let dd = isFeedPump ? 6.0 : (isWaterPump ? 10.0 : 4.0);
+      let zs = 2.0;
+      let zd = 4.0;
+      let sg = 1.0;
+      let temp = 85.0;
+      let pv = 0.6;
+      
+      const variation = 1 + (Math.sin(id + (facility === 'QPL' ? 2 : 5)) * 0.08);
+      ps = parseFloat((ps * variation).toFixed(1));
+      pd = parseFloat((pd * variation).toFixed(1));
+      q = parseFloat((q * variation).toFixed(0));
+      pin = parseFloat((pin * variation).toFixed(0));
+
+      return {
+        ps, pd, q, pin, ds, dd, zs, zd, sg, temp, pv,
+        hasValidReadings: true
+      };
+    }
+
+    function getPumpData(facility, id) {
+      const key = `${facility}_${id}`;
+      if (!pumpState.pumps[key]) {
+        pumpState.pumps[key] = createDefaultPumpData(facility, id);
+      }
+      return pumpState.pumps[key];
+    }
+
+    function savePumpState() {
+      localStorage.setItem(PUMP_STORAGE_KEY, JSON.stringify(pumpState));
+      updatePumpCalculations();
+    }
+
+    function calculatePumpMetrics(p) {
+      if (!p || !p.hasValidReadings) {
+        return {
+          ps: 0, pd: 0, q: 0, pin: 0, ds: 0, dd: 0, zs: 0, zd: 0, sg: 0, temp: 0, pv: 0,
+          v_s: 0, v_d: 0, h_vs: 0, h_vd: 0,
+          h_s: 0, h_d: 0, tdh: 0, diffPress: 0,
+          whp: 0, efficiency: 0, npsha: 0,
+          hasValidReadings: false
+        };
+      }
+
+      const ps = parseFloat(p.ps);
+      const pd = parseFloat(p.pd);
+      const q = parseFloat(p.q);
+      const pin = parseFloat(p.pin) || 1;
+      const ds = parseFloat(p.ds) || 1;
+      const dd = parseFloat(p.dd) || 1;
+      const zs = parseFloat(p.zs) || 0;
+      const zd = parseFloat(p.zd) || 0;
+      const sg = parseFloat(p.sg) || 1.0;
+      const temp = parseFloat(p.temp) || 85.0;
+      const pv = parseFloat(p.pv) || 0.6;
+      const g = 32.174;
+      const patm = 14.7;
+
+      if (isNaN(ps) || isNaN(pd) || isNaN(q)) {
+        return {
+          ps: 0, pd: 0, q: 0, pin: 0, ds: 0, dd: 0, zs: 0, zd: 0, sg: 0, temp: 0, pv: 0,
+          v_s: 0, v_d: 0, h_vs: 0, h_vd: 0,
+          h_s: 0, h_d: 0, tdh: 0, diffPress: 0,
+          whp: 0, efficiency: 0, npsha: 0,
+          hasValidReadings: false
+        };
+      }
+
+      const density = sg * 62.4; // lb/ft3
+
+      const v_s = (0.4085 * q) / (ds * ds);
+      const v_d = (0.4085 * q) / (dd * dd);
+
+      const h_vs = (v_s * v_s) / (2 * g);
+      const h_vd = (v_d * v_d) / (2 * g);
+
+      const h_ps = (ps * 144) / density;
+      const h_pd = (pd * 144) / density;
+
+      const h_s = zs + h_ps + h_vs;
+      const h_d = zd + h_pd + h_vd;
+
+      const tdh = h_d - h_s;
+      const diffPress = pd - ps;
+      const whp = (q * tdh * sg) / 3960;
+
+      let efficiency = (whp / pin) * 100;
+      if (efficiency > 100) efficiency = 100;
+      if (efficiency < 0) efficiency = 0;
+
+      const npsha = ((patm + ps - pv) * 144) / density + zs + h_vs;
+
+      return {
+        ps, pd, q, pin, ds, dd, zs, zd, sg, temp, pv,
+        v_s, v_d, h_vs, h_vd,
+        h_s, h_d, tdh, diffPress,
+        whp, efficiency, npsha,
+        hasValidReadings: true
+      };
+    }
+
+    window.selectPump = function(id) {
+      pumpState.activePumpId = id;
+      savePumpState();
+    };
+
+    function selectPumpFacility(facility) {
+      pumpState.facility = facility;
+      
+      const btnQpl = document.getElementById('btn-pump-fac-qpl');
+      const btnSbpl = document.getElementById('btn-pump-fac-sbpl');
+      
+      if (facility === 'QPL') {
+        btnQpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md cursor-pointer";
+        btnSbpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-appTextSec hover:text-appText hover:bg-cardBg/60 cursor-pointer";
+      } else {
+        btnSbpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md cursor-pointer";
+        btnQpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-appTextSec hover:text-appText hover:bg-cardBg/60 cursor-pointer";
+      }
+      
+      savePumpState();
+    }
+
+    window.updatePumpCalculations = function() {
+      const activePumpMeta = PUMP_METADATA[pumpState.facility].find(p => p.id === pumpState.activePumpId);
+      const activePumpData = getPumpData(pumpState.facility, pumpState.activePumpId);
+      
+      document.getElementById('lbl-active-pump-inputs-title').innerText = `Inspection Inputs: ${activePumpMeta.name}`;
+      
+      const fields = ['ps', 'ds', 'zs', 'pd', 'dd', 'zd', 'q', 'pin', 'sg', 'temp', 'pv'];
+      fields.forEach(f => {
+        const el = document.getElementById(`input-pump-${f}`);
+        if (el) {
+          el.value = activePumpData[f] !== undefined ? activePumpData[f] : '';
+        }
+      });
+
+      const res = calculatePumpMetrics(activePumpData);
+
+      const circ = document.getElementById('pump-efficiency-circle');
+      const valEl = document.getElementById('pump-efficiency-value');
+      const labelEl = document.getElementById('pump-efficiency-label');
+      const powerInEl = document.getElementById('lbl-pump-power-in');
+      const powerOutEl = document.getElementById('lbl-pump-power-out');
+
+      const tdhEl = document.getElementById('pump-tdh-value');
+      const suctionHeadEl = document.getElementById('pump-suction-head');
+      const dischargeHeadEl = document.getElementById('pump-discharge-head');
+      const diffPressEl = document.getElementById('pump-diff-press');
+
+      const npshaEl = document.getElementById('pump-npsha-value');
+      const cavitationBadge = document.getElementById('pump-cavitation-badge');
+      const cavitationText = document.getElementById('pump-cavitation-text');
+
+      const suctionVelEl = document.getElementById('pump-suction-vel');
+      const suctionVelHeadEl = document.getElementById('pump-suction-vel-head');
+      const dischargeVelEl = document.getElementById('pump-discharge-vel');
+      const dischargeVelHeadEl = document.getElementById('pump-discharge-vel-head');
+
+      if (res.hasValidReadings) {
+        const eff = res.efficiency;
+        valEl.innerText = `${eff.toFixed(1)}%`;
+        
+        const dashoffset = 377 * (1 - eff / 100);
+        circ.setAttribute('stroke-dashoffset', dashoffset);
+
+        if (eff >= 75) {
+          labelEl.innerText = 'EXCELLENT';
+          labelEl.className = 'text-[9px] font-mono text-emerald-400 font-bold tracking-wider uppercase mt-0.5';
+          circ.className.baseVal = 'text-emerald-500 transition-all duration-300';
+        } else if (eff >= 60) {
+          labelEl.innerText = 'OPTIMAL';
+          labelEl.className = 'text-[9px] font-mono text-amber-400 font-bold tracking-wider uppercase mt-0.5';
+          circ.className.baseVal = 'text-amber-500 transition-all duration-300';
+        } else {
+          labelEl.innerText = 'LOW EFFICIENCY';
+          labelEl.className = 'text-[9px] font-mono text-red-400 font-bold tracking-wider uppercase mt-0.5';
+          circ.className.baseVal = 'text-red-500 transition-all duration-300';
+        }
+
+        powerInEl.innerText = `${res.pin.toFixed(1)} hp`;
+        powerOutEl.innerText = `${res.whp.toFixed(1)} hp`;
+
+        tdhEl.innerText = res.tdh.toFixed(1);
+        suctionHeadEl.innerText = `${res.h_s.toFixed(1)} ft`;
+        dischargeHeadEl.innerText = `${res.h_d.toFixed(1)} ft`;
+        diffPressEl.innerText = `${res.diffPress.toFixed(1)} psi`;
+
+        npshaEl.innerText = res.npsha.toFixed(1);
+        if (res.npsha > 8.0) {
+          cavitationBadge.className = "flex items-center gap-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs font-sans font-semibold";
+          cavitationText.innerHTML = `SAFE: NPSHa (${res.npsha.toFixed(1)} ft) &gt; NPSHr limit of 8.0 ft`;
+          cavitationBadge.querySelector('i').setAttribute('data-lucide', 'check-circle');
+        } else {
+          cavitationBadge.className = "flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-sans font-semibold animate-pulse";
+          cavitationText.innerHTML = `CAVITATION RISK: NPSHa (${res.npsha.toFixed(1)} ft) &lt;= NPSHr of 8.0 ft!`;
+          cavitationBadge.querySelector('i').setAttribute('data-lucide', 'alert-triangle');
+        }
+
+        suctionVelEl.innerText = `${res.v_s.toFixed(1)} fps`;
+        suctionVelHeadEl.innerText = `${res.h_vs.toFixed(2)} ft`;
+        dischargeVelEl.innerText = `${res.v_d.toFixed(1)} fps`;
+        dischargeVelHeadEl.innerText = `${res.h_vd.toFixed(2)} ft`;
+
+      } else {
+        valEl.innerText = 'N/A';
+        labelEl.innerText = 'UNINSPECTED';
+        labelEl.className = 'text-[9px] font-mono text-appTextTer font-bold tracking-wider uppercase mt-0.5';
+        circ.setAttribute('stroke-dashoffset', 377);
+        circ.className.baseVal = 'text-borderPrim';
+
+        powerInEl.innerText = '0.0 hp';
+        powerOutEl.innerText = '0.0 hp';
+
+        tdhEl.innerText = 'N/A';
+        suctionHeadEl.innerText = '0.0 ft';
+        dischargeHeadEl.innerText = '0.0 ft';
+        diffPressEl.innerText = '0.0 psi';
+
+        npshaEl.innerText = 'N/A';
+        cavitationBadge.className = "flex items-center gap-2 px-3 py-2 bg-inputBg border border-borderPrim text-appTextTer rounded-xl text-xs font-sans font-semibold";
+        cavitationText.innerHTML = "No readings logged. Enter inputs to compute.";
+        cavitationBadge.querySelector('i').setAttribute('data-lucide', 'help-circle');
+
+        suctionVelEl.innerText = '0.0 fps';
+        suctionVelHeadEl.innerText = '0.00 ft';
+        dischargeVelEl.innerText = '0.0 fps';
+        dischargeVelHeadEl.innerText = '0.00 ft';
+      }
+
+      renderPumpSelectorGrid();
+      renderPumpRegistryTable();
+      updatePumpEmailDraft();
+      lucide.createIcons();
+    };
+
+    function renderPumpSelectorGrid() {
+      const grid = document.getElementById('pump-selector-grid');
+      if (!grid) return;
+
+      const pumpsList = PUMP_METADATA[pumpState.facility];
+      grid.innerHTML = pumpsList.map(p => {
+        const pData = getPumpData(pumpState.facility, p.id);
+        const isActive = p.id === pumpState.activePumpId;
+        const hasData = pData.hasValidReadings;
+
+        let borderClass = 'border-borderPrim';
+        let bgClass = 'bg-inputBg/60 text-appTextSec';
+        let badge = '';
+
+        if (isActive) {
+          borderClass = 'border-amber-500 shadow-md shadow-amber-500/10';
+          bgClass = 'bg-amber-500 text-neutral-950 font-bold';
+        } else if (hasData) {
+          borderClass = 'border-emerald-500/40 hover:border-emerald-400/60';
+          bgClass = 'bg-emerald-950/20 text-emerald-400';
+          badge = '<span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-400"></span>';
+        } else {
+          borderClass = 'border-borderPrim hover:border-amber-500/30';
+        }
+
+        return `
+          <button onclick="selectPump(${p.id})" class="relative p-2.5 rounded-xl border ${borderClass} ${bgClass} text-center transition-all cursor-pointer text-xs flex flex-col items-center justify-center gap-0.5 select-none">
+            ${badge}
+            <span class="block text-[11px] font-semibold tracking-tight truncate w-full">${p.short}</span>
+            <span class="block text-[8px] font-mono opacity-80 uppercase">${isActive ? 'Active' : (hasData ? 'Inspected' : 'Empty')}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderPumpRegistryTable() {
+      const tbody = document.getElementById('pump-registry-table-body');
+      if (!tbody) return;
+
+      const pumpsList = PUMP_METADATA[pumpState.facility];
+      tbody.innerHTML = pumpsList.map(p => {
+        const pData = getPumpData(pumpState.facility, p.id);
+        const metrics = calculatePumpMetrics(pData);
+        const isActive = p.id === pumpState.activePumpId;
+
+        let statusBadge = '';
+        if (metrics.hasValidReadings) {
+          const isSafe = metrics.npsha > 8.0;
+          statusBadge = `
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
+              isSafe ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+            }">
+              ${isSafe ? 'SAFE' : 'CAV RISK'}
+            </span>
+          `;
+        } else {
+          statusBadge = `
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono bg-inputBg text-appTextTer">
+              UNINS.
+            </span>
+          `;
+        }
+
+        const trClass = isActive ? 'bg-amber-500/5 border-l-2 border-l-amber-500' : 'hover:bg-inputBg/30';
+
+        return `
+          <tr class="${trClass} transition-colors">
+            <td class="py-3 px-4 font-semibold text-appText">
+              <span class="block text-xs">${p.name}</span>
+              <span class="text-[9px] text-appTextTer font-mono uppercase">${p.short}</span>
+            </td>
+            <td class="py-3 px-4 text-right text-appTextSec">${metrics.hasValidReadings ? metrics.q.toFixed(0) : '-'}</td>
+            <td class="py-3 px-4 text-right text-appTextSec">${metrics.hasValidReadings ? metrics.h_s.toFixed(1) : '-'}</td>
+            <td class="py-3 px-4 text-right text-appTextSec">${metrics.hasValidReadings ? metrics.h_d.toFixed(1) : '-'}</td>
+            <td class="py-3 px-4 text-right text-amber-500 font-semibold">${metrics.hasValidReadings ? metrics.tdh.toFixed(1) : '-'}</td>
+            <td class="py-3 px-4 text-right text-appTextSec">${metrics.hasValidReadings ? metrics.whp.toFixed(1) : '-'}</td>
+            <td class="py-3 px-4 text-right text-emerald-400 font-semibold">${metrics.hasValidReadings ? metrics.efficiency.toFixed(1) + '%' : '-'}</td>
+            <td class="py-3 px-4 text-right text-appTextSec">${metrics.hasValidReadings ? metrics.npsha.toFixed(1) : '-'}</td>
+            <td class="py-3 px-4 text-center">${statusBadge}</td>
+            <td class="py-3 px-4 text-center">
+              <button onclick="selectPump(${p.id})" class="px-2 py-1 bg-inputBg border border-borderPrim hover:border-amber-500/30 text-[10px] text-appTextSec hover:text-amber-500 rounded transition-colors cursor-pointer">
+                Select
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function compilePumpPlaintextReport(scope) {
+      const timeStr = new Date().toLocaleString();
+      let body = `ASME PTC 8.2 PUMP PERFORMANCE COMPLIANCE REPORT\n`;
+      body += `==================================================\n`;
+      body += `Generated At: ${timeStr}\n`;
+      body += `Scope: ${scope === 'pump' ? 'Active Pump Unit Only' : (scope === 'facility' ? 'Facility Wide' : 'Entire Pumps Database')}\n\n`;
+
+      const pumpsToReport = [];
+      if (scope === 'pump') {
+        pumpsToReport.push({ fac: pumpState.facility, id: pumpState.activePumpId });
+      } else if (scope === 'facility') {
+        for (let i = 1; i <= 10; i++) {
+          pumpsToReport.push({ fac: pumpState.facility, id: i });
+        }
+      } else {
+        for (let i = 1; i <= 10; i++) pumpsToReport.push({ fac: 'QPL', id: i });
+        for (let i = 1; i <= 10; i++) pumpsToReport.push({ fac: 'SBPL', id: i });
+      }
+
+      let count = 0;
+      pumpsToReport.forEach(({ fac, id }) => {
+        const pData = getPumpData(fac, id);
+        if (!pData || !pData.hasValidReadings) return;
+        
+        count++;
+        const pMeta = PUMP_METADATA[fac].find(x => x.id === id);
+        const m = calculatePumpMetrics(pData);
+
+        body += `--------------------------------------------------\n`;
+        body += `FACILITY: ${fac} | UNIT: ${pMeta.name} (${pMeta.short})\n`;
+        body += `--------------------------------------------------\n`;
+        body += `INPUT READINGS:\n`;
+        body += `  - Suction Inlet: Press ${m.ps.toFixed(1)} psi | Pipe Diam ${m.ds.toFixed(1)} in | Elevation ${m.zs.toFixed(1)} ft\n`;
+        body += `  - Discharge Outlet: Press ${m.pd.toFixed(1)} psi | Pipe Diam ${m.dd.toFixed(1)} in | Elevation ${m.zd.toFixed(1)} ft\n`;
+        body += `  - Capacity Constants: Flow Rate ${m.q.toFixed(0)} gpm | Specific Gravity ${m.sg.toFixed(2)} | Liquid Temp ${m.temp.toFixed(1)} °F\n`;
+        body += `  - Power parameters: Shaft Input ${m.pin.toFixed(1)} hp | Vapor Pressure ${m.pv.toFixed(2)} psia\n`;
+        body += `RESOLVED HYDRAULICS:\n`;
+        body += `  - Line Velocities: Suction ${m.v_s.toFixed(1)} fps | Discharge ${m.v_d.toFixed(1)} fps\n`;
+        body += `  - Velocity Head: Suction ${m.h_vs.toFixed(2)} ft | Discharge ${m.h_vd.toFixed(2)} ft\n`;
+        body += `  - Absolute Total Head: Suction ${m.h_s.toFixed(1)} ft | Discharge ${m.h_d.toFixed(1)} ft\n`;
+        body += `  - Total Dynamic Head (TDH): ${m.tdh.toFixed(1)} ft\n`;
+        body += `  - Fluid Power (Water HP): ${m.whp.toFixed(1)} hp\n`;
+        body += `  - Power Conversion Loss (Shaft HP): ${m.pin.toFixed(1)} hp\n`;
+        body += `  - Total Pump Hydraulic Efficiency: ${m.efficiency.toFixed(1)}%\n`;
+        body += `  - Inlet NPSH Available (NPSHa): ${m.npsha.toFixed(1)} ft (NPSHr Limit: 8.0 ft)\n`;
+        body += `  - Cavitation Vulnerability: ${m.npsha > 8.0 ? '✅ SAFE (No Cavitation Risk)' : '⚠️ CAVITATION RISK! (Inlet Head Insufficient)'}\n\n`;
+      });
+
+      if (count === 0) {
+        body += `No inspected pump units logged for the selected scope. Open Pump Performance workspace to populate data.\n`;
+      }
+
+      body += `\nGenerated via Standalone Field Engineer Toolbox.`;
+      return body;
+    }
+
+    function updatePumpEmailDraft() {
+      const text = compilePumpPlaintextReport('pump');
+      const previewEl = document.getElementById('pre-pump-report-preview');
+      if (previewEl) previewEl.innerText = text;
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      const activePumpMeta = PUMP_METADATA[pumpState.facility].find(p => p.id === pumpState.activePumpId);
+      const subject = `Pump Performance Inspection - ${pumpState.facility} [${activePumpMeta.short}] - ${dateStr}`;
+
+      const lnkGmail = document.getElementById('lnk-pump-gmail');
+      const lnkOutlook = document.getElementById('lnk-pump-outlook');
+      const lnkMailto = document.getElementById('lnk-pump-mailto');
+
+      if (lnkGmail) lnkGmail.href = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+      if (lnkOutlook) lnkOutlook.href = `https://outlook.live.com/default.aspx?rru=compose&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+      if (lnkMailto) lnkMailto.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    }
+
+    window.generatePumpXLSX = function(scope) {
+      if (typeof XLSX === 'undefined') {
+        alert("SheetJS library is not fully loaded. Please check your internet connection.");
+        return;
+      }
+      const wb = XLSX.utils.book_new();
+      const dateStr = new Date().toISOString().split('T')[0];
+
+      const pumpsToReport = [];
+      if (scope === 'pump') {
+        pumpsToReport.push({ fac: pumpState.facility, id: pumpState.activePumpId });
+      } else if (scope === 'facility') {
+        for (let i = 1; i <= 10; i++) {
+          pumpsToReport.push({ fac: pumpState.facility, id: i });
+        }
+      } else {
+        for (let i = 1; i <= 10; i++) pumpsToReport.push({ fac: 'QPL', id: i });
+        for (let i = 1; i <= 10; i++) pumpsToReport.push({ fac: 'SBPL', id: i });
+      }
+
+      const grouped = { QPL: [], SBPL: [] };
+      pumpsToReport.forEach(item => {
+        grouped[item.fac].push(item.id);
+      });
+
+      Object.keys(grouped).forEach(fac => {
+        const ids = grouped[fac];
+        if (ids.length === 0) return;
+
+        const rows = [
+          [`FIELD ENGINEER PUMP PERFORMANCE TEST SHEET - ${fac} FACILITY`],
+          [`Generated At: ${new Date().toLocaleString()}`],
+          [],
+          [
+            'Pump Identifier',
+            'Flow Q (gpm)',
+            'S. Press Ps (psi)',
+            'S. Pipe Ds (in)',
+            'S. Elev zs (ft)',
+            'D. Press Pd (psi)',
+            'D. Pipe Dd (in)',
+            'D. Elev zd (ft)',
+            'SG',
+            'Temp (°F)',
+            'Vapor Pv (psia)',
+            'S. Velocity (fps)',
+            'S. Vel Head (ft)',
+            'S. Total Head (ft)',
+            'D. Velocity (fps)',
+            'D. Vel Head (ft)',
+            'D. Total Head (ft)',
+            'Total TDH (ft)',
+            'Net Diff P (psi)',
+            'Fluid Power WHP',
+            'Shaft Power Pin',
+            'Efficiency (%)',
+            'NPSHa (ft)',
+            'Cavitation Guard Status'
+          ]
+        ];
+
+        ids.forEach(id => {
+          const pMeta = PUMP_METADATA[fac].find(x => x.id === id);
+          const pData = getPumpData(fac, id);
+          const m = calculatePumpMetrics(pData);
+
+          if (!m.hasValidReadings) {
+            rows.push([`${pMeta.name} (${pMeta.short})`, 'UNINSPECTED']);
+            return;
+          }
+
+          rows.push([
+            `${pMeta.name} (${pMeta.short})`,
+            parseFloat(m.q.toFixed(0)),
+            parseFloat(m.ps.toFixed(1)),
+            parseFloat(m.ds.toFixed(1)),
+            parseFloat(m.zs.toFixed(1)),
+            parseFloat(m.pd.toFixed(1)),
+            parseFloat(m.dd.toFixed(1)),
+            parseFloat(m.zd.toFixed(1)),
+            parseFloat(m.sg.toFixed(2)),
+            parseFloat(m.temp.toFixed(1)),
+            parseFloat(m.pv.toFixed(2)),
+            parseFloat(m.v_s.toFixed(2)),
+            parseFloat(m.h_vs.toFixed(3)),
+            parseFloat(m.h_s.toFixed(2)),
+            parseFloat(m.v_d.toFixed(2)),
+            parseFloat(m.h_vd.toFixed(3)),
+            parseFloat(m.h_d.toFixed(2)),
+            parseFloat(m.tdh.toFixed(2)),
+            parseFloat(m.diffPress.toFixed(1)),
+            parseFloat(m.whp.toFixed(2)),
+            parseFloat(m.pin.toFixed(1)),
+            parseFloat(m.efficiency.toFixed(2)),
+            parseFloat(m.npsha.toFixed(2)),
+            m.npsha > 8.0 ? 'SAFE' : 'RISK'
+          ]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+
+        const max_cols = rows.reduce((max, r) => Math.max(max, r.length), 0);
+        const wscols = [];
+        for (let c = 0; c < max_cols; c++) {
+          let max_len = 10;
+          rows.forEach(r => {
+            if (r[c] !== undefined && r[c] !== null) {
+              const valStr = String(r[c]);
+              if (valStr.length > max_len) max_len = valStr.length;
+            }
+          });
+          wscols.push({ wch: max_len + 3 });
+        }
+        ws['!cols'] = wscols;
+
+        XLSX.utils.book_append_sheet(wb, ws, `${fac}_Pumps`);
+      });
+
+      const filename = `pump_performance_${scope}_report_${pumpState.facility}_${dateStr}.xlsx`;
+      XLSX.writeFile(wb, filename);
+    };
+
+    // Binding pump UI event listeners
+    function initPumpBindings() {
+      // Inputs binding
+      const inputs = [
+        { id: 'input-pump-ps', field: 'ps' },
+        { id: 'input-pump-ds', field: 'ds' },
+        { id: 'input-pump-zs', field: 'zs' },
+        { id: 'input-pump-pd', field: 'pd' },
+        { id: 'input-pump-dd', field: 'dd' },
+        { id: 'input-pump-zd', field: 'zd' },
+        { id: 'input-pump-q', field: 'q' },
+        { id: 'input-pump-pin', field: 'pin' },
+        { id: 'input-pump-sg', field: 'sg' },
+        { id: 'input-pump-temp', field: 'temp' },
+        { id: 'input-pump-pv', field: 'pv' }
+      ];
+
+      inputs.forEach(({ id, field }) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            const activePump = getPumpData(pumpState.facility, pumpState.activePumpId);
+            activePump[field] = isNaN(val) ? '' : val;
+            activePump.hasValidReadings = true;
+            savePumpState();
+          });
+        }
+      });
+
+      // Navigation
+      const btnLaunchPump = document.getElementById('btn-launch-pump');
+      if (btnLaunchPump) {
+        btnLaunchPump.addEventListener('click', () => {
+          document.getElementById('view-dashboard').classList.add('hidden');
+          document.getElementById('view-pump').classList.remove('hidden');
+          updatePumpCalculations();
+        });
+      }
+
+      const btnBackPump = document.getElementById('btn-back-pump-dashboard');
+      if (btnBackPump) {
+        btnBackPump.addEventListener('click', () => {
+          document.getElementById('view-dashboard').classList.remove('hidden');
+          document.getElementById('view-pump').classList.add('hidden');
+          renderDashboardRegistry();
+        });
+      }
+
+      // Facility buttons
+      const btnFacQpl = document.getElementById('btn-pump-fac-qpl');
+      if (btnFacQpl) {
+        btnFacQpl.addEventListener('click', () => {
+          selectPumpFacility('QPL');
+          updatePumpCalculations();
+        });
+      }
+
+      const btnFacSbpl = document.getElementById('btn-pump-fac-sbpl');
+      if (btnFacSbpl) {
+        btnFacSbpl.addEventListener('click', () => {
+          selectPumpFacility('SBPL');
+          updatePumpCalculations();
+        });
+      }
+
+      // Bulk Fill Demo
+      const btnBulkDemo = document.getElementById('btn-pump-bulk-demo');
+      if (btnBulkDemo) {
+        btnBulkDemo.addEventListener('click', () => {
+          for (let i = 1; i <= 10; i++) {
+            pumpState.pumps[`${pumpState.facility}_${i}`] = createDefaultPumpData(pumpState.facility, i);
+          }
+          savePumpState();
+        });
+      }
+
+      // Bulk Clear Confirm
+      const pumpClearModal = document.getElementById('pump-clear-confirm-modal');
+      const btnBulkClear = document.getElementById('btn-pump-bulk-clear');
+      if (btnBulkClear) {
+        btnBulkClear.addEventListener('click', () => {
+          const activePumpMeta = PUMP_METADATA[pumpState.facility].find(p => p.id === pumpState.activePumpId);
+          document.getElementById('lbl-pump-clear-current-name').innerText = activePumpMeta.short;
+          document.getElementById('lbl-pump-clear-fac-name').innerText = pumpState.facility;
+          pumpClearModal.classList.remove('hidden');
+        });
+      }
+
+      const btnCancelClear = document.getElementById('btn-pump-cancel-clear');
+      if (btnCancelClear) {
+        btnCancelClear.addEventListener('click', () => {
+          pumpClearModal.classList.add('hidden');
+        });
+      }
+
+      const btnClearActive = document.getElementById('btn-pump-clear-active');
+      if (btnClearActive) {
+        btnClearActive.addEventListener('click', () => {
+          const key = `${pumpState.facility}_${pumpState.activePumpId}`;
+          pumpState.pumps[key] = {
+            ps: '', pd: '', q: '', pin: '', ds: 1, dd: 1, zs: 0, zd: 0, sg: 1.0, temp: 85.0, pv: 0.6,
+            hasValidReadings: false
+          };
+          savePumpState();
+          pumpClearModal.classList.add('hidden');
+        });
+      }
+
+      const btnClearFac = document.getElementById('btn-pump-clear-facility');
+      if (btnClearFac) {
+        btnClearFac.addEventListener('click', () => {
+          for (let i = 1; i <= 10; i++) {
+            const key = `${pumpState.facility}_${i}`;
+            pumpState.pumps[key] = {
+              ps: '', pd: '', q: '', pin: '', ds: 1, dd: 1, zs: 0, zd: 0, sg: 1.0, temp: 85.0, pv: 0.6,
+              hasValidReadings: false
+            };
+          }
+          savePumpState();
+          pumpClearModal.classList.add('hidden');
+        });
+      }
+
+      const btnClearAll = document.getElementById('btn-pump-clear-all');
+      if (btnClearAll) {
+        btnClearAll.addEventListener('click', () => {
+          pumpState.pumps = {};
+          for (let i = 1; i <= 10; i++) {
+            pumpState.pumps[`QPL_${i}`] = {
+              ps: '', pd: '', q: '', pin: '', ds: 1, dd: 1, zs: 0, zd: 0, sg: 1.0, temp: 85.0, pv: 0.6,
+              hasValidReadings: false
+            };
+            pumpState.pumps[`SBPL_${i}`] = {
+              ps: '', pd: '', q: '', pin: '', ds: 1, dd: 1, zs: 0, zd: 0, sg: 1.0, temp: 85.0, pv: 0.6,
+              hasValidReadings: false
+            };
+          }
+          savePumpState();
+          pumpClearModal.classList.add('hidden');
+        });
+      }
+
+      // Inline Email container togglers
+      const btnExportXlsx = document.getElementById('btn-pump-export-xlsx');
+      if (btnExportXlsx) {
+        btnExportXlsx.addEventListener('click', () => {
+          generatePumpXLSX('facility');
+          document.getElementById('pump-email-container').classList.add('hidden');
+        });
+      }
+
+      const btnExportEmail = document.getElementById('btn-pump-export-email');
+      if (btnExportEmail) {
+        btnExportEmail.addEventListener('click', () => {
+          generatePumpXLSX('facility');
+          document.getElementById('pump-email-container').classList.remove('hidden');
+        });
+      }
+
+      const btnCopyPumpText = document.getElementById('btn-copy-pump-text');
+      if (btnCopyPumpText) {
+        btnCopyPumpText.addEventListener('click', () => {
+          const text = compilePumpPlaintextReport('pump');
+          navigator.clipboard.writeText(text);
+          document.getElementById('lbl-copy-pump-text-btn').innerText = 'Copied!';
+          setTimeout(() => document.getElementById('lbl-copy-pump-text-btn').innerText = 'Copy Text', 2000);
+        });
+      }
+
+      // Dynamic Pump Export Multi-Scope Modal triggers
+      const pumpExportModal = document.getElementById('pump-export-modal');
+      const pumpEmailDrawer = document.getElementById('pump-modal-email-drawer');
+      let currentPumpExportScope = 'pump';
+
+      function updatePumpExportModalContent() {
+        const btnUnit = document.getElementById('btn-pump-scope-unit');
+        const btnFac = document.getElementById('btn-pump-scope-facility');
+        const btnAll = document.getElementById('btn-pump-scope-all');
+
+        if (btnUnit) btnUnit.className = `p-3 border rounded-lg text-left transition-all cursor-pointer flex flex-col justify-between h-24 ${currentPumpExportScope === 'pump' ? 'border-amber-500 bg-amber-500/10 text-amber-500' : 'border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec'}`;
+        if (btnFac) btnFac.className = `p-3 border rounded-lg text-left transition-all cursor-pointer flex flex-col justify-between h-24 ${currentPumpExportScope === 'facility' ? 'border-amber-500 bg-amber-500/10 text-amber-500' : 'border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec'}`;
+        if (btnAll) btnAll.className = `p-3 border rounded-lg text-left transition-all cursor-pointer flex flex-col justify-between h-24 ${currentPumpExportScope === 'all' ? 'border-amber-500 bg-amber-500/10 text-amber-500' : 'border-borderPrim bg-inputBg hover:bg-cardBg text-appTextSec'}`;
+
+        const activePumpMeta = PUMP_METADATA[pumpState.facility].find(p => p.id === pumpState.activePumpId);
+        const lblScopeUnit = document.getElementById('lbl-pump-scope-unit-name');
+        if (lblScopeUnit) lblScopeUnit.innerText = activePumpMeta.short;
+        const lblScopeFac = document.getElementById('lbl-pump-scope-facility-name');
+        if (lblScopeFac) lblScopeFac.innerText = `${pumpState.facility} Facility`;
+
+        const text = compilePumpPlaintextReport(currentPumpExportScope);
+        const preReportPreview = document.getElementById('pre-pump-modal-report-preview');
+        if (preReportPreview) preReportPreview.innerText = text;
+
+        const dateStr = new Date().toISOString().split('T')[0];
+        const scopeLabel = currentPumpExportScope === 'pump' ? `${pumpState.facility} [${activePumpMeta.short}]` : (currentPumpExportScope === 'facility' ? `${pumpState.facility} Facility` : 'All Pump Facilities');
+        const subject = `Pump Performance Field Report - ${scopeLabel} - ${dateStr}`;
+
+        const lnkGmail = document.getElementById('lnk-pump-modal-gmail');
+        const lnkOutlook = document.getElementById('lnk-pump-modal-outlook');
+        const lnkMailto = document.getElementById('lnk-pump-modal-mailto');
+
+        if (lnkGmail) lnkGmail.href = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+        if (lnkOutlook) lnkOutlook.href = `https://outlook.live.com/default.aspx?rru=compose&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+        if (lnkMailto) lnkMailto.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+
+        const btnCopy = document.getElementById('btn-pump-modal-copy-text');
+        if (btnCopy) {
+          btnCopy.onclick = () => {
+            navigator.clipboard.writeText(text);
+            const lblBtn = document.getElementById('lbl-pump-modal-copy-btn-lbl');
+            if (lblBtn) lblBtn.innerText = 'Copied!';
+            setTimeout(() => { if (lblBtn) lblBtn.innerText = 'Copy Text Only'; }, 2000);
+          };
+        }
+      }
+
+      const closePumpExportModal = () => {
+        if (pumpExportModal) pumpExportModal.classList.add('hidden');
+        if (pumpEmailDrawer) pumpEmailDrawer.classList.add('hidden');
+      };
+
+      const btnCloseExportX = document.getElementById('btn-pump-close-export');
+      if (btnCloseExportX) btnCloseExportX.onclick = closePumpExportModal;
+      
+      const btnCloseExportFooter = document.getElementById('btn-pump-close-export-footer');
+      if (btnCloseExportFooter) btnCloseExportFooter.onclick = closePumpExportModal;
+
+      const btnScopeUnit = document.getElementById('btn-pump-scope-unit');
+      if (btnScopeUnit) {
+        btnScopeUnit.onclick = () => {
+          currentPumpExportScope = 'pump';
+          updatePumpExportModalContent();
+        };
+      }
+
+      const btnScopeFac = document.getElementById('btn-pump-scope-facility');
+      if (btnScopeFac) {
+        btnScopeFac.onclick = () => {
+          currentPumpExportScope = 'facility';
+          updatePumpExportModalContent();
+        };
+      }
+
+      const btnScopeAll = document.getElementById('btn-pump-scope-all');
+      if (btnScopeAll) {
+        btnScopeAll.onclick = () => {
+          currentPumpExportScope = 'all';
+          updatePumpExportModalContent();
+        };
+      }
+
+      const btnExportModalXlsx = document.getElementById('btn-pump-export-to-xlsx');
+      if (btnExportModalXlsx) {
+        btnExportModalXlsx.onclick = () => {
+          generatePumpXLSX(currentPumpExportScope);
+          closePumpExportModal();
+        };
+      }
+
+      const btnExportModalEmail = document.getElementById('btn-pump-export-to-email');
+      if (btnExportModalEmail) {
+        btnExportModalEmail.onclick = () => {
+          generatePumpXLSX(currentPumpExportScope);
+          if (pumpEmailDrawer) pumpEmailDrawer.classList.remove('hidden');
+        };
+      }
+
+      // External Launch multi-scope trigger
+      const btnTriggerModalScope = document.getElementById('btn-pump-trigger-modal-scope');
+      if (btnTriggerModalScope) {
+        btnTriggerModalScope.addEventListener('click', () => {
+          currentPumpExportScope = 'pump';
+          updatePumpExportModalContent();
+          if (pumpExportModal) pumpExportModal.classList.remove('hidden');
+        });
+      }
+    }
+
+    // Try recover pump state
+    try {
+      const cachedPumps = localStorage.getItem(PUMP_STORAGE_KEY);
+      if (cachedPumps) {
+        const parsedPumps = JSON.parse(cachedPumps);
+        if (parsedPumps && parsedPumps.pumps) {
+          pumpState = parsedPumps;
+        }
+      }
+    } catch (e) {
+      console.warn("Could not load cached pump state: ", e);
+    }
+
+    // Initialize bindings
+    initPumpBindings();
+    updatePumpCalculations();
+
+    // Initial theme check
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+    updateThemeUI();
+
+    // Trigger initial calculations and directory rendering on load
+    updateLiveCalculations();
+    renderDashboardRegistry();
+  </script>
+</body>
+</html>

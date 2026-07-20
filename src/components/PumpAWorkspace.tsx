@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, RotateCcw, Activity, Gauge, Cpu, Check } from 'lucide-react';
+import { ChevronLeft, RotateCcw, Activity, Gauge, Cpu, Check, Database, RefreshCw } from 'lucide-react';
 import { NeonSaveWidget } from './NeonSaveWidget';
 
 interface PumpAWorkspaceProps {
@@ -17,6 +17,9 @@ export function PumpAWorkspace({ onBack, teamLogs, onSaveSuccess }: PumpAWorkspa
 
   const [tdh, setTdh] = useState(0);
   const [power, setPower] = useState(0);
+
+  const [isQuickSaving, setIsQuickSaving] = useState(false);
+  const [isQuickSuccess, setIsQuickSuccess] = useState(false);
 
   // Recalculate pump metrics
   useEffect(() => {
@@ -40,6 +43,39 @@ export function PumpAWorkspace({ onBack, teamLogs, onSaveSuccess }: PumpAWorkspa
     setSg('1.0');
   };
 
+  const handleQuickSave = async () => {
+    setIsQuickSaving(true);
+    const operatorName = localStorage.getItem('neo_operator_name') || 'Christian de la Cruz';
+    const payload = {
+      user: operatorName,
+      role: 'Field Operations',
+      module: 'Inspection of Pump A',
+      title: 'Pump A Diagnostics - Quick Upload',
+      description: 'Quick 1-click snapshot save.',
+      text: `[Inspection of Pump A] Suction: ${suction} PSI | Discharge: ${discharge} PSI | Speed: ${speed} RPM | Flow: ${flow} GPM | TDH: ${tdh.toFixed(1)} ft | Power: ${power.toFixed(2)} HP`,
+      timestamp: new Date().toISOString(),
+      dateString: new Date().toISOString().split('T')[0],
+      data: moduleData
+    };
+
+    try {
+      const response = await fetch('/api/save-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: JSON.stringify(payload) }),
+      });
+      if (!response.ok) throw new Error('Failed to save');
+      setIsQuickSuccess(true);
+      await onSaveSuccess();
+      setTimeout(() => setIsQuickSuccess(false), 4000);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload to database: ' + err);
+    } finally {
+      setIsQuickSaving(false);
+    }
+  };
+
   const moduleData = {
     suctionPressurePsi: suction,
     dischargePressurePsi: discharge,
@@ -61,13 +97,30 @@ export function PumpAWorkspace({ onBack, teamLogs, onSaveSuccess }: PumpAWorkspa
           Back to Dashboard
         </button>
 
-        <button
-          onClick={handleReset}
-          className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          Reset Defaults
-        </button>
+        <div className="flex items-center gap-2 self-end">
+          <button
+            onClick={handleQuickSave}
+            disabled={isQuickSaving}
+            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            {isQuickSaving ? (
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            ) : isQuickSuccess ? (
+              <Check className="h-3.5 w-3.5 text-emerald-300" />
+            ) : (
+              <Database className="h-3.5 w-3.5" />
+            )}
+            {isQuickSaving ? 'Uploading...' : isQuickSuccess ? 'Uploaded to DB!' : 'Upload to Neon DB'}
+          </button>
+
+          <button
+            onClick={handleReset}
+            className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset Defaults
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
