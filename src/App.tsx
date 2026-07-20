@@ -21,6 +21,12 @@ import {
   RefreshCw,
   Send,
   AlertCircle,
+  User,
+  Briefcase,
+  ShieldCheck,
+  Check,
+  Plus,
+  Clock,
 } from 'lucide-react';
 import { SessionState, ConduitData } from './types';
 import { calculateAllMetrics, generateDemoReadings } from './utils/calculations';
@@ -67,11 +73,45 @@ export default function App() {
   const [recoveredData, setRecoveredData] = useState<SessionState | null>(null);
 
   // Neon Postgres Live Team Logging State
-  const [teamLogs, setTeamLogs] = useState<{ content: string }[]>([]);
+  const [teamLogs, setTeamLogs] = useState<{ id: number; content: string }[]>([]);
   const [newLogText, setNewLogText] = useState('');
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
   const [isSavingLog, setIsSavingLog] = useState(false);
   const [logsError, setLogsError] = useState<string | null>(null);
+
+  // Multi-Factor Verification & Identity Management States
+  const [logStep, setLogStep] = useState<1 | 2 | 3>(1);
+  const [logUser, setLogUser] = useState('');
+  const [logRole, setLogRole] = useState('Field Operations');
+  const [logDescription, setLogDescription] = useState('');
+  const [logBadge, setLogBadge] = useState('');
+  const [conflictAction, setConflictAction] = useState<'overwrite' | 'additional'>('additional');
+  const [hasCertified, setHasCertified] = useState(false);
+
+  const getTodayString = () => {
+    const localDate = new Date();
+    return `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
+  };
+
+  const safeParseLog = (content: string) => {
+    try {
+      const data = JSON.parse(content);
+      if (data && typeof data === 'object' && 'user' in data && 'text' in data) {
+        return data as {
+          user: string;
+          role: string;
+          badge?: string;
+          description: string;
+          text: string;
+          timestamp: string;
+          dateString: string;
+        };
+      }
+    } catch (e) {
+      // ignore parsing if not JSON formatted (legacy)
+    }
+    return null;
+  };
 
   const fetchTeamLogs = async () => {
     setIsLoadingLogs(true);
@@ -91,30 +131,77 @@ export default function App() {
     }
   };
 
-  const handleSaveTeamLog = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newLogText.trim()) return;
+  const findConflictingLog = () => {
+    if (!logUser.trim()) return null;
+    const todayStr = getTodayString();
+    
+    for (const log of teamLogs) {
+      const parsed = safeParseLog(log.content);
+      if (parsed) {
+        if (
+          parsed.user.trim().toLowerCase() === logUser.trim().toLowerCase() &&
+          parsed.dateString === todayStr
+        ) {
+          return { id: log.id, parsed };
+        }
+      }
+    }
+    return null;
+  };
+
+  const handleSaveTeamLog = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newLogText.trim() || !logUser.trim() || !logRole.trim() || !logDescription.trim()) {
+      setLogsError('All required profile and entry fields must be completed.');
+      return;
+    }
+
+    if (!hasCertified) {
+      setLogsError('Please review and click the operational certification checkbox to authorize database dispatch.');
+      return;
+    }
 
     setIsSavingLog(true);
     setLogsError(null);
+
+    const conflict = findConflictingLog();
+
+    const payloadData = {
+      user: logUser.trim(),
+      role: logRole.trim(),
+      badge: logBadge.trim() || undefined,
+      description: logDescription.trim(),
+      text: newLogText.trim(),
+      timestamp: new Date().toISOString(),
+      dateString: getTodayString()
+    };
+
     try {
       const response = await fetch('/api/save-log', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: newLogText.trim() }),
+        body: JSON.stringify({
+          text: JSON.stringify(payloadData),
+          idToOverwrite: (conflict && conflictAction === 'overwrite') ? conflict.id : undefined
+        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to submit log: ${response.statusText}`);
+        throw new Error(errorData.error || `Failed to save log: ${response.statusText}`);
       }
 
+      // Success resetting form wizard
       setNewLogText('');
+      setLogDescription('');
+      setLogStep(1);
+      setHasCertified(false);
+      setConflictAction('additional');
       await fetchTeamLogs();
     } catch (err: any) {
-      console.error('Error saving log:', err);
+      console.error('Error saving log to Neon Postgres:', err);
       setLogsError(err.message || 'Failed to write log to Neon Postgres.');
     } finally {
       setIsSavingLog(false);
@@ -540,61 +627,320 @@ export default function App() {
             {/* Neon Postgres Live Team Logging */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 border-t border-neutral-900/60">
               {/* Left Form: Entry Form */}
-              <div className="lg:col-span-1 bg-neutral-900 border border-neutral-850/80 rounded-2xl p-5 space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
-                    <Database className="h-4.5 w-4.5" />
+              <div className="lg:col-span-1 bg-neutral-900 border border-neutral-850/80 rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="p-2 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
+                      <Database className="h-4.5 w-4.5" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-sans font-semibold text-sm">
+                        Log New Operation
+                      </h3>
+                      <p className="text-neutral-500 text-[11px] font-mono uppercase tracking-wider">
+                        Neon DB Live Portal
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-white font-sans font-semibold text-sm">
-                      Log New Operation
-                    </h3>
-                    <p className="text-neutral-500 text-[11px] font-mono uppercase tracking-wider">
-                      Neon DB Live Portal
-                    </p>
+
+                  {/* Step Indicators */}
+                  <div className="grid grid-cols-3 gap-1 mb-4 text-center">
+                    <button 
+                      type="button"
+                      onClick={() => logStep > 1 && setLogStep(1)}
+                      className={`py-1.5 text-[10px] font-mono rounded-lg border transition-all ${
+                        logStep === 1 
+                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 font-bold' 
+                          : 'bg-neutral-950 border-neutral-850 text-neutral-500 hover:text-neutral-300'
+                      }`}
+                    >
+                      1. Profile
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        if (logStep > 2) setLogStep(2);
+                        else if (logStep === 1 && logUser.trim() && logRole.trim()) setLogStep(2);
+                      }}
+                      className={`py-1.5 text-[10px] font-mono rounded-lg border transition-all ${
+                        logStep === 2 
+                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 font-bold' 
+                          : 'bg-neutral-950 border-neutral-850 text-neutral-500 disabled:opacity-40'
+                      }`}
+                      disabled={!logUser.trim() || !logRole.trim()}
+                    >
+                      2. Content
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        if (logStep === 2 && newLogText.trim() && logDescription.trim()) setLogStep(3);
+                      }}
+                      className={`py-1.5 text-[10px] font-mono rounded-lg border transition-all ${
+                        logStep === 3 
+                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 font-bold' 
+                          : 'bg-neutral-950 border-neutral-850 text-neutral-500 disabled:opacity-40'
+                      }`}
+                      disabled={!logUser.trim() || !logRole.trim() || !newLogText.trim() || !logDescription.trim()}
+                    >
+                      3. Authorize
+                    </button>
                   </div>
+
+                  {/* Step 1: Operator Profile */}
+                  {logStep === 1 && (
+                    <div className="space-y-3.5 animate-fade-in">
+                      <div>
+                        <label className="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider mb-1">
+                          Name of User <span className="text-amber-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-2.5 h-3.5 w-3.5 text-neutral-600" />
+                          <input
+                            type="text"
+                            value={logUser}
+                            onChange={(e) => setLogUser(e.target.value)}
+                            placeholder="e.g., Sarah Jenkins"
+                            className="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-sans text-xs pl-9 pr-3 py-2 rounded-lg transition-all placeholder-neutral-600"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider mb-1">
+                          Department / Role <span className="text-amber-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <Briefcase className="absolute left-3 top-2.5 h-3.5 w-3.5 text-neutral-600" />
+                          <select
+                            value={logRole}
+                            onChange={(e) => setLogRole(e.target.value)}
+                            className="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-sans text-xs pl-9 pr-3 py-2 rounded-lg transition-all appearance-none"
+                          >
+                            <option value="Field Operations">Field Operations</option>
+                            <option value="Calibration Lab">Calibration Lab</option>
+                            <option value="Maintenance Shift">Maintenance Shift</option>
+                            <option value="Audit & Compliance">Audit & Compliance</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider mb-1">
+                          Identifier Badge <span className="text-neutral-500">(Optional)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={logBadge}
+                          onChange={(e) => setLogBadge(e.target.value)}
+                          placeholder="e.g., FE-092"
+                          className="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-sans text-xs px-3 py-2 rounded-lg transition-all placeholder-neutral-600"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (logUser.trim().length < 2) {
+                            setLogsError('Please provide a valid operator name.');
+                          } else {
+                            setLogsError(null);
+                            setLogStep(2);
+                          }
+                        }}
+                        disabled={!logUser.trim()}
+                        className="w-full mt-2 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      >
+                        Next: Entry Details <ArrowRight className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Step 2: Operational Log Content */}
+                  {logStep === 2 && (
+                    <div className="space-y-3.5 animate-fade-in">
+                      <div>
+                        <label className="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider mb-1">
+                          Operational Description <span className="text-amber-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={logDescription}
+                          onChange={(e) => setLogDescription(e.target.value)}
+                          placeholder="e.g., Mill A Pitot Sweeps Alignment"
+                          className="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-sans text-xs px-3 py-2 rounded-lg transition-all placeholder-neutral-600"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider mb-1">
+                          Operational Log Entry Text <span className="text-amber-500">*</span>
+                        </label>
+                        <textarea
+                          value={newLogText}
+                          onChange={(e) => setNewLogText(e.target.value)}
+                          placeholder="e.g., Swept Pitot calibration complete on Mill A, Conduit 1. Confirmed distribution factors."
+                          className="w-full h-24 bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-sans text-xs p-3 rounded-lg transition-all resize-none placeholder-neutral-600"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => setLogStep(1)}
+                          className="w-full py-2 bg-neutral-955 border border-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white font-bold text-xs rounded-lg transition-all cursor-pointer"
+                        >
+                          Back
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!logDescription.trim() || !newLogText.trim()) {
+                              setLogsError('Please complete both description and log text fields.');
+                            } else {
+                              setLogsError(null);
+                              setLogStep(3);
+                            }
+                          }}
+                          disabled={!logDescription.trim() || !newLogText.trim()}
+                          className="w-full py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-45 disabled:cursor-not-allowed text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          Next: Authorize <ArrowRight className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 3: Authorization and Review */}
+                  {logStep === 3 && (
+                    <div className="space-y-3.5 animate-fade-in">
+                      {/* Verification Summary */}
+                      <div className="bg-neutral-950 border border-neutral-850/60 rounded-xl p-3 space-y-2 text-[11px] text-neutral-300">
+                        <div className="text-amber-400 font-bold font-mono text-[10px] uppercase border-b border-neutral-850 pb-1.5 flex items-center gap-1">
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          Operational Log Summary
+                        </div>
+                        <div className="grid grid-cols-3 gap-1">
+                          <span className="text-neutral-500 font-mono">Operator:</span>
+                          <span className="col-span-2 text-white font-sans font-medium">{logUser}</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1">
+                          <span className="text-neutral-500 font-mono">Role:</span>
+                          <span className="col-span-2 text-neutral-300 font-sans">{logRole}</span>
+                        </div>
+                        {logBadge && (
+                          <div className="grid grid-cols-3 gap-1">
+                            <span className="text-neutral-500 font-mono">Badge:</span>
+                            <span className="col-span-2 text-amber-500 font-mono">{logBadge}</span>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-3 gap-1">
+                          <span className="text-neutral-500 font-mono">Action:</span>
+                          <span className="col-span-2 text-neutral-300 font-sans italic">{logDescription}</span>
+                        </div>
+                      </div>
+
+                      {/* Conflict Detection UI */}
+                      {(() => {
+                        const conflict = findConflictingLog();
+                        if (conflict) {
+                          return (
+                            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-2">
+                              <div className="flex items-start gap-1.5 text-amber-400">
+                                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 animate-pulse" />
+                                <div>
+                                  <div className="text-[11px] font-bold font-mono uppercase">Duplicate Log Detected</div>
+                                  <p className="text-[10px] leading-relaxed text-neutral-300 mt-0.5">
+                                    An entry has already been written for <strong className="text-amber-300">{logUser}</strong> today. Please select your data preservation strategy:
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2 pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setConflictAction('overwrite')}
+                                  className={`py-1.5 px-2 text-[10px] rounded-lg border transition-all cursor-pointer ${
+                                    conflictAction === 'overwrite'
+                                      ? 'bg-amber-500 text-neutral-950 font-bold border-amber-400'
+                                      : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:text-white'
+                                  }`}
+                                >
+                                  Overwrite Entry
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setConflictAction('additional')}
+                                  className={`py-1.5 px-2 text-[10px] rounded-lg border transition-all cursor-pointer ${
+                                    conflictAction === 'additional'
+                                      ? 'bg-amber-500 text-neutral-950 font-bold border-amber-400'
+                                      : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:text-white'
+                                  }`}
+                                >
+                                  Save Distinct
+                                </button>
+                              </div>
+                              <div className="text-[9px] text-neutral-500 text-center font-mono uppercase tracking-wider">
+                                {conflictAction === 'overwrite' ? 'Modifies existing DB row' : 'Inserts additional distinct row'}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
+                      {/* Multi-Factor Safety Certification Box */}
+                      <label className="flex items-start gap-2 p-2.5 bg-neutral-950 border border-neutral-850 rounded-xl cursor-pointer hover:border-neutral-750 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={hasCertified}
+                          onChange={(e) => setHasCertified(e.target.checked)}
+                          className="mt-0.5 accent-amber-500 rounded text-neutral-900 border-neutral-800"
+                        />
+                        <span className="text-[10px] text-neutral-400 leading-normal select-none">
+                          I certify that these operational parameters and calibration observations are authentic, accurate, and ready for deployment logs.
+                        </span>
+                      </label>
+
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setLogStep(2)}
+                          className="w-full py-2 bg-neutral-950 border border-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white font-bold text-xs rounded-lg transition-all cursor-pointer"
+                        >
+                          Back
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveTeamLog()}
+                          disabled={isSavingLog || !hasCertified}
+                          className="w-full py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/10 cursor-pointer"
+                        >
+                          {isSavingLog ? (
+                            <>
+                              <RefreshCw className="h-3 w-3 animate-spin" />
+                              Committing...
+                            </>
+                          ) : (
+                            <>
+                              <Send className="h-3 w-3" />
+                              Save to Database
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <form onSubmit={handleSaveTeamLog} className="space-y-3">
-                  <div>
-                    <label className="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider mb-1.5">
-                      Operational Log Entry Text
-                    </label>
-                    <textarea
-                      value={newLogText}
-                      onChange={(e) => setNewLogText(e.target.value)}
-                      placeholder="e.g. Swept Pitot calibration complete on Mill A, Conduit 1."
-                      className="w-full h-24 bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-sans text-xs p-3 rounded-lg transition-colors resize-none placeholder-neutral-600"
-                      disabled={isSavingLog}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSavingLog || !newLogText.trim()}
-                    className="w-full py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/10"
-                  >
-                    {isSavingLog ? (
-                      <>
-                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                        Logging Entry...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-3.5 w-3.5" />
-                        Dispatch to Neon DB
-                      </>
-                    )}
-                  </button>
-                </form>
-                
-                <p className="text-neutral-500 text-[10px] leading-relaxed">
-                  Every entry is transmitted through secure Vercel Serverless proxy and stored immediately in a serverless Neon PostgreSQL cluster.
-                </p>
+                <div className="pt-3 border-t border-neutral-850/40 text-[9px] text-neutral-500 font-mono flex items-center justify-between">
+                  <span>API VERSION: 1.2</span>
+                  <span className="text-amber-500">NEON SERVERLESS</span>
+                </div>
               </div>
 
               {/* Right List: Synchronized Database Logs */}
-              <div className="lg:col-span-2 bg-neutral-900 border border-neutral-850/80 rounded-2xl p-5 flex flex-col h-[320px]">
+              <div className="lg:col-span-2 bg-neutral-900 border border-neutral-850/80 rounded-2xl p-5 flex flex-col h-[420px]">
                 <div className="flex items-center justify-between border-b border-neutral-800/80 pb-3 mb-3">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4.5 w-4.5 text-amber-400" />
@@ -618,7 +964,7 @@ export default function App() {
                     <button
                       onClick={fetchTeamLogs}
                       disabled={isLoadingLogs}
-                      className="p-1.5 bg-neutral-950 border border-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white rounded-lg transition-colors"
+                      className="p-1.5 bg-neutral-950 border border-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white rounded-lg transition-colors cursor-pointer"
                       title="Sync with database"
                     >
                       <RefreshCw className={`h-3.5 w-3.5 ${isLoadingLogs ? 'animate-spin' : ''}`} />
@@ -627,9 +973,9 @@ export default function App() {
                 </div>
 
                 {/* Logs Scroll List */}
-                <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-thin">
+                <div className="flex-1 overflow-y-auto pr-1 space-y-3.5 scrollbar-thin">
                   {logsError ? (
-                    <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-xl flex items-start gap-2.5 text-red-400">
+                    <div className="p-4 bg-red-950/20 border border-red-900/30 rounded-xl flex items-start gap-2.5 text-red-400 animate-fade-in">
                       <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                       <div className="space-y-1">
                         <div className="text-xs font-bold font-mono">Neon DB Sync Warn</div>
@@ -638,7 +984,7 @@ export default function App() {
                         </p>
                         <button
                           onClick={fetchTeamLogs}
-                          className="text-[10px] font-mono px-2 py-0.5 bg-red-900/20 hover:bg-red-900/30 border border-red-900/40 rounded text-red-300 font-bold transition-all mt-1"
+                          className="text-[10px] font-mono px-2 py-0.5 bg-red-900/20 hover:bg-red-900/30 border border-red-900/40 rounded text-red-300 font-bold transition-all mt-1 cursor-pointer"
                         >
                           Retry Sync
                         </button>
@@ -650,33 +996,91 @@ export default function App() {
                       <span className="text-xs font-mono">Querying Postgres cluster...</span>
                     </div>
                   ) : teamLogs.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-neutral-500 py-8 text-center space-y-2">
+                    <div className="flex flex-col items-center justify-center h-full text-neutral-500 py-8 text-center space-y-2 animate-fade-in">
                       <Database className="h-7 w-7 text-neutral-700" />
                       <p className="text-xs font-mono max-w-sm">
                         No team log rows fetched. Submit a log entry on the left to append to Neon Postgres!
                       </p>
                     </div>
                   ) : (
-                    teamLogs.map((log, index) => (
-                      <div
-                        key={index}
-                        className="p-3 bg-neutral-950/60 border border-neutral-850/60 hover:border-neutral-800 rounded-xl flex items-start gap-3 transition-colors group"
-                      >
-                        <div className="p-1.5 bg-neutral-900 border border-neutral-800 text-neutral-400 rounded-md shrink-0 group-hover:text-amber-400 transition-colors">
-                          <FileText className="h-3.5 w-3.5" />
-                        </div>
-                        <div className="space-y-1 min-w-0">
-                          <p className="text-xs text-neutral-200 leading-relaxed font-sans break-words whitespace-pre-wrap">
-                            {log.content}
-                          </p>
-                          <div className="flex items-center gap-2 text-[10px] font-mono text-neutral-600">
-                            <span>Index {teamLogs.length - index}</span>
-                            <span>•</span>
-                            <span className="text-neutral-500">Neon Postgres Managed Row</span>
+                    teamLogs.map((log) => {
+                      const parsed = safeParseLog(log.content);
+                      
+                      if (parsed) {
+                        return (
+                          <div
+                            key={log.id}
+                            className="p-4 bg-neutral-950 border border-neutral-850/40 hover:border-neutral-800 rounded-xl flex flex-col gap-2 transition-all hover:bg-neutral-950/80 group animate-fade-in"
+                          >
+                            {/* Top Meta Header */}
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-900/60 pb-2">
+                              <div className="flex items-center gap-2">
+                                <div className="p-1 bg-amber-500/10 border border-amber-500/25 text-amber-400 rounded">
+                                  <User className="h-3 w-3" />
+                                </div>
+                                <div>
+                                  <span className="text-xs font-sans font-bold text-white block">
+                                    {parsed.user}
+                                  </span>
+                                  <span className="text-[10px] text-neutral-400 flex items-center gap-1">
+                                    <Briefcase className="h-2.5 w-2.5" /> {parsed.role}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5">
+                                {parsed.badge && (
+                                  <span className="text-[9px] font-mono px-1.5 py-0.5 bg-amber-950/40 text-amber-400 border border-amber-900/30 rounded">
+                                    ID: {parsed.badge}
+                                  </span>
+                                )}
+                                <span className="text-[9px] font-mono px-1.5 py-0.5 bg-neutral-900 text-neutral-400 border border-neutral-850 rounded flex items-center gap-1">
+                                  <Clock className="h-2.5 w-2.5 text-amber-400" />
+                                  {new Date(parsed.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Description & Text Body */}
+                            <div className="space-y-1">
+                              <div className="text-[10px] font-mono text-amber-500/95 font-bold uppercase tracking-wider">
+                                {parsed.description}
+                              </div>
+                              <p className="text-xs text-neutral-300 leading-relaxed font-sans break-words whitespace-pre-wrap selection:bg-amber-500/20">
+                                {parsed.text}
+                              </p>
+                            </div>
+
+                            {/* Dynamic stamp details */}
+                            <div className="flex items-center justify-between text-[9px] font-mono text-neutral-600 pt-1 border-t border-neutral-900/40">
+                              <span>Database Ref ID: #{log.id}</span>
+                              <span>{parsed.dateString}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Legacy rendering fallback
+                      return (
+                        <div
+                          key={log.id}
+                          className="p-3.5 bg-neutral-950/60 border border-neutral-850/60 hover:border-neutral-800 rounded-xl flex items-start gap-3 transition-all group animate-fade-in"
+                        >
+                          <div className="p-1.5 bg-neutral-900 border border-neutral-800 text-neutral-500 rounded-md shrink-0 group-hover:text-amber-400 transition-colors">
+                            <FileText className="h-3.5 w-3.5" />
+                          </div>
+                          <div className="space-y-1.5 min-w-0 flex-1">
+                            <p className="text-xs text-neutral-300 leading-relaxed font-sans break-words whitespace-pre-wrap">
+                              {log.content}
+                            </p>
+                            <div className="flex items-center justify-between text-[9px] font-mono text-neutral-600">
+                              <span>Row Ref: #{log.id} (Legacy System Entry)</span>
+                              <span className="text-neutral-500">Neon Live Storage</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
