@@ -1349,10 +1349,10 @@
     }
 
     // Save state helper
-    function saveState() {
+    function saveState(isFromTyping = false) {
       appState.lastUpdated = new Date().toISOString();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-      updateLiveCalculations();
+      updateLiveCalculations(isFromTyping);
       renderDashboardRegistry();
     }
 
@@ -1417,7 +1417,7 @@
     }
 
     // Master updates of DOM calculations
-    function updateLiveCalculations() {
+    function updateLiveCalculations(isFromTyping = false) {
       const dataset = getDataset(appState.facility, appState.millName);
       const size = parseFloat(dataset.conduitSize) || 20.5;
       const baro = parseFloat(dataset.barometricPressure) || 29.60;
@@ -1454,10 +1454,66 @@
       });
 
       // Update dynamic conduit inputs & layout
-      renderConduitInputs(metrics, deviations, ambient);
+      if (!isFromTyping) {
+        renderConduitInputs(metrics, deviations, ambient);
+        // Render tab highlights
+        renderConduitTabs();
+      } else {
+        // Surgically update the calculated values in the existing conduit input cards
+        metrics.forEach(m => {
+          const cId = m.id;
+          const dev = deviations[cId] || 0;
+          const isWarn = Math.abs(dev) > 0.05 && m.hasValidReadings;
+          const widthPercent = Math.min(50, Math.abs(dev) * 500);
 
-      // Render tab highlights
-      renderConduitTabs();
+          const lblMassFlow = document.getElementById(`conduit-${cId}-lbl-mass-flow`);
+          if (lblMassFlow) {
+            lblMassFlow.innerText = m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/hr` : '0.000 k lb/hr';
+          }
+          const lblAvgVelocity = document.getElementById(`conduit-${cId}-lbl-avg-velocity`);
+          if (lblAvgVelocity) {
+            lblAvgVelocity.innerText = m.hasValidReadings ? `${m.avgVelocity.toFixed(0)} fpm` : '0 fpm';
+          }
+          const lblDensity = document.getElementById(`conduit-${cId}-lbl-density`);
+          if (lblDensity) {
+            lblDensity.innerText = m.hasValidReadings ? `${m.density.toFixed(4)} lb/ft³` : 'N/A';
+          }
+          const lblDeviation = document.getElementById(`conduit-${cId}-lbl-deviation`);
+          if (lblDeviation) {
+            lblDeviation.innerText = m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0.0%';
+            lblDeviation.className = `text-xs font-mono font-semibold ${isWarn ? 'text-red-500' : 'text-emerald-500'}`;
+          }
+          
+          const miniContainer = document.getElementById(`conduit-${cId}-visual-miniature`);
+          if (miniContainer) {
+            if (m.hasValidReadings) {
+              miniContainer.innerHTML = `
+                <div class="w-full h-1 bg-inputBg rounded-full overflow-hidden mt-1 relative">
+                  <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarn ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${widthPercent}%; ${dev >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
+                  <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim"></div>
+                </div>
+              `;
+            } else {
+              miniContainer.innerHTML = '';
+            }
+          }
+
+          const alertContainer = document.getElementById(`conduit-${cId}-imbalance-alert`);
+          if (alertContainer) {
+            if (isWarn) {
+              alertContainer.innerHTML = `
+                <div class="mt-1.5 flex items-center gap-1 text-[9px] font-mono text-red-500 leading-tight">
+                  <i data-lucide="alert-triangle" class="h-3.5 w-3.5 text-red-500 shrink-0"></i>
+                  <span>Imbalance exceeds 5% threshold!</span>
+                </div>
+              `;
+              lucide.createIcons();
+            } else {
+              alertContainer.innerHTML = '';
+            }
+          }
+        });
+      }
 
       // Render deviations bar graph chart
       renderDeviationsGraph(metrics, deviations);
@@ -1500,6 +1556,18 @@
     function renderConduitInputs(metrics, deviations, ambientTemp) {
       const container = document.getElementById('conduits-render-container');
       if (!container) return;
+
+      const activeEl = document.activeElement;
+      let activeId = null;
+      let selectionStart = null;
+      let selectionEnd = null;
+      if (activeEl && activeEl.id && activeEl.id.startsWith('input-conduit-')) {
+        activeId = activeEl.id;
+        try {
+          selectionStart = activeEl.selectionStart;
+          selectionEnd = activeEl.selectionEnd;
+        } catch (e) {}
+      }
 
       let conduitsToRender = appState.conduits;
       
@@ -1546,13 +1614,13 @@
                 <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider mb-1">
                   Static P. (inWC)
                 </label>
-                <input type="text" placeholder="0.00" value="${c.staticPressure}" oninput="updateConduitField(${c.id}, 'staticPressure', this.value)" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
+                <input id="input-conduit-${c.id}-staticPressure" type="text" placeholder="0.00" value="${c.staticPressure}" oninput="updateConduitField(${c.id}, 'staticPressure', this.value)" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
               </div>
               <div>
                 <label class="block text-[10px] font-mono text-appTextSec uppercase tracking-wider mb-1">
                   Gas Temp (°F)
                 </label>
-                <input type="text" placeholder="${ambientTemp} (ambient)" value="${c.temperature}" oninput="updateConduitField(${c.id}, 'temperature', this.value)" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
+                <input id="input-conduit-${c.id}-temperature" type="text" placeholder="${ambientTemp} (ambient)" value="${c.temperature}" oninput="updateConduitField(${c.id}, 'temperature', this.value)" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
               </div>
             </div>
 
@@ -1569,9 +1637,9 @@
                   const pt = idx + 1;
                   return `
                     <div class="grid grid-cols-3 items-center gap-1.5">
-                      <input type="text" placeholder="0.000" value="${c.port1Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port1', ${idx}, this.value)" class="bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
+                      <input id="input-conduit-${c.id}-port1-${idx}" type="text" placeholder="0.000" value="${c.port1Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port1', ${idx}, this.value)" class="bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
                       <div class="text-center font-mono text-[10px] text-appTextTer bg-inputBg/60 py-1 border border-borderPrim/50 rounded">${pt}</div>
-                      <input type="text" placeholder="0.000" value="${c.port2Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port2', ${idx}, this.value)" class="bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
+                      <input id="input-conduit-${c.id}-port2-${idx}" type="text" placeholder="0.000" value="${c.port2Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port2', ${idx}, this.value)" class="bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
                     </div>
                   `;
                 }).join('')}
@@ -1582,19 +1650,19 @@
             <div class="p-4 bg-inputBg/80 border-t border-borderPrim space-y-2.5">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-mono text-appTextSec uppercase">Mass Flow Rate</span>
-                <span class="text-xs font-mono font-bold text-appText">
+                <span id="conduit-${c.id}-lbl-mass-flow" class="text-xs font-mono font-bold text-appText">
                   ${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/hr` : '0.000 k lb/hr'}
                 </span>
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-mono text-appTextSec uppercase">Avg Velocity</span>
-                <span class="text-xs font-mono text-appTextSec">
+                <span id="conduit-${c.id}-lbl-avg-velocity" class="text-xs font-mono text-appTextSec">
                   ${m.hasValidReadings ? `${m.avgVelocity.toFixed(0)} fpm` : '0 fpm'}
                 </span>
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-mono text-appTextSec uppercase">Gas Density</span>
-                <span class="text-xs font-mono text-appTextTer">
+                <span id="conduit-${c.id}-lbl-density" class="text-xs font-mono text-appTextTer">
                   ${m.hasValidReadings ? `${m.density.toFixed(4)} lb/ft³` : 'N/A'}
                 </span>
               </div>
@@ -1602,25 +1670,29 @@
               <div class="pt-2 border-t border-borderPrim/50 flex flex-col gap-1">
                 <div class="flex items-center justify-between">
                   <span class="text-[10px] font-mono text-appTextSec uppercase">Mean Deviation</span>
-                  <span class="text-xs font-mono font-semibold ${isWarn ? 'text-red-500' : 'text-emerald-500'}">
+                  <span id="conduit-${c.id}-lbl-deviation" class="text-xs font-mono font-semibold ${isWarn ? 'text-red-500' : 'text-emerald-500'}">
                     ${m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0.0%'}
                   </span>
                 </div>
 
                 <!-- deviation visual miniature line -->
-                ${m.hasValidReadings ? `
-                  <div class="w-full h-1 bg-inputBg rounded-full overflow-hidden mt-1 relative">
-                    <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarn ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${widthPercent}%; ${dev >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
-                    <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim"></div>
-                  </div>
-                ` : ''}
+                <div id="conduit-${c.id}-visual-miniature">
+                  ${m.hasValidReadings ? `
+                    <div class="w-full h-1 bg-inputBg rounded-full overflow-hidden mt-1 relative">
+                      <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarn ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${widthPercent}%; ${dev >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
+                      <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim"></div>
+                    </div>
+                  ` : ''}
+                </div>
 
-                ${isWarn ? `
-                  <div class="mt-1.5 flex items-center gap-1 text-[9px] font-mono text-red-500 leading-tight">
-                    <i data-lucide="alert-triangle" class="h-3.5 w-3.5 text-red-500 shrink-0"></i>
-                    <span>Imbalance exceeds 5% threshold!</span>
-                  </div>
-                ` : ''}
+                <div id="conduit-${c.id}-imbalance-alert">
+                  ${isWarn ? `
+                    <div class="mt-1.5 flex items-center gap-1 text-[9px] font-mono text-red-500 leading-tight">
+                      <i data-lucide="alert-triangle" class="h-3.5 w-3.5 text-red-500 shrink-0"></i>
+                      <span>Imbalance exceeds 5% threshold!</span>
+                    </div>
+                  ` : ''}
+                </div>
               </div>
             </div>
           </div>
@@ -1635,6 +1707,18 @@
 
       container.innerHTML = html;
       lucide.createIcons();
+
+      if (activeId) {
+        const newActiveEl = document.getElementById(activeId);
+        if (newActiveEl) {
+          newActiveEl.focus();
+          if (selectionStart !== null && selectionEnd !== null) {
+            try {
+              newActiveEl.setSelectionRange(selectionStart, selectionEnd);
+            } catch (e) {}
+          }
+        }
+      }
     }
 
     // Render Deviations bar charts
@@ -1703,7 +1787,7 @@
       const conduit = appState.conduits.find(c => c.id === id);
       if (conduit) {
         conduit[field] = value;
-        saveState();
+        saveState(true);
       }
     };
 
@@ -1712,7 +1796,7 @@
       if (conduit) {
         const readings = port === 'port1' ? conduit.port1Readings : conduit.port2Readings;
         readings[index] = value;
-        saveState();
+        saveState(true);
       }
     };
 
@@ -1737,6 +1821,74 @@
         saveState();
       }
     };
+
+    // Custom downward navigation order helper for Coal Sampling Module
+    function getOrderedInputs() {
+      const list = [];
+      let conduits = appState.conduits;
+      if (layoutMode === 'tabbed') {
+        conduits = appState.conduits.filter(c => c.id === activeConduitId);
+      }
+      
+      conduits.forEach(c => {
+        // Left Column: Static Pressure, then Port 1 Readings (1 to 12)
+        list.push(`input-conduit-${c.id}-staticPressure`);
+        for (let i = 0; i < 12; i++) {
+          list.push(`input-conduit-${c.id}-port1-${i}`);
+        }
+        
+        // Right Column: Gas Temp, then Port 2 Readings (1 to 12)
+        list.push(`input-conduit-${c.id}-temperature`);
+        for (let i = 0; i < 12; i++) {
+          list.push(`input-conduit-${c.id}-port2-${i}`);
+        }
+      });
+      
+      return list;
+    }
+
+    // Intercept keyboard navigation in conduits-render-container
+    const conduitsRenderContainer = document.getElementById('conduits-render-container');
+    if (conduitsRenderContainer) {
+      conduitsRenderContainer.addEventListener('keydown', (e) => {
+        const isTab = e.key === 'Tab';
+        const isEnter = e.key === 'Enter';
+        
+        if (!isTab && !isEnter) return;
+        
+        const target = e.target;
+        if (!target || !target.id || !target.id.startsWith('input-conduit-')) return;
+        
+        const orderedIds = getOrderedInputs();
+        const idx = orderedIds.indexOf(target.id);
+        if (idx === -1) return;
+        
+        e.preventDefault();
+        
+        let nextIdx = idx;
+        if (isTab && e.shiftKey) {
+          // Go backward on Shift + Tab
+          nextIdx = idx - 1;
+          if (nextIdx < 0) {
+            nextIdx = orderedIds.length - 1; // wrap around
+          }
+        } else {
+          // Go forward (downward order) on Tab or Enter
+          nextIdx = idx + 1;
+          if (nextIdx >= orderedIds.length) {
+            nextIdx = 0; // wrap around
+          }
+        }
+        
+        const nextEl = document.getElementById(orderedIds[nextIdx]);
+        if (nextEl) {
+          nextEl.focus();
+          try {
+            nextEl.select(); // Highlight existing content for easy overwriting
+          } catch (err) {}
+        }
+      });
+    }
 
     // Bulk actions
     document.getElementById('btn-bulk-demo').addEventListener('click', () => {
@@ -1845,19 +1997,19 @@
 
     document.getElementById('param-size').addEventListener('input', (e) => {
       getDataset(appState.facility, appState.millName).conduitSize = e.target.value;
-      saveState();
+      saveState(true);
     });
     document.getElementById('param-baro').addEventListener('input', (e) => {
       getDataset(appState.facility, appState.millName).barometricPressure = e.target.value;
-      saveState();
+      saveState(true);
     });
     document.getElementById('param-ambient').addEventListener('input', (e) => {
       getDataset(appState.facility, appState.millName).ambientTemp = e.target.value;
-      saveState();
+      saveState(true);
     });
     document.getElementById('param-pitot').addEventListener('input', (e) => {
       getDataset(appState.facility, appState.millName).pitotCoefficient = e.target.value;
-      saveState();
+      saveState(true);
     });
 
     // Layout togglers
@@ -2690,7 +2842,9 @@
       fields.forEach(f => {
         const el = document.getElementById(`input-pump-${f}`);
         if (el) {
-          el.value = activePumpData[f] !== undefined ? activePumpData[f] : '';
+          if (document.activeElement !== el) {
+            el.value = activePumpData[f] !== undefined ? activePumpData[f] : '';
+          }
         }
       });
 
