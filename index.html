@@ -1466,6 +1466,18 @@
           const isWarn = Math.abs(dev) > 0.05 && m.hasValidReadings;
           const widthPercent = Math.min(50, Math.abs(dev) * 500);
 
+          const lblDp = document.getElementById(`conduit-${cId}-lbl-dp`);
+          if (lblDp) {
+            lblDp.innerText = m.hasValidReadings ? `${m.dp.toFixed(4)} inWC` : '0.0000 inWC';
+          }
+          const lblArea = document.getElementById(`conduit-${cId}-lbl-area`);
+          if (lblArea) {
+            lblArea.innerText = m.hasValidReadings ? `${m.areaSqFt.toFixed(4)} ft²` : 'N/A';
+          }
+          const lblVolFlow = document.getElementById(`conduit-${cId}-lbl-vol-flow`);
+          if (lblVolFlow) {
+            lblVolFlow.innerText = m.hasValidReadings ? `${m.volFlow.toFixed(1)} acfm` : '0.0 acfm';
+          }
           const lblMassFlow = document.getElementById(`conduit-${cId}-lbl-mass-flow`);
           if (lblMassFlow) {
             lblMassFlow.innerText = m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/hr` : '0.000 k lb/hr';
@@ -1648,10 +1660,10 @@
 
             <!-- Live Calculated Conduit results -->
             <div class="p-4 bg-inputBg/80 border-t border-borderPrim space-y-2.5">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] font-mono text-appTextSec uppercase">Mass Flow Rate</span>
-                <span id="conduit-${c.id}-lbl-mass-flow" class="text-xs font-mono font-bold text-appText">
-                  ${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/hr` : '0.000 k lb/hr'}
+              <div class="flex items-center justify-between font-bold">
+                <span class="text-[10px] font-mono text-amber-500 uppercase tracking-wider">Diff. Pressure (DP)</span>
+                <span id="conduit-${c.id}-lbl-dp" class="text-xs font-mono font-bold text-amber-500">
+                  ${m.hasValidReadings ? `${m.dp.toFixed(4)} inWC` : '0.0000 inWC'}
                 </span>
               </div>
               <div class="flex items-center justify-between">
@@ -1664,6 +1676,24 @@
                 <span class="text-[10px] font-mono text-appTextSec uppercase">Gas Density</span>
                 <span id="conduit-${c.id}-lbl-density" class="text-xs font-mono text-appTextTer">
                   ${m.hasValidReadings ? `${m.density.toFixed(4)} lb/ft³` : 'N/A'}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono text-appTextSec uppercase">Area</span>
+                <span id="conduit-${c.id}-lbl-area" class="text-xs font-mono text-appTextTer">
+                  ${m.hasValidReadings ? `${m.areaSqFt.toFixed(4)} ft²` : 'N/A'}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono text-appTextSec uppercase">Volume Flow</span>
+                <span id="conduit-${c.id}-lbl-vol-flow" class="text-xs font-mono text-appTextTer">
+                  ${m.hasValidReadings ? `${m.volFlow.toFixed(1)} acfm` : '0.0 acfm'}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono text-appTextSec uppercase font-semibold">Mass Flow Rate</span>
+                <span id="conduit-${c.id}-lbl-mass-flow" class="text-xs font-mono font-bold text-appText">
+                  ${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/hr` : '0.000 k lb/hr'}
                 </span>
               </div>
 
@@ -2200,7 +2230,9 @@
         rows.push(['Gas Temperature (°F)', ...dataset.conduits.map(c => c.temperature ? parseFloat(c.temperature) : ambient)]);
         rows.push(['DP (inWC)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.dp.toFixed(4)) : 'N/A')]);
         rows.push(['Density (lb/ft3)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.density.toFixed(4)) : 'N/A')]);
+        rows.push(['Conduit Area (ft2)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.areaSqFt.toFixed(4)) : 'N/A')]);
         rows.push(['Gas Velocity (fpm)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.avgVelocity.toFixed(1)) : 0)]);
+        rows.push(['Volume Flow Rate (acfm)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.volFlow.toFixed(1)) : 0)]);
         rows.push(['Mass Flow (k lb/hr)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.massFlow.toFixed(3)) : 0)]);
         rows.push(['Mean Deviation (%)', ...metrics.map(m => {
           const dev = deviations[m.id] || 0;
