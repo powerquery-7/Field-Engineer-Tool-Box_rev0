@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Field Engineer Toolbox</title>
+  
+  <!-- Inter & JetBrains Mono Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom Scrollbar for precise grid design */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0a0a0a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #262626;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #404040;
+    }
+
+    /* Simple fade in animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="bg-[#050505] text-neutral-100 min-h-screen flex flex-col font-sans selection:bg-amber-500 selection:text-neutral-950">
+
+  <!-- 1. Global Header -->
+  <header class="border-b border-neutral-900 bg-neutral-900/40 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 md:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <div class="p-2.5 bg-neutral-900 border border-neutral-800 rounded-lg shadow-inner text-amber-400">
+          <i data-lucide="cpu" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-white font-mono font-bold text-base md:text-lg tracking-tight">
+              Field Engineer Toolbox System
+            </h1>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 bg-neutral-800 border border-neutral-750 text-neutral-400 rounded">
+              v2.6 (JS)
+            </span>
+          </div>
+          <p class="text-neutral-500 text-[10px] md:text-xs uppercase tracking-wider flex items-center gap-2 mt-0.5 font-mono">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Local Engines Active
+            <span class="text-neutral-700">|</span>
+            Operating in Offline Direct Repository Mode
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 w-full sm:w-auto justify-end">
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-neutral-950 border border-neutral-850 rounded-lg text-[11px] font-mono">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-neutral-400 uppercase">Local Cache:</span>
+          <span class="text-emerald-400 font-semibold">Active</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+
+    <!-- Active State Recovery Banner -->
+    <div id="recovery-banner" class="hidden border border-amber-500/30 bg-amber-950/20 backdrop-blur-md rounded-lg p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in">
+      <div class="flex items-start gap-3">
+        <div class="p-2 bg-amber-500/10 text-amber-400 rounded-lg shrink-0">
+          <i data-lucide="alert-triangle" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <h4 class="text-amber-400 font-medium font-sans text-sm md:text-base">
+            Previous Session Data Retrieved
+          </h4>
+          <p class="text-neutral-400 text-xs md:text-sm mt-0.5">
+            System detected active isokinetic calculations cached from <span id="recovery-timestamp" class="font-mono text-amber-300 font-semibold">--</span>.
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 w-full md:w-auto justify-end shrink-0">
+        <button id="btn-recovery-clear" class="flex-1 md:flex-none px-4 py-2 bg-neutral-900 hover:bg-red-950/40 border border-neutral-800 hover:border-red-900/30 text-neutral-400 hover:text-red-400 rounded-md text-xs font-mono transition-colors flex items-center justify-center gap-1.5">
+          <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i>
+          Start Fresh
+        </button>
+        <button id="btn-recovery-keep" class="flex-1 md:flex-none px-4 py-2 bg-amber-500 text-neutral-950 hover:bg-amber-400 font-semibold rounded-md text-xs font-sans transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/10">
+          <i data-lucide="check-circle" class="h-3.5 w-3.5"></i>
+          Keep Data
+        </button>
+      </div>
+    </div>
+
+    <!-- View 1: Unified Dashboard -->
+    <section id="view-dashboard" class="space-y-8 animate-fade-in">
+      <!-- Ambient Hero Banner -->
+      <div class="relative border border-neutral-900 bg-neutral-900/20 rounded-2xl p-6 md:p-8 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-3 z-10 max-w-xl">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-400 text-xs font-mono rounded-full border border-amber-500/20">
+            <i data-lucide="activity" class="h-3 w-3 animate-pulse"></i> Thermal Plant Field Utility Suite
+          </span>
+          <h2 class="text-2xl md:text-3xl text-white font-sans font-semibold tracking-tight">
+            High-Precision Sampling & Diagnostic Tools
+          </h2>
+          <p class="text-neutral-400 text-sm leading-relaxed">
+            Engineered specifically for heavy mechanical field specialists. This web-only suite resolves isokinetic flue sweeps, fluid dynamics, and head parameters with zero network latency.
+          </p>
+        </div>
+        <div class="shrink-0 font-mono text-[11px] text-neutral-500 space-y-1.5 bg-neutral-950/60 p-4 border border-neutral-900 rounded-xl z-10 w-full md:w-auto">
+          <div class="text-neutral-400 border-b border-neutral-900 pb-1.5 font-bold uppercase tracking-wider">System Hardware Info</div>
+          <div>CPU CORE EMULATION: <span class="text-white">Active</span></div>
+          <div>LOCAL DIRECT STORAGE: <span class="text-white">localStorage DB</span></div>
+          <div>TARGET DIRECTORY: <span class="text-amber-400">/standalone.html</span></div>
+        </div>
+        <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-radial from-amber-500/5 to-transparent pointer-events-none"></div>
+      </div>
+
+      <!-- Modules List -->
+      <div class="space-y-4">
+        <h3 class="text-xs font-mono font-bold text-neutral-400 uppercase tracking-wider">
+          Select Operational Module
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Active Module -->
+          <div class="border border-amber-500/30 hover:border-amber-400/50 bg-neutral-900/60 hover:bg-neutral-900/90 rounded-xl p-5 flex flex-col justify-between gap-6 transition-all group shadow-lg shadow-amber-500/5">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
+                  <i data-lucide="flame" class="h-5 w-5"></i>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 rounded-full font-semibold">
+                  Ready
+                </span>
+              </div>
+              <div>
+                <h4 class="text-white font-sans font-semibold text-base group-hover:text-amber-400 transition-colors">
+                  Isokinetic Coal Sampling
+                </h4>
+                <p class="text-neutral-400 text-xs mt-1.5 leading-relaxed">
+                  Calculate average square velocity heads (ASVH), flue densities, volume flow ratios, and mass flow rates with deviation mapping.
+                </p>
+              </div>
+            </div>
+            <button id="btn-launch-coal" class="w-full py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/10">
+              Launch Workspace
+              <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+            </button>
+          </div>
+
+          <!-- Locked Modules -->
+          <div class="border border-neutral-900 bg-neutral-950/30 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="p-2.5 bg-neutral-900 border border-neutral-850 text-neutral-500 rounded-lg">
+                  <i data-lucide="settings" class="h-5 w-5"></i>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded-full">Locked</span>
+              </div>
+              <div>
+                <h4 class="text-neutral-400 font-sans font-semibold text-base">Inspection of Pump A</h4>
+                <p class="text-neutral-500 text-xs mt-1.5 leading-relaxed">Verify suction and discharge heads, compute NPSH, and plot efficiency performance envelopes.</p>
+              </div>
+            </div>
+            <div class="w-full py-2 bg-neutral-900 border border-neutral-850 text-neutral-500 text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
+              <i data-lucide="lock" class="h-3.5 w-3.5"></i> System Lock (v2.7)
+            </div>
+          </div>
+
+          <div class="border border-neutral-900 bg-neutral-950/30 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="p-2.5 bg-neutral-900 border border-neutral-850 text-neutral-500 rounded-lg">
+                  <i data-lucide="layers" class="h-5 w-5"></i>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded-full">Locked</span>
+              </div>
+              <div>
+                <h4 class="text-neutral-400 font-sans font-semibold text-base">Boiler Feed Pump B Sweeps</h4>
+                <p class="text-neutral-500 text-xs mt-1.5 leading-relaxed font-sans">Assess continuous multi-stage thermal pump metrics, vibration thresholds, and turbine sweep logs.</p>
+              </div>
+            </div>
+            <div class="w-full py-2 bg-neutral-900 border border-neutral-850 text-neutral-500 text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
+              <i data-lucide="lock" class="h-3.5 w-3.5"></i> System Lock (v2.7)
+            </div>
+          </div>
+
+          <div class="border border-neutral-900 bg-neutral-950/30 rounded-xl p-5 flex flex-col justify-between gap-6 opacity-65 relative overflow-hidden">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between">
+                <div class="p-2.5 bg-neutral-900 border border-neutral-850 text-neutral-500 rounded-lg">
+                  <i data-lucide="activity" class="h-5 w-5"></i>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded-full">Locked</span>
+              </div>
+              <div>
+                <h4 class="text-neutral-400 font-sans font-semibold text-base">Condenser Air In-Leakage</h4>
+                <p class="text-neutral-500 text-xs mt-1.5 leading-relaxed">Audit vacuum decay times, compute mass leakage rates, and calculate condenser efficiency drop.</p>
+              </div>
+            </div>
+            <div class="w-full py-2 bg-neutral-900 border border-neutral-850 text-neutral-500 text-xs rounded-lg flex items-center justify-center gap-1.5 font-mono cursor-not-allowed">
+              <i data-lucide="lock" class="h-3.5 w-3.5"></i> System Lock (v2.8)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Tutorial -->
+      <div class="p-6 bg-neutral-900 border border-neutral-800 rounded-2xl space-y-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="book-open" class="text-amber-400 h-4.5 w-4.5"></i>
+          <h3 class="text-white font-sans font-semibold text-sm">
+            Field Engineer Fast-Track Guide (Isokinetic Sampling)
+          </h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase">
+              <span class="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[11px]">01</span>
+              Configure Parameters
+            </div>
+            <p class="text-neutral-400 text-xs leading-relaxed">
+              Select your active site (QPL / SBPL) and Mill identifier. This automatically sizes the calculation array. Adjust conduit size, ambient temp, and barometric variables as required.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase">
+              <span class="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[11px]">02</span>
+              Input Point Vectors
+            </div>
+            <p class="text-neutral-400 text-xs leading-relaxed">
+              Type 12-point velocity head readouts directly for both Port 1 and Port 2. Use the <strong class="text-neutral-300 font-mono">Fill Demo Data</strong> action to instantly load pre-modeled, realistic physical values.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase">
+              <span class="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[11px]">03</span>
+              Monitor and Dispatch
+            </div>
+            <p class="text-neutral-400 text-xs leading-relaxed">
+              Check the real-time deviation indicators to find distribution discrepancies. Open the Export Modal to obtain your structured spreadsheet .CSV and launch pre-addressed emails.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 2: Isokinetic Coal Sampling Workspace -->
+    <section id="view-sampling" class="hidden space-y-6 animate-fade-in">
+      <!-- Back back navigation and tools bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <button id="btn-back-dashboard" class="self-start inline-flex items-center gap-2 px-3 py-1.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-300 rounded-lg text-xs font-mono transition-colors">
+          <i data-lucide="chevron-left" class="h-4 w-4 text-amber-400"></i>
+          Back to Dashboard
+        </button>
+        <div class="flex items-center gap-2 self-end">
+          <button id="btn-bulk-demo" class="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-amber-400 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+            Fill All Demo Data
+          </button>
+          <button id="btn-bulk-clear" class="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-red-400 text-xs font-mono rounded-lg transition-colors flex items-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i>
+            Clear All Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Config Card -->
+      <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-6 shadow-xl shadow-black/30">
+        <div class="border-b border-neutral-800 pb-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-white font-sans font-semibold text-lg flex items-center gap-2">
+              <i data-lucide="flame" class="text-amber-400 h-5 w-5"></i>
+              Isokinetic Coal Sampling Configuration
+            </h3>
+            <p class="text-neutral-400 text-xs mt-0.5">
+              Configure active facility, mill identification, and system constants below to resolve live gas density models.
+            </p>
+          </div>
+          <!-- Facility Selection -->
+          <div class="flex items-center gap-2 bg-neutral-950 p-1 border border-neutral-800 rounded-lg shrink-0">
+            <button id="btn-fac-qpl" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md">
+              QPL Facility (5 Conduits)
+            </button>
+            <button id="btn-fac-sbpl" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-neutral-400 hover:text-white hover:bg-neutral-900/60">
+              SBPL Facility (4 Conduits)
+            </button>
+          </div>
+        </div>
+
+        {/* Form Inputs Grid */}
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Mill Identifier</label>
+            <select id="param-mill" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-3 py-2 rounded-lg transition-colors cursor-pointer">
+              <option value="Mill A">Mill A</option>
+              <option value="Mill B">Mill B</option>
+              <option value="Mill C">Mill C</option>
+              <option value="Mill D">Mill D</option>
+              <option value="Mill E">Mill E</option>
+            </select>
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Conduit Size (inches)</label>
+            <input id="param-size" type="text" value="20.5" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Barometric P. (inHg)</label>
+            <input id="param-baro" type="text" value="29.60" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Ambient Temp (°F)</label>
+            <input id="param-ambient" type="text" value="82.4" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Pitot Coefficient</label>
+            <input id="param-pitot" type="text" value="0.94" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-3 py-2 rounded-lg transition-colors text-right" />
+          </div>
+          <div class="bg-neutral-950 border border-neutral-850 rounded-lg p-2.5 flex flex-col justify-center text-[10px] font-mono text-neutral-500 leading-normal">
+            <div class="text-neutral-400 font-bold uppercase mb-0.5">Physical fallbacks</div>
+            <div>Temp Default: <span id="lbl-fallback-temp" class="text-amber-400 font-bold">82.4°F</span></div>
+            <div>Area Calc: <span id="lbl-calculated-area" class="text-white">2.292 ft²</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layout Toggles and Horizontal Tab Selection -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-neutral-900 border border-neutral-800 rounded-2xl p-4">
+        <div class="flex items-center gap-2 bg-neutral-950 p-1 border border-neutral-800 rounded-lg">
+          <button id="btn-layout-tabbed" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-neutral-800 text-amber-400 border border-neutral-700/60">
+            <i data-lucide="list" class="h-3.5 w-3.5"></i>
+            Tabbed View
+          </button>
+          <button id="btn-layout-grid" class="px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-neutral-400 hover:text-white">
+            <i data-lucide="grid" class="h-3.5 w-3.5"></i>
+            Side-by-Side (Grid)
+          </button>
+        </div>
+
+        <!-- Dynamic horizontal tab container (Only visible in Tabbed layout mode) -->
+        <div id="conduit-tabs-row" class="flex flex-wrap gap-2 w-full sm:w-auto">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Conduit Columns Container -->
+      <div id="conduits-render-container" class="w-full">
+        <!-- Render columns dynamically either centered or side-by-side -->
+      </div>
+
+      <!-- Summary Board -->
+      <div class="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-6 shadow-xl shadow-black/30">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-neutral-850 pb-4 gap-4">
+          <div>
+            <h3 class="text-white font-sans font-semibold text-lg flex items-center gap-2">
+              <i data-lucide="check-circle-2" class="text-emerald-400 h-5 w-5"></i>
+              Consolidated Summary Metrics Board
+            </h3>
+            <p class="text-neutral-400 text-xs mt-0.5">
+              Continuous overall summaries and mass distributions resolved from active conduits.
+            </p>
+          </div>
+          <button id="btn-trigger-export-modal" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-amber-500/10">
+            <i data-lucide="download" class="h-4 w-4"></i>
+            Export & Dispatch Report
+          </button>
+        </div>
+
+        <!-- Consolidated metrics row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="p-4 bg-neutral-950/60 border border-neutral-800 rounded-xl space-y-2">
+            <span class="text-[10px] font-mono text-neutral-500 uppercase tracking-wider block">Total Mass Flow Rate</span>
+            <div class="flex items-baseline gap-1">
+              <span id="sum-total-mass-flow" class="text-2xl md:text-3xl font-mono font-bold text-white">0.000</span>
+              <span class="text-xs font-mono text-neutral-400">k lb/hr</span>
+            </div>
+            <p class="text-[11px] text-neutral-500 leading-normal">Aggregate coal dust conveyance flow calculated across active test pipes.</p>
+          </div>
+
+          <div class="p-4 bg-neutral-950/60 border border-neutral-800 rounded-xl space-y-2">
+            <span class="text-[10px] font-mono text-neutral-500 uppercase tracking-wider block">Average Mass Flow Rate</span>
+            <div class="flex items-baseline gap-1">
+              <span id="sum-avg-mass-flow" class="text-2xl md:text-3xl font-mono font-bold text-amber-400">0.000</span>
+              <span class="text-xs font-mono text-neutral-400">k lb/hr</span>
+            </div>
+            <p class="text-[11px] text-neutral-500 leading-normal">Arithmetic mean flow rate distributed per individual conduit pipe.</p>
+          </div>
+
+          <div class="p-4 bg-neutral-950/60 border border-neutral-800 rounded-xl space-y-2">
+            <span class="text-[10px] font-mono text-neutral-500 uppercase tracking-wider block">Average Air Velocity</span>
+            <div class="flex items-baseline gap-1">
+              <span id="sum-avg-velocity" class="text-2xl md:text-3xl font-mono font-bold text-emerald-400">0</span>
+              <span class="text-xs font-mono text-neutral-400">fpm</span>
+            </div>
+            <p class="text-[11px] text-neutral-500 leading-normal">Average gas stream speed resolved from valid isokinetic Pitot sweep measurements.</p>
+          </div>
+        </div>
+
+        <!-- Deviations Plotting -->
+        <div class="space-y-4 pt-2">
+          <div>
+            <h4 class="text-white font-sans font-semibold text-sm">Individual Conduit Mass Flow Deviations from Mean</h4>
+            <p class="text-neutral-400 text-xs mt-0.5">
+              Imbalances exceeding <span class="text-red-400 font-bold">±5.0%</span> are highlighted with amber alerts to prevent localized fuel starvation or line clogging.
+            </p>
+          </div>
+          <!-- Dynamic deviation rows -->
+          <div id="deviations-graph-rows" class="p-4 bg-neutral-950 border border-neutral-850 rounded-xl space-y-4">
+            <!-- Populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 4. Global Footer -->
+  <footer class="border-t border-neutral-900 bg-neutral-950 mt-12 py-6">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-neutral-500">
+      <div>
+        &copy; 2026 Thermal Engineering Field Services Group. All calculations comply with ASME PTC 4.2 Coal Sampling standards.
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 px-2.5 py-0.5 rounded-full">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1"></span>
+          SECURE STANDALONE WEB REPO
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 5. Export Report Modal -->
+  <div id="export-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+    <div class="relative w-full max-w-2xl bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-2xl shadow-black/80">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
+        <div class="flex items-center gap-2">
+          <i data-lucide="mail" class="text-amber-400 h-5 w-5"></i>
+          <h3 class="text-white font-sans font-semibold text-lg">Export and Dispatch Report</h3>
+        </div>
+        <button id="btn-close-export" class="p-1.5 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+        <!-- Step 1: Download CSV -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2 text-sm font-sans font-medium text-neutral-300">
+            <span class="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs border border-amber-500/20 font-mono">1</span>
+            <span>Primary Data Export</span>
+          </div>
+          <p class="text-neutral-400 text-xs pl-7 leading-relaxed font-sans">
+            Export the raw 12-point velocity grid matrix, global barometric readings, flue density profiles, and computed deviations in standard CSV layout.
+          </p>
+          <div class="pl-7">
+            <button id="btn-download-csv-standalone" class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold rounded-lg text-sm transition-all shadow-md">
+              <i data-lucide="download" class="h-4 w-4"></i>
+              Download Report (.CSV)
+            </button>
+          </div>
+        </div>
+
+        <div class="border-t border-neutral-800"></div>
+
+        <!-- Step 2: Email Dispatcher -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 text-sm font-sans font-medium text-neutral-300">
+            <span class="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs border border-amber-500/20 font-mono">2</span>
+            <span>Structured Email Dispatch</span>
+          </div>
+          <p class="text-neutral-400 text-xs pl-7 leading-relaxed">
+            Select an email endpoint to open a pre-formatted draft with all consolidated averages, individual velocities, and deviances. Drag-and-drop your downloaded CSV file directly into your draft!
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pl-7">
+            <a id="lnk-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-xs font-mono text-neutral-300 hover:text-white transition-all">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              Gmail Webmail
+            </a>
+            <a id="lnk-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-xs font-mono text-neutral-300 hover:text-white transition-all">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              Outlook Web
+            </a>
+            <a id="lnk-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-xs font-mono text-neutral-300 hover:text-white transition-all">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              System Client
+            </a>
+          </div>
+        </div>
+
+        <div class="border-t border-neutral-800"></div>
+
+        <!-- Quick Copy Preview -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between pl-7">
+            <span class="text-xs font-sans font-medium text-neutral-400">Plaintext Summary Preview</span>
+            <button id="btn-copy-summary-standalone" class="flex items-center gap-1.5 px-3 py-1 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded text-[11px] font-mono transition-colors">
+              <i data-lucide="copy" class="h-3 w-3"></i>
+              <span id="lbl-copy-btn">Copy Summary</span>
+            </button>
+          </div>
+          <div class="pl-7">
+            <pre id="pre-report-preview" class="p-3 bg-neutral-950 border border-neutral-800 rounded-lg text-[10px] font-mono text-neutral-400 max-h-40 overflow-y-auto whitespace-pre-wrap leading-relaxed select-all">
+              Summary loading...
+            </pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end px-6 py-4 bg-neutral-950/40 border-t border-neutral-850">
+        <button id="btn-close-export-footer" class="px-4 py-2 bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 rounded-lg text-xs font-mono transition-colors">
+          Close Dialog
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Vanilla JavaScript App Engine -->
+  <script>
+    // State representation
+    let appState = {
+      facility: 'QPL', // 'QPL' or 'SBPL'
+      millName: 'Mill A',
+      conduitSize: '20.5',
+      barometricPressure: '29.60',
+      ambientTemp: '82.4',
+      pitotCoefficient: '0.94',
+      conduits: [],
+      startTime: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+    };
+
+    let layoutMode = 'tabbed'; // 'tabbed' or 'grid'
+    let activeConduitId = 1;
+
+    // LocalStorage keys
+    const STORAGE_KEY = 'field_engineer_toolbox_standalone_session';
+
+    // Get default conduits
+    function createDefaultConduits(facility) {
+      const count = facility === 'QPL' ? 5 : 4;
+      return Array.from({ length: count }).map((_, i) => ({
+        id: i + 1,
+        staticPressure: '',
+        temperature: '',
+        port1Readings: Array(12).fill(''),
+        port2Readings: Array(12).fill(''),
+      }));
+    }
+
+    // Initialize state
+    function initDefaultState(facility = 'QPL') {
+      appState.facility = facility;
+      appState.millName = 'Mill A';
+      appState.conduitSize = facility === 'QPL' ? '20.5' : '24.0';
+      appState.barometricPressure = '29.60';
+      appState.ambientTemp = '82.4';
+      appState.pitotCoefficient = '0.94';
+      appState.conduits = createDefaultConduits(facility);
+      appState.startTime = new Date().toISOString();
+      appState.lastUpdated = new Date().toISOString();
+    }
+
+    // Save state helper
+    function saveState() {
+      appState.lastUpdated = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      updateLiveCalculations();
+    }
+
+    // Generate random demo readings
+    function generateDemoReadings() {
+      const readings = [];
+      for (let i = 0; i < 12; i++) {
+        const val = 0.150 + Math.random() * 0.300;
+        readings.push(val.toFixed(3));
+      }
+      return readings;
+    }
+
+    // Run ASME calculations on a single conduit
+    function calculateConduitMetrics(conduit, size, baro, ambient, pitot) {
+      const allReadings = [...conduit.port1Readings, ...conduit.port2Readings];
+      const validReadings = allReadings
+        .map(parseFloat)
+        .filter(val => !isNaN(val) && val !== 0);
+
+      const count = validReadings.length;
+      const hasValidReadings = count > 0;
+
+      let asvh = 0;
+      if (hasValidReadings) {
+        const sumSquares = validReadings.reduce((sum, v) => sum + v * v, 0);
+        asvh = sumSquares / count;
+      }
+
+      const dp = 1.573 * (asvh * asvh) * (pitot * pitot);
+
+      const pStatic = parseFloat(conduit.staticPressure) || 0;
+      const tF = parseFloat(conduit.temperature) || ambient;
+
+      const tempFactor = 530 / (460 + tF);
+      const pressFactor = (29.92 + pStatic / 13.6) / 29.92;
+      const density = tempFactor * pressFactor * 0.075;
+
+      const radius = size / 2;
+      const areaSqIn = Math.PI * radius * radius;
+      const areaSqFt = areaSqIn / 144;
+
+      let avgVelocity = 0;
+      if (density > 0 && hasValidReadings) {
+        avgVelocity = ((1096 * asvh) / Math.sqrt(density)) * pitot;
+      }
+
+      const volFlow = avgVelocity * areaSqFt;
+      const massFlow = (volFlow * density * 60) / 1000;
+
+      return {
+        id: conduit.id,
+        asvh,
+        dp,
+        density,
+        areaSqFt,
+        avgVelocity,
+        volFlow,
+        massFlow,
+        hasValidReadings
+      };
+    }
+
+    // Master updates of DOM calculations
+    function updateLiveCalculations() {
+      const size = parseFloat(appState.conduitSize) || 20.5;
+      const baro = parseFloat(appState.barometricPressure) || 29.60;
+      const ambient = parseFloat(appState.ambientTemp) || 82.4;
+      const pitot = parseFloat(appState.pitotCoefficient) || 0.94;
+
+      // Update physical fallbacks preview labels
+      document.getElementById('lbl-fallback-temp').innerText = `${ambient.toFixed(1)}°F`;
+      const calculatedArea = (Math.PI * (size / 2) * (size / 2)) / 144;
+      document.getElementById('lbl-calculated-area').innerText = `${calculatedArea.toFixed(3)} ft²`;
+
+      // Recalculate each conduit
+      const metrics = appState.conduits.map(c => 
+        calculateConduitMetrics(c, size, baro, ambient, pitot)
+      );
+
+      // Active ones
+      const activeMetrics = metrics.filter(m => m.hasValidReadings);
+      const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+      const avgMassFlow = totalMassFlow / (metrics.length || 1);
+      
+      const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+      const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+
+      // Render Consolidated summary metrics board
+      document.getElementById('sum-total-mass-flow').innerText = totalMassFlow.toFixed(3);
+      document.getElementById('sum-avg-mass-flow').innerText = avgMassFlow.toFixed(3);
+      document.getElementById('sum-avg-velocity').innerText = avgVelocity.toFixed(0);
+
+      // Calculate Deviations
+      const deviations = {};
+      metrics.forEach(m => {
+        deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+      });
+
+      // Update dynamic conduit inputs & layout
+      renderConduitInputs(metrics, deviations, ambient);
+
+      // Render tab highlights
+      renderConduitTabs();
+
+      // Render deviations bar graph chart
+      renderDeviationsGraph(metrics, deviations);
+    }
+
+    // Render horizontal tabs row
+    function renderConduitTabs() {
+      const tabRow = document.getElementById('conduit-tabs-row');
+      if (!tabRow) return;
+
+      if (layoutMode !== 'tabbed') {
+        tabRow.innerHTML = '';
+        return;
+      }
+
+      tabRow.innerHTML = appState.conduits.map(c => {
+        // Check if has any value inputted
+        const hasData = c.staticPressure !== '' || c.temperature !== '' || c.port1Readings.some(v => v !== '') || c.port2Readings.some(v => v !== '');
+        const isActive = activeConduitId === c.id;
+
+        return `
+          <button onclick="setActiveConduit(${c.id})" class="px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-2 border ${
+            isActive
+              ? 'bg-amber-500 text-neutral-950 border-amber-500 shadow-md'
+              : 'bg-neutral-950 text-neutral-400 hover:text-white border-neutral-800 hover:bg-neutral-900'
+          }">
+            Conduit ${c.id}
+            ${hasData ? `<span class="w-2 h-2 rounded-full ${isActive ? 'bg-neutral-950' : 'bg-emerald-400 shadow-sm'}"></span>` : ''}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function setActiveConduit(id) {
+      activeConduitId = id;
+      updateLiveCalculations();
+    }
+
+    // Render Input Columns depending on view mode
+    function renderConduitInputs(metrics, deviations, ambientTemp) {
+      const container = document.getElementById('conduits-render-container');
+      if (!container) return;
+
+      let conduitsToRender = appState.conduits;
+      
+      // Filter out if in tabbed mode
+      if (layoutMode === 'tabbed') {
+        conduitsToRender = appState.conduits.filter(c => c.id === activeConduitId);
+      }
+
+      let html = '';
+      
+      if (layoutMode === 'grid') {
+        html += `<div class="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0"><div class="flex gap-6 min-w-[1200px] select-none">`;
+      } else {
+        html += `<div class="max-w-md mx-auto w-full animate-fade-in">`;
+      }
+
+      conduitsToRender.forEach(c => {
+        const m = metrics.find(met => met.id === c.id);
+        const dev = deviations[c.id] || 0;
+        const isWarn = Math.abs(dev) > 0.05 && m.hasValidReadings;
+        const widthPercent = Math.min(50, Math.abs(dev) * 500);
+
+        html += `
+          <div class="flex flex-col bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-xl shadow-black/40 ${layoutMode === 'grid' ? 'w-[300px] shrink-0' : ''}">
+            <!-- Conduit title bar -->
+            <div class="px-4 py-3 bg-neutral-950/80 border-b border-neutral-800 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span class="text-sm font-mono font-bold text-neutral-200">CONDUIT ${c.id}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="fillConduitDemo(${c.id})" title="Populate demo data" class="p-1 text-neutral-400 hover:text-amber-400 hover:bg-neutral-800 rounded transition-colors">
+                  <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+                </button>
+                <button onclick="clearConduit(${c.id})" title="Reset conduit values" class="p-1 text-neutral-400 hover:text-red-400 hover:bg-neutral-800 rounded transition-colors">
+                  <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Parameters -->
+            <div class="p-4 bg-neutral-950/40 border-b border-neutral-800 grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] font-mono text-neutral-500 uppercase tracking-wider mb-1">
+                  Static P. (inWC)
+                </label>
+                <input type="text" placeholder="0.00" value="${c.staticPressure}" oninput="updateConduitField(${c.id}, 'staticPressure', this.value)" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-mono text-neutral-500 uppercase tracking-wider mb-1">
+                  Gas Temp (°F)
+                </label>
+                <input type="text" placeholder="${ambientTemp} (ambient)" value="${c.temperature}" oninput="updateConduitField(${c.id}, 'temperature', this.value)" class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500/50 outline-none text-neutral-200 font-mono text-xs px-2.5 py-1.5 rounded text-right transition-colors" />
+              </div>
+            </div>
+
+            <!-- 12-point matrix -->
+            <div class="p-4 flex-1 space-y-3">
+              <div class="grid grid-cols-3 text-center text-[10px] font-mono font-bold text-neutral-500 uppercase tracking-wider pb-1 border-b border-neutral-800/65">
+                <span>Port 1</span>
+                <span>Point</span>
+                <span>Port 2</span>
+              </div>
+              
+              <div class="space-y-1.5 max-h-[380px] overflow-y-auto pr-1">
+                ${Array.from({ length: 12 }).map((_, idx) => {
+                  const pt = idx + 1;
+                  return `
+                    <div class="grid grid-cols-3 items-center gap-1.5">
+                      <input type="text" placeholder="0.000" value="${c.port1Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port1', ${idx}, this.value)" class="bg-neutral-950 border border-neutral-850/80 focus:border-amber-500/50 outline-none text-neutral-300 font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
+                      <div class="text-center font-mono text-[10px] text-neutral-500 bg-neutral-950/60 py-1 border border-neutral-850/30 rounded">${pt}</div>
+                      <input type="text" placeholder="0.000" value="${c.port2Readings[idx]}" oninput="updateConduitPortReading(${c.id}, 'port2', ${idx}, this.value)" class="bg-neutral-950 border border-neutral-850/80 focus:border-amber-500/50 outline-none text-neutral-300 font-mono text-xs px-2 py-1 rounded text-center transition-colors" />
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Live Calculated Conduit results -->
+            <div class="p-4 bg-neutral-950/80 border-t border-neutral-850/80 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono text-neutral-500 uppercase">Mass Flow Rate</span>
+                <span class="text-xs font-mono font-bold text-white">
+                  ${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/hr` : '0.000 k lb/hr'}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono text-neutral-500 uppercase">Avg Velocity</span>
+                <span class="text-xs font-mono text-neutral-300">
+                  ${m.hasValidReadings ? `${m.avgVelocity.toFixed(0)} fpm` : '0 fpm'}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono text-neutral-500 uppercase">Gas Density</span>
+                <span class="text-xs font-mono text-neutral-400">
+                  ${m.hasValidReadings ? `${m.density.toFixed(4)} lb/ft³` : 'N/A'}
+                </span>
+              </div>
+
+              <div class="pt-2 border-t border-neutral-850/50 flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono text-neutral-500 uppercase">Mean Deviation</span>
+                  <span class="text-xs font-mono font-semibold ${isWarn ? 'text-red-400' : 'text-emerald-400'}">
+                    ${m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0.0%'}
+                  </span>
+                </div>
+
+                <!-- deviation visual miniature line -->
+                ${m.hasValidReadings ? `
+                  <div class="w-full h-1 bg-neutral-900 rounded-full overflow-hidden mt-1 relative">
+                    <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarn ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${widthPercent}%; ${dev >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
+                    <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-neutral-700"></div>
+                  </div>
+                ` : ''}
+
+                ${isWarn ? `
+                  <div class="mt-1.5 flex items-center gap-1 text-[9px] font-mono text-red-400 leading-tight">
+                    <i data-lucide="alert-triangle" class="h-3.5 w-3.5 text-red-400 shrink-0"></i>
+                    <span>Imbalance exceeds 5% threshold!</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      if (layoutMode === 'grid') {
+        html += `</div></div>`;
+      } else {
+        html += `</div>`;
+      }
+
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    // Render Deviations bar charts
+    function renderDeviationsGraph(metrics, deviations) {
+      const graphContainer = document.getElementById('deviations-graph-rows');
+      if (!graphContainer) return;
+
+      graphContainer.innerHTML = appState.conduits.map(c => {
+        const m = metrics.find(met => met.id === c.id);
+        const devVal = deviations[c.id] || 0;
+        const devPctStr = (devVal * 100).toFixed(1);
+        const isExceeds = Math.abs(devVal) > 0.05 && m.hasValidReadings;
+        const normalizedWidth = Math.min(50, Math.abs(devVal) * 100);
+
+        return `
+          <div class="grid grid-cols-1 md:grid-cols-12 items-center gap-3">
+            <div class="md:col-span-2 flex items-center justify-between md:justify-start gap-2">
+              <span class="text-xs font-mono font-bold text-neutral-300">Conduit ${c.id}</span>
+              ${!m.hasValidReadings ? `
+                <span class="text-[10px] font-mono text-neutral-600">(No Data)</span>
+              ` : isExceeds ? `
+                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-red-950/60 text-red-400 border border-red-900/40 rounded">EXCEEDS</span>
+              ` : `
+                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-900/40 rounded">BALANCED</span>
+              `}
+            </div>
+
+            <div class="md:col-span-2 text-right text-xs font-mono text-neutral-400 md:pr-4">
+              ${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/h` : '0.000'}
+            </div>
+
+            <!-- deviation range bar -->
+            <div class="md:col-span-6 relative h-6 bg-neutral-900/60 border border-neutral-850 rounded-lg overflow-hidden flex items-center">
+              <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-neutral-800 z-10"></div>
+              <div class="absolute left-[25%] top-0 bottom-0 w-[1px] bg-neutral-900/30 border-dashed"></div>
+              <div class="absolute left-[75%] top-0 bottom-0 w-[1px] bg-neutral-900/30 border-dashed"></div>
+
+              ${m.hasValidReadings ? `
+                <div class="absolute h-full transition-all duration-300 ${
+                  isExceeds ? 'bg-gradient-to-r from-red-500/10 to-red-500' : 'bg-gradient-to-r from-emerald-500/10 to-emerald-500'
+                }" style="width: ${normalizedWidth}%; ${devVal < 0 ? 'right: 50%' : 'left: 50%'}"></div>
+              ` : ''}
+
+              <div class="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[10px] font-mono z-20">
+                <span class="text-neutral-600">-50%</span>
+                <span class="text-neutral-600">0%</span>
+                <span class="text-neutral-600">+50%</span>
+              </div>
+            </div>
+
+            <div class="md:col-span-2 text-right font-mono text-xs font-semibold">
+              ${m.hasValidReadings ? `
+                <span class="${isExceeds ? 'text-red-400' : 'text-emerald-400'}">
+                  ${devVal >= 0 ? '+' : ''}${devPctStr}%
+                </span>
+              ` : '<span class="text-neutral-600">0.0%</span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    // Input state mutations handlers
+    window.updateConduitField = function(id, field, value) {
+      const conduit = appState.conduits.find(c => c.id === id);
+      if (conduit) {
+        conduit[field] = value;
+        saveState();
+      }
+    };
+
+    window.updateConduitPortReading = function(id, port, index, value) {
+      const conduit = appState.conduits.find(c => c.id === id);
+      if (conduit) {
+        const readings = port === 'port1' ? conduit.port1Readings : conduit.port2Readings;
+        readings[index] = value;
+        saveState();
+      }
+    };
+
+    window.fillConduitDemo = function(id) {
+      const conduit = appState.conduits.find(c => c.id === id);
+      if (conduit) {
+        conduit.port1Readings = generateDemoReadings();
+        conduit.port2Readings = generateDemoReadings();
+        conduit.staticPressure = (Math.random() * -3.0 - 0.5).toFixed(2);
+        conduit.temperature = (120 + Math.random() * 40).toFixed(1);
+        saveState();
+      }
+    };
+
+    window.clearConduit = function(id) {
+      const conduit = appState.conduits.find(c => c.id === id);
+      if (conduit) {
+        conduit.port1Readings = Array(12).fill('');
+        conduit.port2Readings = Array(12).fill('');
+        conduit.staticPressure = '';
+        conduit.temperature = '';
+        saveState();
+      }
+    };
+
+    // Bulk actions
+    document.getElementById('btn-bulk-demo').addEventListener('click', () => {
+      appState.conduits.forEach(c => {
+        c.port1Readings = generateDemoReadings();
+        c.port2Readings = generateDemoReadings();
+        c.staticPressure = (Math.random() * -3.0 - 0.5).toFixed(2);
+        c.temperature = (120 + Math.random() * 40).toFixed(1);
+      });
+      saveState();
+    });
+
+    document.getElementById('btn-bulk-clear').addEventListener('click', () => {
+      appState.conduits.forEach(c => {
+        c.port1Readings = Array(12).fill('');
+        c.port2Readings = Array(12).fill('');
+        c.staticPressure = '';
+        c.temperature = '';
+      });
+      saveState();
+    });
+
+    // Facility toggle actions
+    const btnQpl = document.getElementById('btn-fac-qpl');
+    const btnSbpl = document.getElementById('btn-fac-sbpl');
+
+    function selectFacility(facility) {
+      initDefaultState(facility);
+      activeConduitId = 1;
+
+      // Update button highlights
+      if (facility === 'QPL') {
+        btnQpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md";
+        btnSbpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-neutral-400 hover:text-white hover:bg-neutral-900/60";
+        document.getElementById('param-size').value = '20.5';
+        
+        // Options for Mill A-E
+        document.getElementById('param-mill').innerHTML = `
+          <option value="Mill A">Mill A</option>
+          <option value="Mill B">Mill B</option>
+          <option value="Mill C">Mill C</option>
+          <option value="Mill D">Mill D</option>
+          <option value="Mill E">Mill E</option>
+        `;
+      } else {
+        btnSbpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all bg-amber-500 text-neutral-950 shadow-md";
+        btnQpl.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition-all text-neutral-400 hover:text-white hover:bg-neutral-900/60";
+        document.getElementById('param-size').value = '24.0';
+
+        // Options for Mill A-F
+        document.getElementById('param-mill').innerHTML = `
+          <option value="Mill A">Mill A</option>
+          <option value="Mill B">Mill B</option>
+          <option value="Mill C">Mill C</option>
+          <option value="Mill D">Mill D</option>
+          <option value="Mill E">Mill E</option>
+          <option value="Mill F">Mill F</option>
+        `;
+      }
+
+      saveState();
+    }
+
+    btnQpl.addEventListener('click', () => selectFacility('QPL'));
+    btnSbpl.addEventListener('click', () => selectFacility('SBPL'));
+
+    // Global parameters binding
+    document.getElementById('param-mill').addEventListener('change', (e) => {
+      appState.millName = e.target.value;
+      saveState();
+    });
+    document.getElementById('param-size').addEventListener('input', (e) => {
+      appState.conduitSize = e.target.value;
+      saveState();
+    });
+    document.getElementById('param-baro').addEventListener('input', (e) => {
+      appState.barometricPressure = e.target.value;
+      saveState();
+    });
+    document.getElementById('param-ambient').addEventListener('input', (e) => {
+      appState.ambientTemp = e.target.value;
+      saveState();
+    });
+    document.getElementById('param-pitot').addEventListener('input', (e) => {
+      appState.pitotCoefficient = e.target.value;
+      saveState();
+    });
+
+    // Layout togglers
+    const tabbedLayoutBtn = document.getElementById('btn-layout-tabbed');
+    const gridLayoutBtn = document.getElementById('btn-layout-grid');
+
+    tabbedLayoutBtn.addEventListener('click', () => {
+      layoutMode = 'tabbed';
+      tabbedLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-neutral-800 text-amber-400 border border-neutral-700/60";
+      gridLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-neutral-400 hover:text-white";
+      updateLiveCalculations();
+    });
+
+    gridLayoutBtn.addEventListener('click', () => {
+      layoutMode = 'grid';
+      gridLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all bg-neutral-800 text-amber-400 border border-neutral-700/60";
+      tabbedLayoutBtn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-bold flex items-center gap-1.5 transition-all text-neutral-400 hover:text-white";
+      updateLiveCalculations();
+    });
+
+    // Navigation togglers
+    document.getElementById('btn-launch-coal').addEventListener('click', () => {
+      document.getElementById('view-dashboard').classList.add('hidden');
+      document.getElementById('view-sampling').classList.remove('hidden');
+    });
+
+    document.getElementById('btn-back-dashboard').addEventListener('click', () => {
+      document.getElementById('view-dashboard').classList.remove('hidden');
+      document.getElementById('view-sampling').classList.add('hidden');
+    });
+
+    // State recovery setup
+    const recoveryBanner = document.getElementById('recovery-banner');
+    const recoveryTimestamp = document.getElementById('recovery-timestamp');
+
+    try {
+      const cachedSession = localStorage.getItem(STORAGE_KEY);
+      if (cachedSession) {
+        const parsed = JSON.parse(cachedSession);
+        if (parsed && parsed.conduits && parsed.conduits.length > 0) {
+          recoveryTimestamp.innerText = new Date(parsed.lastUpdated).toLocaleString();
+          recoveryBanner.classList.remove('hidden');
+          
+          document.getElementById('btn-recovery-keep').onclick = () => {
+            appState = parsed;
+            // set inputs
+            document.getElementById('param-size').value = appState.conduitSize;
+            document.getElementById('param-baro').value = appState.barometricPressure;
+            document.getElementById('param-ambient').value = appState.ambientTemp;
+            document.getElementById('param-pitot').value = appState.pitotCoefficient;
+            selectFacility(appState.facility);
+            // restore mill select
+            document.getElementById('param-mill').value = appState.millName;
+            
+            recoveryBanner.classList.add('hidden');
+            updateLiveCalculations();
+          };
+
+          document.getElementById('btn-recovery-clear').onclick = () => {
+            localStorage.removeItem(STORAGE_KEY);
+            initDefaultState('QPL');
+            recoveryBanner.classList.add('hidden');
+            updateLiveCalculations();
+          };
+        }
+      } else {
+        initDefaultState('QPL');
+      }
+    } catch (e) {
+      initDefaultState('QPL');
+    }
+
+    // Export Reports Generation Logic
+    function compilePlaintextSummary(metrics, deviations) {
+      const dateStr = new Date().toISOString().split('T')[0];
+      const timeStr = new Date().toLocaleString();
+
+      let body = `FIELD ENGINEER COAL SAMPLING REPORT SUMMARY\n`;
+      body += `==========================================\n`;
+      body += `Facility: ${appState.facility} Facility\n`;
+      body += `Mill Name: ${appState.millName || 'N/A'}\n`;
+      body += `Dispatch Date/Time: ${timeStr}\n\n`;
+
+      body += `GLOBAL PARAMETERS:\n`;
+      body += `- Conduit Size: ${appState.conduitSize} in\n`;
+      body += `- Barometric Pressure: ${appState.barometricPressure} inHg\n`;
+      body += `- Ambient Temp: ${appState.ambientTemp} °F\n`;
+      body += `- Pitot Coefficient: ${appState.pitotCoefficient}\n\n`;
+
+      // Active metrics summary
+      const activeMetrics = metrics.filter(m => m.hasValidReadings);
+      const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+      const avgMassFlow = totalMassFlow / (metrics.length || 1);
+      const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+      const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+
+      body += `SUMMARY METRICS:\n`;
+      body += `- Total Mass Flow Rate: ${totalMassFlow.toFixed(3)} k lb/hr\n`;
+      body += `- Average Mass Flow Rate: ${avgMassFlow.toFixed(3)} k lb/hr\n`;
+      body += `- Average Air Velocity: ${avgVelocity.toFixed(1)} fpm\n\n`;
+
+      body += `CONDUIT BREAKDOWN:\n`;
+      metrics.forEach((m) => {
+        const cData = appState.conduits.find((c) => c.id === m.id);
+        const dev = deviations[m.id] || 0;
+        const devPct = (dev * 100).toFixed(1);
+        const isWarn = Math.abs(dev) > 0.05;
+
+        body += `Conduit ${m.id}:\n`;
+        if (!m.hasValidReadings) {
+          body += `  - STATUS: INACTIVE (No measurements recorded)\n\n`;
+          return;
+        }
+        body += `  - Static Pressure: ${cData.staticPressure || '0'} inWC\n`;
+        body += `  - Flue Gas Temp: ${cData.temperature || appState.ambientTemp} °F\n`;
+        body += `  - DP (Calculated): ${m.dp.toFixed(4)} inWC\n`;
+        body += `  - Flue Gas Density: ${m.density.toFixed(4)} lb/ft3\n`;
+        body += `  - Avg Air Velocity: ${m.avgVelocity.toFixed(1)} fpm\n`;
+        body += `  - Mass Flow Rate: ${m.massFlow.toFixed(3)} k lb/hr\n`;
+        body += `  - Deviation from Mean: ${devPct}% ${isWarn ? '⚠️ EXCEEDS DEVIANCE LIMIT (>5%)' : '(Normal)'}\n\n`;
+      });
+
+      body += `INSTRUCTIONS TO RECEIVER:\n`;
+      body += `1. An official detailed CSV data sheet has been downloaded locally by the sender.\n`;
+      body += `2. Please request the sender to attach the downloaded file.\n`;
+      body += `\nSent via Field Engineer Toolbox System.`;
+
+      return body;
+    }
+
+    function generateCSVContent(metrics, deviations) {
+      const rows = [];
+      const timeStr = new Date().toLocaleString();
+
+      rows.push(['FIELD ENGINEER COAL SAMPLING REPORT']);
+      rows.push(['Generated At', timeStr]);
+      rows.push(['Facility', appState.facility]);
+      rows.push(['Mill Name', appState.millName]);
+      rows.push(['Conduit Size (in)', appState.conduitSize]);
+      rows.push(['Barometric Pressure (inHg)', appState.barometricPressure]);
+      rows.push(['Ambient Temp (°F)', appState.ambientTemp]);
+      rows.push(['Pitot Coefficient', appState.pitotCoefficient]);
+      rows.push([]);
+
+      // Summaries
+      const activeMetrics = metrics.filter(m => m.hasValidReadings);
+      const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+      const avgMassFlow = totalMassFlow / (metrics.length || 1);
+      const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+      const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+
+      rows.push(['SUMMARY TOTALS']);
+      rows.push(['Total Mass Flow Rate (k lb/hr)', totalMassFlow.toFixed(3)]);
+      rows.push(['Average Mass Flow Rate (k lb/hr)', avgMassFlow.toFixed(3)]);
+      rows.push(['Average Air Velocity (fpm)', avgVelocity.toFixed(1)]);
+      rows.push([]);
+
+      // Columns header
+      const conduitHeaders = ['Metric / Port Point', ...appState.conduits.map(c => `Conduit ${c.id}`)];
+      rows.push(conduitHeaders);
+
+      rows.push(['Static Pressure (inWC)', ...appState.conduits.map(c => c.staticPressure || '0')]);
+      rows.push(['Conduit Gas Temp (°F)', ...appState.conduits.map(c => c.temperature || appState.ambientTemp)]);
+      rows.push(['ASVH', ...metrics.map(m => m.hasValidReadings ? m.asvh.toFixed(4) : 'N/A')]);
+      rows.push(['DP (inWC)', ...metrics.map(m => m.hasValidReadings ? m.dp.toFixed(4) : 'N/A')]);
+      rows.push(['Density (lb/ft3)', ...metrics.map(m => m.hasValidReadings ? m.density.toFixed(4) : 'N/A')]);
+      rows.push(['Velocity (fpm)', ...metrics.map(m => m.hasValidReadings ? m.avgVelocity.toFixed(1) : '0')]);
+      rows.push(['Vol Flow (acfm)', ...metrics.map(m => m.hasValidReadings ? m.volFlow.toFixed(1) : '0')]);
+      rows.push(['Mass Flow (k lb/hr)', ...metrics.map(m => m.hasValidReadings ? m.massFlow.toFixed(3) : '0')]);
+      rows.push(['Deviation (%)', ...metrics.map(m => {
+        const dev = deviations[m.id] || 0;
+        return m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0%';
+      })]);
+      rows.push([]);
+
+      // Port points matrix
+      rows.push(['PORT READINGS MATRIX']);
+      for (let i = 0; i < 12; i++) {
+        rows.push([`Port 1 Point ${i + 1}`, ...appState.conduits.map(c => c.port1Readings[i] || '')]);
+      }
+      for (let i = 0; i < 12; i++) {
+        rows.push([`Port 2 Point ${i + 1}`, ...appState.conduits.map(c => c.port2Readings[i] || '')]);
+      }
+
+      return rows.map(r => 
+        r.map(val => {
+          const escaped = String(val).replace(/"/g, '""');
+          return escaped.includes(',') || escaped.includes('\n') || escaped.includes('"')
+            ? `"${escaped}"`
+            : escaped;
+        }).join(',')
+      ).join('\n');
+    }
+
+    // Modal Triggers
+    const exportModal = document.getElementById('export-modal');
+    
+    document.getElementById('btn-trigger-export-modal').addEventListener('click', () => {
+      exportModal.classList.remove('hidden');
+      
+      const size = parseFloat(appState.conduitSize) || 20.5;
+      const baro = parseFloat(appState.barometricPressure) || 29.60;
+      const ambient = parseFloat(appState.ambientTemp) || 82.4;
+      const pitot = parseFloat(appState.pitotCoefficient) || 0.94;
+
+      const metrics = appState.conduits.map(c => 
+        calculateConduitMetrics(c, size, baro, ambient, pitot)
+      );
+
+      const activeMetrics = metrics.filter(m => m.hasValidReadings);
+      const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
+      const avgMassFlow = totalMassFlow / (metrics.length || 1);
+      
+      const deviations = {};
+      metrics.forEach(m => {
+        deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+      });
+
+      const reportText = compilePlaintextSummary(metrics, deviations);
+      document.getElementById('pre-report-preview').innerText = reportText;
+
+      // Email links
+      const dateStr = new Date().toISOString().split('T')[0];
+      const subject = `Coal Sampling Field Report - ${appState.facility} [${appState.millName || 'Mill'}] - ${dateStr}`;
+      
+      document.getElementById('lnk-gmail').href = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(reportText)}`;
+      document.getElementById('lnk-outlook').href = `https://outlook.live.com/default.aspx?rru=compose&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(reportText)}`;
+      document.getElementById('lnk-mailto').href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(reportText)}`;
+
+      // Copy Summary Action
+      const copyBtn = document.getElementById('btn-copy-summary-standalone');
+      const copyLbl = document.getElementById('lbl-copy-btn');
+      
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(reportText);
+        copyLbl.innerText = 'Copied!';
+        setTimeout(() => copyLbl.innerText = 'Copy Summary', 2000);
+      };
+
+      // Download CSV Action
+      document.getElementById('btn-download-csv-standalone').onclick = () => {
+        const csv = generateCSVContent(metrics, deviations);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const filename = `coal_sampling_report_${appState.facility}_${appState.millName || 'Mill'}_${dateStr}.csv`;
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+    });
+
+    const closeModal = () => exportModal.classList.add('hidden');
+    document.getElementById('btn-close-export').addEventListener('click', closeModal);
+    document.getElementById('btn-close-export-footer').addEventListener('click', closeModal);
+
+    // Initial Render on Load
+    updateLiveCalculations();
+  </script>
+</body>
+</html>

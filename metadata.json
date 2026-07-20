@@ -1,0 +1,6 @@
+{
+  "name": "Field Engineer Toolbox",
+  "description": "A high-performance offline-first isokinetic coal sampling calculation and monitoring utility for field engineers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
