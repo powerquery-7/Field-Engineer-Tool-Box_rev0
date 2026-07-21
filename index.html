@@ -1371,41 +1371,48 @@
       const allReadings = [...conduit.port1Readings, ...conduit.port2Readings];
       const validReadings = allReadings
         .map(parseFloat)
-        .filter(val => !isNaN(val) && val !== 0);
+        .filter(val => !isNaN(val) && val > 0);
 
       const count = validReadings.length;
       const hasValidReadings = count > 0;
 
-      let asvh = 0;
+      let average_vh = 0;
       if (hasValidReadings) {
-        const sumSquares = validReadings.reduce((sum, v) => sum + v * v, 0);
-        asvh = sumSquares / count;
+        // Step 1: each input box (total of 24) should be square root
+        const sqrtReadings = validReadings.map(v => Math.sqrt(v));
+        // Step 2: get the average of the square root
+        const sumSqrt = sqrtReadings.reduce((sum, v) => sum + v, 0);
+        average_vh = sumSqrt / count;
       }
 
-      const dp = 1.573 * (asvh * asvh) * (pitot * pitot);
+      // Step 3: average_velocity_head_corr = 1.573 * average_vh^2 * pitot^2
+      const dp = 1.573 * (average_vh * average_vh) * (pitot * pitot);
 
       const pStatic = parseFloat(conduit.staticPressure) || 0;
       const tF = parseFloat(conduit.temperature) || ambient;
 
-      const tempFactor = 530 / (460 + tF);
-      const pressFactor = (29.92 + pStatic / 13.6) / 29.92;
-      const density = tempFactor * pressFactor * 0.075;
+      // Step 4: density (lb/ft^3) = (530/(460+conduit temperature)) * ((29.92 + (conduit static pressure * 0.0738))/29.92) * (0.075)
+      const pStaticInHg = pStatic * 0.0738;
+      const density = (530 / (460 + tF)) * ((29.92 + pStaticInHg) / 29.92) * 0.075;
 
-      const radius = size / 2;
-      const areaSqIn = Math.PI * radius * radius;
-      const areaSqFt = areaSqIn / 144;
+      // Step 6: duct_area (ft^2) = diameter^2 * pi / 4 / 144
+      const areaSqFt = (Math.PI * (size / 2) * (size / 2)) / 144;
 
+      // Step 5: average_velocity (ft per min) = 1093 * average_vh * pitot / sqrt (density)
       let avgVelocity = 0;
       if (density > 0 && hasValidReadings) {
-        avgVelocity = ((1096 * asvh) / Math.sqrt(density)) * pitot;
+        avgVelocity = (1093 * average_vh * pitot) / Math.sqrt(density);
       }
 
-      const volFlow = avgVelocity * areaSqFt;
-      const massFlow = (volFlow * density * 60) / 1000;
+      // Step 7: volume_flow_rate (ft^3/hr) = average_velocity (ft per min) * duct_area (ft^2) * 60
+      const volFlow = avgVelocity * areaSqFt * 60;
+
+      // Step 8: mass_flow_rate (klb/hr) = volume_flow_rate (ft^3/hr) * density (lb/ft^3) / 1000
+      const massFlow = (volFlow * density) / 1000;
 
       return {
         id: conduit.id,
-        asvh,
+        average_vh,
         dp,
         density,
         areaSqFt,
@@ -1434,13 +1441,15 @@
         calculateConduitMetrics(c, size, baro, ambient, pitot)
       );
 
-      // Active ones
-      const activeMetrics = metrics.filter(m => m.hasValidReadings);
-      const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
-      const avgMassFlow = totalMassFlow / (metrics.length || 1);
+      // Total Mass Flow Rate, klb/hr = sum (mass_flow_rate (klb/hr) per conduits)
+      const totalMassFlow = metrics.reduce((sum, m) => sum + m.massFlow, 0);
       
-      const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
-      const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+      // average_mass_flow_rate = Total Mass Flow Rate, klb/hr / 4
+      const avgMassFlow = totalMassFlow / 4;
+      
+      // average_air_velocity = average of all average_velocity per conduits (including all 4 or 5 conduits)
+      const sumVelocity = metrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+      const avgVelocity = sumVelocity / (metrics.length || 1);
 
       // Render Consolidated summary metrics board
       document.getElementById('sum-total-mass-flow').innerText = totalMassFlow.toFixed(3);
@@ -1448,27 +1457,33 @@
       document.getElementById('sum-avg-velocity').innerText = avgVelocity.toFixed(0);
 
       // Calculate Deviations
-      const deviations = {};
+      const devMassFlow = {};
+      const devAirVelocity = {};
       metrics.forEach(m => {
-        deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+        devMassFlow[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+        devAirVelocity[m.id] = avgVelocity > 0 ? (avgVelocity - m.avgVelocity) / avgVelocity : 0;
       });
 
       // Update dynamic conduit inputs & layout
       if (!isFromTyping) {
-        renderConduitInputs(metrics, deviations, ambient);
+        renderConduitInputs(metrics, devMassFlow, devAirVelocity, ambient);
         // Render tab highlights
         renderConduitTabs();
       } else {
         // Surgically update the calculated values in the existing conduit input cards
         metrics.forEach(m => {
           const cId = m.id;
-          const dev = deviations[cId] || 0;
-          const isWarn = Math.abs(dev) > 0.05 && m.hasValidReadings;
-          const widthPercent = Math.min(50, Math.abs(dev) * 500);
+          const devMass = devMassFlow[cId] || 0;
+          const devVel = devAirVelocity[cId] || 0;
+          const isWarnMass = Math.abs(devMass) > 0.05 && m.hasValidReadings;
+          const isWarnVel = Math.abs(devVel) > 0.05 && m.hasValidReadings;
+          const isWarn = isWarnMass || isWarnVel;
+          const widthPercentMass = Math.min(50, Math.abs(devMass) * 500);
+          const widthPercentVel = Math.min(50, Math.abs(devVel) * 500);
 
           const lblDp = document.getElementById(`conduit-${cId}-lbl-dp`);
           if (lblDp) {
-            lblDp.innerText = m.hasValidReadings ? `${m.dp.toFixed(4)} inWC` : '0.0000 inWC';
+            lblDp.innerText = m.hasValidReadings ? `${m.dp.toFixed(4)}` : '0.0000';
           }
           const lblArea = document.getElementById(`conduit-${cId}-lbl-area`);
           if (lblArea) {
@@ -1476,7 +1491,7 @@
           }
           const lblVolFlow = document.getElementById(`conduit-${cId}-lbl-vol-flow`);
           if (lblVolFlow) {
-            lblVolFlow.innerText = m.hasValidReadings ? `${m.volFlow.toFixed(1)} acfm` : '0.0 acfm';
+            lblVolFlow.innerText = m.hasValidReadings ? `${m.volFlow.toFixed(1)} ft³/hr` : '0.0 ft³/hr';
           }
           const lblMassFlow = document.getElementById(`conduit-${cId}-lbl-mass-flow`);
           if (lblMassFlow) {
@@ -1490,23 +1505,44 @@
           if (lblDensity) {
             lblDensity.innerText = m.hasValidReadings ? `${m.density.toFixed(4)} lb/ft³` : 'N/A';
           }
-          const lblDeviation = document.getElementById(`conduit-${cId}-lbl-deviation`);
-          if (lblDeviation) {
-            lblDeviation.innerText = m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0.0%';
-            lblDeviation.className = `text-xs font-mono font-semibold ${isWarn ? 'text-red-500' : 'text-emerald-500'}`;
+          
+          const lblDeviationMass = document.getElementById(`conduit-${cId}-lbl-deviation-mass`);
+          if (lblDeviationMass) {
+            lblDeviationMass.innerText = m.hasValidReadings ? `${(devMass * 100).toFixed(1)}%` : '0.0%';
+            lblDeviationMass.className = `text-xs font-mono font-semibold ${isWarnMass ? 'text-red-500' : 'text-emerald-500'}`;
           }
           
-          const miniContainer = document.getElementById(`conduit-${cId}-visual-miniature`);
-          if (miniContainer) {
+          const lblDeviationVel = document.getElementById(`conduit-${cId}-lbl-deviation-vel`);
+          if (lblDeviationVel) {
+            lblDeviationVel.innerText = m.hasValidReadings ? `${(devVel * 100).toFixed(1)}%` : '0.0%';
+            lblDeviationVel.className = `text-xs font-mono font-semibold ${isWarnVel ? 'text-amber-500' : 'text-teal-500'}`;
+          }
+          
+          const miniContainerMass = document.getElementById(`conduit-${cId}-visual-miniature-mass`);
+          if (miniContainerMass) {
             if (m.hasValidReadings) {
-              miniContainer.innerHTML = `
+              miniContainerMass.innerHTML = `
                 <div class="w-full h-1 bg-inputBg rounded-full overflow-hidden mt-1 relative">
-                  <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarn ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${widthPercent}%; ${dev >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
+                  <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarnMass ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${widthPercentMass}%; ${devMass >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
                   <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim"></div>
                 </div>
               `;
             } else {
-              miniContainer.innerHTML = '';
+              miniContainerMass.innerHTML = '';
+            }
+          }
+
+          const miniContainerVel = document.getElementById(`conduit-${cId}-visual-miniature-vel`);
+          if (miniContainerVel) {
+            if (m.hasValidReadings) {
+              miniContainerVel.innerHTML = `
+                <div class="w-full h-1 bg-inputBg rounded-full overflow-hidden mt-1 relative">
+                  <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarnVel ? 'bg-amber-500' : 'bg-teal-500'}" style="width: ${widthPercentVel}%; ${devVel >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
+                  <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim"></div>
+                </div>
+              `;
+            } else {
+              miniContainerVel.innerHTML = '';
             }
           }
 
@@ -1528,7 +1564,7 @@
       }
 
       // Render deviations bar graph chart
-      renderDeviationsGraph(metrics, deviations);
+      renderDeviationsGraph(metrics, devMassFlow, devAirVelocity);
     }
 
     // Render horizontal tabs row
@@ -1565,7 +1601,7 @@
     }
 
     // Render Input Columns depending on view mode
-    function renderConduitInputs(metrics, deviations, ambientTemp) {
+    function renderConduitInputs(metrics, devMassFlow, devAirVelocity, ambientTemp) {
       const container = document.getElementById('conduits-render-container');
       if (!container) return;
 
@@ -1598,9 +1634,13 @@
 
       conduitsToRender.forEach(c => {
         const m = metrics.find(met => met.id === c.id);
-        const dev = deviations[c.id] || 0;
-        const isWarn = Math.abs(dev) > 0.05 && m.hasValidReadings;
-        const widthPercent = Math.min(50, Math.abs(dev) * 500);
+        const devMass = devMassFlow[c.id] || 0;
+        const devVel = devAirVelocity[c.id] || 0;
+        const isWarnMass = Math.abs(devMass) > 0.05 && m.hasValidReadings;
+        const isWarnVel = Math.abs(devVel) > 0.05 && m.hasValidReadings;
+        const isWarn = isWarnMass || isWarnVel;
+        const widthPercentMass = Math.min(50, Math.abs(devMass) * 500);
+        const widthPercentVel = Math.min(50, Math.abs(devVel) * 500);
 
         html += `
           <div class="flex flex-col bg-cardBg border border-borderPrim rounded-xl overflow-hidden shadow-xl shadow-borderPrim/10 ${layoutMode === 'grid' ? 'w-[300px] shrink-0' : ''}">
@@ -1661,9 +1701,9 @@
             <!-- Live Calculated Conduit results -->
             <div class="p-4 bg-inputBg/80 border-t border-borderPrim space-y-2.5">
               <div class="flex items-center justify-between font-bold">
-                <span class="text-[10px] font-mono text-amber-500 uppercase tracking-wider">Diff. Pressure (DP)</span>
+                <span class="text-[10px] font-mono text-amber-500 uppercase tracking-wider font-semibold">Corr. Velocity Head (DP)</span>
                 <span id="conduit-${c.id}-lbl-dp" class="text-xs font-mono font-bold text-amber-500">
-                  ${m.hasValidReadings ? `${m.dp.toFixed(4)} inWC` : '0.0000 inWC'}
+                  ${m.hasValidReadings ? `${m.dp.toFixed(4)}` : '0.0000'}
                 </span>
               </div>
               <div class="flex items-center justify-between">
@@ -1687,7 +1727,7 @@
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-mono text-appTextSec uppercase">Volume Flow</span>
                 <span id="conduit-${c.id}-lbl-vol-flow" class="text-xs font-mono text-appTextTer">
-                  ${m.hasValidReadings ? `${m.volFlow.toFixed(1)} acfm` : '0.0 acfm'}
+                  ${m.hasValidReadings ? `${m.volFlow.toFixed(1)} ft³/hr` : '0.0 ft³/hr'}
                 </span>
               </div>
               <div class="flex items-center justify-between">
@@ -1699,17 +1739,34 @@
 
               <div class="pt-2 border-t border-borderPrim/50 flex flex-col gap-1">
                 <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-mono text-appTextSec uppercase">Mean Deviation</span>
-                  <span id="conduit-${c.id}-lbl-deviation" class="text-xs font-mono font-semibold ${isWarn ? 'text-red-500' : 'text-emerald-500'}">
-                    ${m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0.0%'}
+                  <span class="text-[10px] font-mono text-appTextSec uppercase">Mass Flow Dev. (Dev 1)</span>
+                  <span id="conduit-${c.id}-lbl-deviation-mass" class="text-xs font-mono font-semibold ${isWarnMass ? 'text-red-500' : 'text-emerald-500'}">
+                    ${m.hasValidReadings ? `${(devMass * 100).toFixed(1)}%` : '0.0%'}
                   </span>
                 </div>
 
-                <!-- deviation visual miniature line -->
-                <div id="conduit-${c.id}-visual-miniature">
+                <!-- deviation visual miniature line for mass flow -->
+                <div id="conduit-${c.id}-visual-miniature-mass">
                   ${m.hasValidReadings ? `
                     <div class="w-full h-1 bg-inputBg rounded-full overflow-hidden mt-1 relative">
-                      <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarn ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${widthPercent}%; ${dev >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
+                      <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarnMass ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${widthPercentMass}%; ${devMass >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
+                      <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim"></div>
+                    </div>
+                  ` : ''}
+                </div>
+
+                <div class="flex items-center justify-between mt-1">
+                  <span class="text-[10px] font-mono text-appTextSec uppercase">Air Velocity Dev. (Dev 2)</span>
+                  <span id="conduit-${c.id}-lbl-deviation-vel" class="text-xs font-mono font-semibold ${isWarnVel ? 'text-amber-500' : 'text-teal-500'}">
+                    ${m.hasValidReadings ? `${(devVel * 100).toFixed(1)}%` : '0.0%'}
+                  </span>
+                </div>
+
+                <!-- deviation visual miniature line for air velocity -->
+                <div id="conduit-${c.id}-visual-miniature-vel">
+                  ${m.hasValidReadings ? `
+                    <div class="w-full h-1 bg-inputBg rounded-full overflow-hidden mt-1 relative">
+                      <div class="h-full absolute left-1/2 transition-all duration-300 ${isWarnVel ? 'bg-amber-500' : 'bg-teal-500'}" style="width: ${widthPercentVel}%; ${devVel >= 0 ? 'left: 50%' : 'transform: translateX(-100%)'}"></div>
                       <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim"></div>
                     </div>
                   ` : ''}
@@ -1752,59 +1809,98 @@
     }
 
     // Render Deviations bar charts
-    function renderDeviationsGraph(metrics, deviations) {
+    function renderDeviationsGraph(metrics, devMassFlow, devAirVelocity) {
       const graphContainer = document.getElementById('deviations-graph-rows');
       if (!graphContainer) return;
 
       graphContainer.innerHTML = appState.conduits.map(c => {
         const m = metrics.find(met => met.id === c.id);
-        const devVal = deviations[c.id] || 0;
-        const devPctStr = (devVal * 100).toFixed(1);
-        const isExceeds = Math.abs(devVal) > 0.05 && m.hasValidReadings;
-        const normalizedWidth = Math.min(50, Math.abs(devVal) * 100);
+        const devValMass = devMassFlow[c.id] || 0;
+        const devValVel = devAirVelocity[c.id] || 0;
+
+        const devPctMassStr = (devValMass * 100).toFixed(1);
+        const devPctVelStr = (devValVel * 100).toFixed(1);
+
+        const isExceedsMass = Math.abs(devValMass) > 0.05 && m.hasValidReadings;
+        const isExceedsVel = Math.abs(devValVel) > 0.05 && m.hasValidReadings;
+
+        const normalizedWidthMass = Math.min(50, Math.abs(devValMass) * 100);
+        const normalizedWidthVel = Math.min(50, Math.abs(devValVel) * 100);
 
         return `
-          <div class="grid grid-cols-1 md:grid-cols-12 items-center gap-3">
-            <div class="md:col-span-2 flex items-center justify-between md:justify-start gap-2">
+          <div class="bg-inputBg/30 border border-borderPrim/50 rounded-xl p-4 space-y-3 shadow-sm">
+            <div class="flex items-center justify-between border-b border-borderPrim/50 pb-2">
               <span class="text-xs font-mono font-bold text-appText">Conduit ${c.id}</span>
-              ${!m.hasValidReadings ? `
-                <span class="text-[10px] font-mono text-appTextTer">(No Data)</span>
-              ` : isExceeds ? `
-                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded">EXCEEDS</span>
-              ` : `
-                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded">BALANCED</span>
-              `}
-            </div>
-
-            <div class="md:col-span-2 text-right text-xs font-mono text-appTextSec md:pr-4">
-              ${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/h` : '0.000'}
-            </div>
-
-            <!-- deviation range bar -->
-            <div class="md:col-span-6 relative h-6 bg-inputBg border border-borderPrim rounded-lg overflow-hidden flex items-center">
-              <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim z-10"></div>
-              <div class="absolute left-[25%] top-0 bottom-0 w-[1px] bg-borderPrim/30 border-dashed"></div>
-              <div class="absolute left-[75%] top-0 bottom-0 w-[1px] bg-borderPrim/30 border-dashed"></div>
-
-              ${m.hasValidReadings ? `
-                <div class="absolute h-full transition-all duration-300 ${
-                  isExceeds ? 'bg-gradient-to-r from-red-500/10 to-red-500' : 'bg-gradient-to-r from-emerald-500/10 to-emerald-500'
-                }" style="width: ${normalizedWidth}%; ${devVal < 0 ? 'right: 50%' : 'left: 50%'}"></div>
-              ` : ''}
-
-              <div class="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[10px] font-mono z-20">
-                <span class="text-appTextTer">-50%</span>
-                <span class="text-appTextTer">0%</span>
-                <span class="text-appTextTer">+50%</span>
+              <div class="flex gap-4 text-[10px] font-mono">
+                <div>
+                  <span class="text-appTextSec">Mass Flow:</span>
+                  <span class="font-bold text-appText">${m.hasValidReadings ? `${m.massFlow.toFixed(3)} k lb/h` : '0.000'}</span>
+                </div>
+                <div>
+                  <span class="text-appTextSec">Velocity:</span>
+                  <span class="font-bold text-appText">${m.hasValidReadings ? `${m.avgVelocity.toFixed(0)} fpm` : '0'}</span>
+                </div>
               </div>
             </div>
 
-            <div class="md:col-span-2 text-right font-mono text-xs font-semibold">
-              ${m.hasValidReadings ? `
-                <span class="${isExceeds ? 'text-red-500' : 'text-emerald-500'}">
-                  ${devVal >= 0 ? '+' : ''}${devPctStr}%
-                </span>
-              ` : '<span class="text-appTextTer">0.0%</span>'}
+            <!-- Row 1: Mass Flow Deviation -->
+            <div class="grid grid-cols-1 md:grid-cols-12 items-center gap-2">
+              <div class="md:col-span-3 text-[10px] font-mono text-appTextSec flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full ${isExceedsMass ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}"></span>
+                Mass Flow Deviation
+              </div>
+              <div class="md:col-span-7 relative h-5 bg-inputBg border border-borderPrim rounded-md overflow-hidden flex items-center">
+                <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim z-10"></div>
+                <div class="absolute left-[25%] top-0 bottom-0 w-[1px] bg-borderPrim/30 border-dashed"></div>
+                <div class="absolute left-[75%] top-0 bottom-0 w-[1px] bg-borderPrim/30 border-dashed"></div>
+                ${m.hasValidReadings ? `
+                  <div class="absolute h-full transition-all duration-300 ${
+                    isExceedsMass ? 'bg-gradient-to-r from-red-500/10 to-red-500' : 'bg-gradient-to-r from-emerald-500/10 to-emerald-500'
+                  }" style="width: ${normalizedWidthMass}%; ${devValMass < 0 ? 'right: 50%' : 'left: 50%'}"></div>
+                ` : ''}
+                <div class="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[8px] font-mono z-20">
+                  <span class="text-appTextTer">-50%</span>
+                  <span class="text-appTextTer">0%</span>
+                  <span class="text-appTextTer">+50%</span>
+                </div>
+              </div>
+              <div class="md:col-span-2 text-right font-mono text-xs font-semibold">
+                ${m.hasValidReadings ? `
+                  <span class="${isExceedsMass ? 'text-red-500' : 'text-emerald-500'}">
+                    ${devValMass >= 0 ? '+' : ''}${devPctMassStr}%
+                  </span>
+                ` : '<span class="text-appTextTer">0.0%</span>'}
+              </div>
+            </div>
+
+            <!-- Row 2: Air Velocity Deviation -->
+            <div class="grid grid-cols-1 md:grid-cols-12 items-center gap-2">
+              <div class="md:col-span-3 text-[10px] font-mono text-appTextSec flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full ${isExceedsVel ? 'bg-amber-500 animate-pulse' : 'bg-teal-500'}"></span>
+                Air Velocity Deviation
+              </div>
+              <div class="md:col-span-7 relative h-5 bg-inputBg border border-borderPrim rounded-md overflow-hidden flex items-center">
+                <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-borderPrim z-10"></div>
+                <div class="absolute left-[25%] top-0 bottom-0 w-[1px] bg-borderPrim/30 border-dashed"></div>
+                <div class="absolute left-[75%] top-0 bottom-0 w-[1px] bg-borderPrim/30 border-dashed"></div>
+                ${m.hasValidReadings ? `
+                  <div class="absolute h-full transition-all duration-300 ${
+                    isExceedsVel ? 'bg-gradient-to-r from-amber-500/10 to-amber-500' : 'bg-gradient-to-r from-teal-500/10 to-teal-500'
+                  }" style="width: ${normalizedWidthVel}%; ${devValVel < 0 ? 'right: 50%' : 'left: 50%'}"></div>
+                ` : ''}
+                <div class="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[8px] font-mono z-20">
+                  <span class="text-appTextTer">-50%</span>
+                  <span class="text-appTextTer">0%</span>
+                  <span class="text-appTextTer">+50%</span>
+                </div>
+              </div>
+              <div class="md:col-span-2 text-right font-mono text-xs font-semibold">
+                ${m.hasValidReadings ? `
+                  <span class="${isExceedsVel ? 'text-amber-500' : 'text-teal-500'}">
+                    ${devValVel >= 0 ? '+' : ''}${devPctVelStr}%
+                  </span>
+                ` : '<span class="text-appTextTer">0.0%</span>'}
+              </div>
             </div>
           </div>
         `;
@@ -2119,30 +2215,42 @@
         body += `- Size: ${dataset.conduitSize} in | Baro: ${dataset.barometricPressure} inHg\n`;
         body += `- Ambient: ${dataset.ambientTemp} °F | Pitot Coeff: ${dataset.pitotCoefficient}\n\n`;
 
-        const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
-        const avgMassFlow = totalMassFlow / (metrics.length || 1);
-        const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
-        const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+        const totalMassFlow = metrics.reduce((sum, m) => sum + m.massFlow, 0);
+        const avgMassFlow = totalMassFlow / 4;
+        const sumVelocity = metrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+        const avgVelocity = sumVelocity / (metrics.length || 1);
 
         body += `SUMMARY METRICS:\n`;
-        body += `  - Total Mass Flow: ${totalMassFlow.toFixed(3)} k lb/hr\n`;
-        body += `  - Average Mass Flow: ${avgMassFlow.toFixed(3)} k lb/hr\n`;
+        body += `  - Total Mass Flow Rate: ${totalMassFlow.toFixed(3)} k lb/hr\n`;
+        body += `  - Average Mass Flow Rate (Total / 4): ${avgMassFlow.toFixed(3)} k lb/hr\n`;
         body += `  - Average Air Velocity: ${avgVelocity.toFixed(1)} fpm\n\n`;
 
-        const deviations = {};
+        const devMassFlow = {};
+        const devAirVelocity = {};
         metrics.forEach(m => {
-          deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+          devMassFlow[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+          devAirVelocity[m.id] = avgVelocity > 0 ? (avgVelocity - m.avgVelocity) / avgVelocity : 0;
         });
 
         body += `CONDUITS DETAILS:\n`;
         metrics.forEach((m) => {
           if (!m.hasValidReadings) return;
           const cData = dataset.conduits.find((c) => c.id === m.id);
-          const dev = deviations[m.id] || 0;
-          const devPct = (dev * 100).toFixed(1);
-          const isWarn = Math.abs(dev) > 0.05;
+          const devM = devMassFlow[m.id] || 0;
+          const devV = devAirVelocity[m.id] || 0;
+          const devPctM = (devM * 100).toFixed(1);
+          const devPctV = (devV * 100).toFixed(1);
+          const isWarnM = Math.abs(devM) > 0.05;
+          const isWarnV = Math.abs(devV) > 0.05;
 
-          body += `  * Conduit ${m.id}: Static ${cData.staticPressure || '0'} inWC | Temp ${cData.temperature || dataset.ambientTemp} °F | Vel ${m.avgVelocity.toFixed(0)} fpm | Flow ${m.massFlow.toFixed(3)} k lb/hr | Dev ${devPct}% ${isWarn ? '⚠️ (>5% Limit)' : '(OK)'}\n`;
+          body += `  * Conduit ${m.id}:\n`;
+          body += `    - Static Pressure: ${cData.staticPressure || '0'} inWC\n`;
+          body += `    - Gas Temp: ${cData.temperature || dataset.ambientTemp} °F\n`;
+          body += `    - Density: ${m.density.toFixed(4)} lb/ft³\n`;
+          body += `    - Conduit Area: ${m.areaSqFt.toFixed(4)} ft²\n`;
+          body += `    - Volume Flow Rate: ${m.volFlow.toFixed(1)} ft³/hr\n`;
+          body += `    - Gas Velocity: ${m.avgVelocity.toFixed(0)} fpm | Dev 2 (Air Velocity): ${devPctV}% ${isWarnV ? '⚠️ (>5% Limit)' : '(OK)'}\n`;
+          body += `    - Mass Flow Rate: ${m.massFlow.toFixed(3)} k lb/hr | Dev 1 (Mass Flow): ${devPctM}% ${isWarnM ? '⚠️ (>5% Limit)' : '(OK)'}\n`;
         });
         body += `\n`;
       });
@@ -2195,14 +2303,16 @@
         );
 
         const activeMetrics = metrics.filter(m => m.hasValidReadings);
-        const totalMassFlow = activeMetrics.reduce((sum, m) => sum + m.massFlow, 0);
-        const avgMassFlow = totalMassFlow / (metrics.length || 1);
-        const totalVelocityActive = activeMetrics.reduce((sum, m) => sum + m.avgVelocity, 0);
-        const avgVelocity = activeMetrics.length > 0 ? totalVelocityActive / activeMetrics.length : 0;
+        const totalMassFlow = metrics.reduce((sum, m) => sum + m.massFlow, 0);
+        const avgMassFlow = totalMassFlow / 4;
+        const sumVelocity = metrics.reduce((sum, m) => sum + m.avgVelocity, 0);
+        const avgVelocity = sumVelocity / (metrics.length || 1);
 
-        const deviations = {};
+        const devMassFlow = {};
+        const devAirVelocity = {};
         metrics.forEach(m => {
-          deviations[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+          devMassFlow[m.id] = avgMassFlow > 0 ? (avgMassFlow - m.massFlow) / avgMassFlow : 0;
+          devAirVelocity[m.id] = avgVelocity > 0 ? (avgVelocity - m.avgVelocity) / avgVelocity : 0;
         });
 
         const rows = [
@@ -2217,7 +2327,7 @@
           [],
           ['Consolidated Performance Summary', 'Value', 'Unit'],
           ['Total Mass Flow Rate', parseFloat(totalMassFlow.toFixed(3)), 'k lb/hr'],
-          ['Average Mass Flow Rate', parseFloat(avgMassFlow.toFixed(3)), 'k lb/hr'],
+          ['Average Mass Flow Rate (Total / 4)', parseFloat(avgMassFlow.toFixed(3)), 'k lb/hr'],
           ['Average Gas Velocity', parseFloat(avgVelocity.toFixed(1)), 'fpm'],
           [],
           ['Conduit Multi-Point Matrix Details'],
@@ -2228,14 +2338,18 @@
         rows.push(conduitHeaders);
         rows.push(['Static Pressure (inWC)', ...dataset.conduits.map(c => c.staticPressure ? parseFloat(c.staticPressure) : 0)]);
         rows.push(['Gas Temperature (°F)', ...dataset.conduits.map(c => c.temperature ? parseFloat(c.temperature) : ambient)]);
-        rows.push(['DP (inWC)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.dp.toFixed(4)) : 'N/A')]);
+        rows.push(['Corr. Velocity Head (DP)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.dp.toFixed(4)) : 'N/A')]);
         rows.push(['Density (lb/ft3)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.density.toFixed(4)) : 'N/A')]);
         rows.push(['Conduit Area (ft2)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.areaSqFt.toFixed(4)) : 'N/A')]);
         rows.push(['Gas Velocity (fpm)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.avgVelocity.toFixed(1)) : 0)]);
-        rows.push(['Volume Flow Rate (acfm)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.volFlow.toFixed(1)) : 0)]);
+        rows.push(['Volume Flow Rate (ft3/hr)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.volFlow.toFixed(1)) : 0)]);
         rows.push(['Mass Flow (k lb/hr)', ...metrics.map(m => m.hasValidReadings ? parseFloat(m.massFlow.toFixed(3)) : 0)]);
-        rows.push(['Mean Deviation (%)', ...metrics.map(m => {
-          const dev = deviations[m.id] || 0;
+        rows.push(['Dev 1: Mass Flow Dev (%)', ...metrics.map(m => {
+          const dev = devMassFlow[m.id] || 0;
+          return m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0%';
+        })]);
+        rows.push(['Dev 2: Air Velocity Dev (%)', ...metrics.map(m => {
+          const dev = devAirVelocity[m.id] || 0;
           return m.hasValidReadings ? `${(dev * 100).toFixed(1)}%` : '0%';
         })]);
 
