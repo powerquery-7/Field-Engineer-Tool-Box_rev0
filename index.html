@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Field Engineer Toolbox</title>
+  <title>Performance Engineer Field Toolbox</title>
   
   <!-- Inter & JetBrains Mono Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -128,7 +128,7 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-appText font-mono font-bold text-base md:text-lg tracking-tight">
-              Field Engineer Toolbox System
+              Performance Engineer Field Toolbox
             </h1>
             <span class="text-[10px] font-mono px-1.5 py-0.5 bg-inputBg border border-borderPrim text-appTextSec rounded">
               v2.7 (JS)
@@ -1369,7 +1369,9 @@
     // Run ASME calculations on a single conduit
     function calculateConduitMetrics(conduit, size, baro, ambient, pitot) {
       const allReadings = [...conduit.port1Readings, ...conduit.port2Readings];
+      // Filter out blanks and 0 values from the 24 input boxes
       const validReadings = allReadings
+        .map(v => typeof v === 'string' ? v.trim() : v)
         .map(parseFloat)
         .filter(val => !isNaN(val) && val > 0);
 
@@ -1378,37 +1380,37 @@
 
       let average_vh = 0;
       if (hasValidReadings) {
-        // Step 1: each input box (total of 24) should be square root
+        // Step 1: Excel column D = SQRT(C_i)
         const sqrtReadings = validReadings.map(v => Math.sqrt(v));
-        // Step 2: get the average of the square root
+        // Step 2: C42 average velocity (sqrt v) = AVERAGEIF(D14:D38, "<>0")
         const sumSqrt = sqrtReadings.reduce((sum, v) => sum + v, 0);
         average_vh = sumSqrt / count;
       }
 
-      // Step 3: average_velocity_head_corr = 1.573 * average_vh^2 * pitot^2
+      // C43: average velocity_corr = 1.573 * C42^2 * C5^2
       const dp = 1.573 * (average_vh * average_vh) * (pitot * pitot);
 
       const pStatic = parseFloat(conduit.staticPressure) || 0;
       const tF = parseFloat(conduit.temperature) || ambient;
 
-      // Step 4: density (lb/ft^3) = (530/(460+conduit temperature)) * ((29.92 + (conduit static pressure * 0.0738))/29.92) * (0.075)
-      const pStaticInHg = pStatic * 0.0738;
-      const density = (530 / (460 + tF)) * ((29.92 + pStaticInHg) / 29.92) * 0.075;
+      // C44: conduit fluid density = (530/(460+conduit_temp))*((29.92+((static_pressure_inWC*0.0738/13.6)))/29.92)*(0.075)
+      const density = (530 / (460 + tF)) * ((29.92 + ((pStatic * 0.0738) / 13.6)) / 29.92) * 0.075;
 
-      // Step 6: duct_area (ft^2) = diameter^2 * pi / 4 / 144
-      const areaSqFt = (Math.PI * (size / 2) * (size / 2)) / 144;
+      // C46: conduit area = PI() * (C2^2) / 4 / 144
+      const areaSqFt = (Math.PI * Math.pow(size, 2)) / 4 / 144;
 
-      // Step 5: average_velocity (ft per min) = 1093 * average_vh * pitot / sqrt (density)
+      // C45: average velocity_vector = 1096 * (C42) / SQRT(C44) * C5
       let avgVelocity = 0;
       if (density > 0 && hasValidReadings) {
-        avgVelocity = (1093 * average_vh * pitot) / Math.sqrt(density);
+        avgVelocity = (1096 * average_vh * pitot) / Math.sqrt(density);
       }
 
-      // Step 7: volume_flow_rate (ft^3/hr) = average_velocity (ft per min) * duct_area (ft^2) * 60
-      const volFlow = avgVelocity * areaSqFt * 60;
+      // C47: conduit volume flow rate = C46 * C45 (ft^3/min; * 60 for ft^3/hr)
+      const volFlowMin = avgVelocity * areaSqFt;
+      const volFlow = volFlowMin * 60; // ft^3/hr
 
-      // Step 8: mass_flow_rate (klb/hr) = volume_flow_rate (ft^3/hr) * density (lb/ft^3) / 1000
-      const massFlow = (volFlow * density) / 1000;
+      // C48: conduit mass flow rate = C47 * C44 * 60 / 1000 (klb/hr)
+      const massFlow = (volFlowMin * density * 60) / 1000;
 
       return {
         id: conduit.id,
@@ -2259,7 +2261,7 @@
         body += `No active isokinetic measurements found for the selected scope. Open Workspace to populate points.\n`;
       }
 
-      body += `\nSent via Field Engineer Toolbox System.`;
+      body += `\nSent via Performance Engineer Field Toolbox.`;
       return body;
     }
 
@@ -3234,7 +3236,7 @@
         body += `No inspected pump units logged for the selected scope. Open Pump Performance workspace to populate data.\n`;
       }
 
-      body += `\nGenerated via Standalone Field Engineer Toolbox.`;
+      body += `\nGenerated via Standalone Performance Engineer Field Toolbox.`;
       return body;
     }
 
