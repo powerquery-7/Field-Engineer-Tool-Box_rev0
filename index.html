@@ -603,13 +603,13 @@
           </div>
           
           <!-- Facility Selection for Pumps -->
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-            <!-- Global Unit System Toggle -->
-            <div class="flex items-center gap-1 bg-inputBg p-1 border border-borderPrim rounded-lg">
-              <button id="btn-unit-system-metric" onclick="setGlobalUnitSystem('metric')" class="px-2.5 py-1 rounded text-[11px] font-mono font-bold transition-all bg-amber-500 text-neutral-950 shadow cursor-pointer">
-                Metric (Default)
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 shrink-0">
+            <!-- Global Unit System Toggle (Centered) -->
+            <div class="flex items-center justify-center gap-1 bg-inputBg p-1 border border-borderPrim rounded-lg">
+              <button id="btn-unit-system-metric" onclick="setGlobalUnitSystem('metric')" class="px-3 py-1 rounded text-[11px] font-mono font-bold transition-all bg-amber-500 text-neutral-950 shadow cursor-pointer">
+                Metric
               </button>
-              <button id="btn-unit-system-english" onclick="setGlobalUnitSystem('english')" class="px-2.5 py-1 rounded text-[11px] font-mono font-bold transition-all text-appTextSec hover:text-appText cursor-pointer">
+              <button id="btn-unit-system-english" onclick="setGlobalUnitSystem('english')" class="px-3 py-1 rounded text-[11px] font-mono font-bold transition-all text-appTextSec hover:text-appText cursor-pointer">
                 English
               </button>
             </div>
@@ -665,15 +665,15 @@
             <div>
               <h4 class="text-appText font-sans font-semibold text-sm flex items-center gap-2">
                 <i data-lucide="edit-3" class="text-amber-400 h-4.5 w-4.5"></i>
-                <span id="lbl-active-pump-inputs-title">Inspection Inputs: Boiler Feed Pump</span>
+                <span id="lbl-active-pump-inputs-title">Step 2: Inspection Inputs: Boiler Feed Pump</span>
               </h4>
               <p class="text-appTextTer text-[11px]">Follow the numbered steps to fill physical gauge values, motor telemetry, and fluid constants.</p>
             </div>
             <span class="text-[10px] font-mono font-bold px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-md">Step-by-Step Guided</span>
           </div>
 
-          <!-- Hidden Camera File Input for Mobile Device Camera Capture -->
-          <input type="file" id="camera-file-input" accept="image/*" capture="environment" class="hidden" onchange="handleCameraCaptureEvent(event)" />
+          <!-- Hidden Camera File Input for Mobile Device Camera & Video Capture -->
+          <input type="file" id="camera-file-input" accept="image/*,video/*" capture="environment" class="hidden" onchange="handleCameraCaptureEvent(event)" />
 
           <div class="space-y-5">
             
@@ -701,42 +701,57 @@
 
                 <!-- Specific Gravity & Temperature -->
                 <div class="space-y-1">
-                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Specific Gravity (SG)</label>
+                  <div class="flex justify-between items-center">
+                    <label class="block text-[10px] font-mono text-appTextSec uppercase">Specific Gravity (SG)</label>
+                    <span id="ref-label-sg" class="text-[9px] font-mono text-appTextTer">Ref: 1.00</span>
+                  </div>
                   <input id="input-pump-sg" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                 </div>
 
                 <div class="space-y-1">
                   <div class="flex justify-between items-center">
                     <label class="block text-[10px] font-mono text-appTextSec uppercase">Fluid Temp</label>
-                    <select id="select-pump-unit-temp" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                      <option value="C">°C</option>
-                      <option value="F">°F</option>
-                    </select>
+                    <div class="flex items-center gap-1.5">
+                      <span id="ref-label-temp" class="text-[9px] font-mono text-appTextTer">Ref: 30°C</span>
+                      <select id="select-pump-unit-temp" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                        <option value="C">°C</option>
+                        <option value="F">°F</option>
+                      </select>
+                    </div>
                   </div>
                   <input id="input-pump-temp" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                 </div>
 
                 <!-- Rated Speed & Actual Shaft Speed -->
                 <div class="space-y-1">
-                  <label class="block text-[10px] font-mono text-appTextSec uppercase">Rated Speed (RPM)</label>
-                  <input id="input-pump-nrated" type="number" step="any" placeholder="3600" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                  <div class="flex justify-between items-center">
+                    <label class="block text-[10px] font-mono text-appTextSec uppercase">Rated Speed (RPM)</label>
+                    <span id="ref-label-nrated" class="text-[9px] font-mono text-appTextTer">Ref: 3600</span>
+                  </div>
+                  <input id="input-pump-nrated" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                 </div>
 
                 <div class="space-y-1">
-                  <label class="block text-[10px] font-mono text-amber-400 uppercase font-bold">Actual Speed (RPM)</label>
-                  <input id="input-pump-nact" type="number" step="any" placeholder="3550" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right font-bold" />
+                  <div class="flex justify-between items-center">
+                    <label class="block text-[10px] font-mono text-amber-400 uppercase font-bold">Actual Speed (RPM)</label>
+                    <span id="ref-label-nact" class="text-[9px] font-mono text-appTextTer">Ref: 3560</span>
+                  </div>
+                  <input id="input-pump-nact" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right font-bold" />
                 </div>
 
                 <!-- Barometric & Vapor Pressure -->
                 <div class="space-y-1">
                   <div class="flex justify-between items-center">
                     <label class="block text-[10px] font-mono text-appTextSec uppercase">Baro. Press</label>
-                    <select id="select-pump-unit-pbaro" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                      <option value="kPa">kPa</option>
-                      <option value="PSI">PSI</option>
-                      <option value="mbar">mbar</option>
-                      <option value="Bar">Bar</option>
-                    </select>
+                    <div class="flex items-center gap-1.5">
+                      <span id="ref-label-pbaro" class="text-[9px] font-mono text-appTextTer">Ref: 101.3 kPa</span>
+                      <select id="select-pump-unit-pbaro" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                        <option value="kPa">kPa</option>
+                        <option value="PSI">PSI</option>
+                        <option value="mbar">mbar</option>
+                        <option value="Bar">Bar</option>
+                      </select>
+                    </div>
                   </div>
                   <input id="input-pump-pbaro" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                 </div>
@@ -744,12 +759,15 @@
                 <div class="space-y-1">
                   <div class="flex justify-between items-center">
                     <label class="block text-[10px] font-mono text-appTextSec uppercase">Vapor Press</label>
-                    <select id="select-pump-unit-pv" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                      <option value="kPa">kPa</option>
-                      <option value="PSI">PSI</option>
-                      <option value="mbar">mbar</option>
-                      <option value="Bar">Bar</option>
-                    </select>
+                    <div class="flex items-center gap-1.5">
+                      <span id="ref-label-pv" class="text-[9px] font-mono text-appTextTer">Ref: 4.2 kPa</span>
+                      <select id="select-pump-unit-pv" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                        <option value="kPa">kPa</option>
+                        <option value="PSI">PSI</option>
+                        <option value="mbar">mbar</option>
+                        <option value="Bar">Bar</option>
+                      </select>
+                    </div>
                   </div>
                   <input id="input-pump-pv" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                 </div>
@@ -772,7 +790,7 @@
                   <span class="text-[10px] font-mono text-amber-400 uppercase font-bold">Suction Line Inlet Readings</span>
                   <button onclick="triggerCameraCapture('ps')" class="inline-flex items-center gap-1 px-2 py-0.5 bg-cardBg hover:bg-amber-500 hover:text-neutral-950 border border-borderPrim text-appTextSec rounded text-[10px] font-mono transition-colors cursor-pointer">
                     <i data-lucide="camera" class="h-3 w-3"></i>
-                    <span>Snap Suction Gauge</span>
+                    <span id="lbl-snap-ps">Attach Media (0/5)</span>
                   </button>
                 </div>
                 
@@ -780,13 +798,16 @@
                   <div class="space-y-1">
                     <div class="flex justify-between items-center">
                       <label class="block text-[9px] font-mono text-appTextSec uppercase">Suction Press</label>
-                      <select id="select-pump-unit-ps" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                        <option value="Bar">Bar</option>
-                        <option value="PSI">PSI</option>
-                        <option value="MPa">MPa</option>
-                        <option value="kPa">kPa</option>
-                        <option value="Pa">Pa</option>
-                      </select>
+                      <div class="flex items-center gap-1.5">
+                        <span id="ref-label-ps" class="text-[9px] font-mono text-appTextTer">Ref: 2.50 Bar</span>
+                        <select id="select-pump-unit-ps" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                          <option value="Bar">Bar</option>
+                          <option value="PSI">PSI</option>
+                          <option value="MPa">MPa</option>
+                          <option value="kPa">kPa</option>
+                          <option value="Pa">Pa</option>
+                        </select>
+                      </div>
                     </div>
                     <input id="input-pump-ps" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                   </div>
@@ -794,13 +815,16 @@
                   <div class="space-y-1">
                     <div class="flex justify-between items-center">
                       <label class="block text-[9px] font-mono text-appTextSec uppercase">Pipe Diam</label>
-                      <select id="select-pump-unit-ds" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                        <option value="mm">mm</option>
-                        <option value="cm">cm</option>
-                        <option value="m">m</option>
-                        <option value="in">in</option>
-                        <option value="ft">ft</option>
-                      </select>
+                      <div class="flex items-center gap-1.5">
+                        <span id="ref-label-ds" class="text-[9px] font-mono text-appTextTer">Ref: 200 mm</span>
+                        <select id="select-pump-unit-ds" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                          <option value="mm">mm</option>
+                          <option value="cm">cm</option>
+                          <option value="m">m</option>
+                          <option value="in">in</option>
+                          <option value="ft">ft</option>
+                        </select>
+                      </div>
                     </div>
                     <input id="input-pump-ds" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                   </div>
@@ -808,13 +832,16 @@
                   <div class="space-y-1">
                     <div class="flex justify-between items-center">
                       <label class="block text-[9px] font-mono text-appTextSec uppercase">Elevation</label>
-                      <select id="select-pump-unit-zs" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                        <option value="m">m</option>
-                        <option value="cm">cm</option>
-                        <option value="mm">mm</option>
-                        <option value="ft">ft</option>
-                        <option value="in">in</option>
-                      </select>
+                      <div class="flex items-center gap-1.5">
+                        <span id="ref-label-zs" class="text-[9px] font-mono text-appTextTer">Ref: 1.0 m</span>
+                        <select id="select-pump-unit-zs" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                          <option value="m">m</option>
+                          <option value="cm">cm</option>
+                          <option value="mm">mm</option>
+                          <option value="ft">ft</option>
+                          <option value="in">in</option>
+                        </select>
+                      </div>
                     </div>
                     <input id="input-pump-zs" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                   </div>
@@ -832,7 +859,7 @@
                   <span class="text-[10px] font-mono text-amber-400 uppercase font-bold">Discharge Line Outlet Readings</span>
                   <button onclick="triggerCameraCapture('pd')" class="inline-flex items-center gap-1 px-2 py-0.5 bg-cardBg hover:bg-amber-500 hover:text-neutral-950 border border-borderPrim text-appTextSec rounded text-[10px] font-mono transition-colors cursor-pointer">
                     <i data-lucide="camera" class="h-3 w-3"></i>
-                    <span>Snap Discharge Gauge</span>
+                    <span id="lbl-snap-pd">Attach Media (0/5)</span>
                   </button>
                 </div>
 
@@ -840,13 +867,16 @@
                   <div class="space-y-1">
                     <div class="flex justify-between items-center">
                       <label class="block text-[9px] font-mono text-appTextSec uppercase">Disch. Press</label>
-                      <select id="select-pump-unit-pd" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                        <option value="Bar">Bar</option>
-                        <option value="PSI">PSI</option>
-                        <option value="MPa">MPa</option>
-                        <option value="kPa">kPa</option>
-                        <option value="Pa">Pa</option>
-                      </select>
+                      <div class="flex items-center gap-1.5">
+                        <span id="ref-label-pd" class="text-[9px] font-mono text-appTextTer">Ref: 22.00 Bar</span>
+                        <select id="select-pump-unit-pd" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                          <option value="Bar">Bar</option>
+                          <option value="PSI">PSI</option>
+                          <option value="MPa">MPa</option>
+                          <option value="kPa">kPa</option>
+                          <option value="Pa">Pa</option>
+                        </select>
+                      </div>
                     </div>
                     <input id="input-pump-pd" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                   </div>
@@ -854,13 +884,16 @@
                   <div class="space-y-1">
                     <div class="flex justify-between items-center">
                       <label class="block text-[9px] font-mono text-appTextSec uppercase">Pipe Diam</label>
-                      <select id="select-pump-unit-dd" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                        <option value="mm">mm</option>
-                        <option value="cm">cm</option>
-                        <option value="m">m</option>
-                        <option value="in">in</option>
-                        <option value="ft">ft</option>
-                      </select>
+                      <div class="flex items-center gap-1.5">
+                        <span id="ref-label-dd" class="text-[9px] font-mono text-appTextTer">Ref: 150 mm</span>
+                        <select id="select-pump-unit-dd" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                          <option value="mm">mm</option>
+                          <option value="cm">cm</option>
+                          <option value="m">m</option>
+                          <option value="in">in</option>
+                          <option value="ft">ft</option>
+                        </select>
+                      </div>
                     </div>
                     <input id="input-pump-dd" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                   </div>
@@ -868,13 +901,16 @@
                   <div class="space-y-1">
                     <div class="flex justify-between items-center">
                       <label class="block text-[9px] font-mono text-appTextSec uppercase">Elevation</label>
-                      <select id="select-pump-unit-zd" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                        <option value="m">m</option>
-                        <option value="cm">cm</option>
-                        <option value="mm">mm</option>
-                        <option value="ft">ft</option>
-                        <option value="in">in</option>
-                      </select>
+                      <div class="flex items-center gap-1.5">
+                        <span id="ref-label-zd" class="text-[9px] font-mono text-appTextTer">Ref: 2.5 m</span>
+                        <select id="select-pump-unit-zd" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                          <option value="m">m</option>
+                          <option value="cm">cm</option>
+                          <option value="mm">mm</option>
+                          <option value="ft">ft</option>
+                          <option value="in">in</option>
+                        </select>
+                      </div>
                     </div>
                     <input id="input-pump-zd" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                   </div>
@@ -892,7 +928,7 @@
                   <span class="text-[10px] font-mono text-amber-400 uppercase font-bold">Flow Meter & Hydraulic Loss</span>
                   <button onclick="triggerCameraCapture('q')" class="inline-flex items-center gap-1 px-2 py-0.5 bg-cardBg hover:bg-amber-500 hover:text-neutral-950 border border-borderPrim text-appTextSec rounded text-[10px] font-mono transition-colors cursor-pointer">
                     <i data-lucide="camera" class="h-3 w-3"></i>
-                    <span>Snap Flow Meter</span>
+                    <span id="lbl-snap-q">Attach Media (0/5)</span>
                   </button>
                 </div>
 
@@ -900,11 +936,14 @@
                   <div class="space-y-1">
                     <div class="flex justify-between items-center">
                       <label class="block text-[9px] font-mono text-appTextSec uppercase">Discharge Flow (Q)</label>
-                      <select id="select-pump-unit-q" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                        <option value="m3_hr">m³/hr</option>
-                        <option value="GPM">GPM</option>
-                        <option value="LPM">LPM</option>
-                      </select>
+                      <div class="flex items-center gap-1.5">
+                        <span id="ref-label-q" class="text-[9px] font-mono text-appTextTer">Ref: 350 m³/hr</span>
+                        <select id="select-pump-unit-q" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                          <option value="m3_hr">m³/hr</option>
+                          <option value="GPM">GPM</option>
+                          <option value="LPM">LPM</option>
+                        </select>
+                      </div>
                     </div>
                     <input id="input-pump-q" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right font-bold" />
                   </div>
@@ -912,12 +951,15 @@
                   <div class="space-y-1">
                     <div class="flex justify-between items-center">
                       <label class="block text-[9px] font-mono text-appTextSec uppercase">Friction Loss (hf)</label>
-                      <select id="select-pump-unit-hf" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
-                        <option value="m">m</option>
-                        <option value="ft">ft</option>
-                      </select>
+                      <div class="flex items-center gap-1.5">
+                        <span id="ref-label-hf" class="text-[9px] font-mono text-appTextTer">Ref: 0.5 m</span>
+                        <select id="select-pump-unit-hf" onchange="onPumpUnitChange()" class="bg-cardBg text-[9px] font-mono text-amber-400 border border-borderPrim rounded px-1 py-0.5 outline-none cursor-pointer">
+                          <option value="m">m</option>
+                          <option value="ft">ft</option>
+                        </select>
+                      </div>
                     </div>
-                    <input id="input-pump-hf" type="number" step="any" placeholder="0.5" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                    <input id="input-pump-hf" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                   </div>
                 </div>
 
@@ -942,30 +984,39 @@
                 <div class="space-y-1">
                   <div class="flex justify-between items-center">
                     <label class="block text-[9px] font-mono text-appTextSec uppercase">Voltage (V)</label>
-                    <button onclick="triggerCameraCapture('v')" class="inline-flex items-center gap-1 px-2 py-0.5 bg-cardBg hover:bg-amber-500 hover:text-neutral-950 border border-borderPrim text-appTextSec rounded text-[10px] font-mono transition-colors cursor-pointer">
-                      <i data-lucide="camera" class="h-3 w-3"></i>
-                      <span>Snap Voltmeter</span>
-                    </button>
+                    <div class="flex items-center gap-1.5">
+                      <span id="ref-label-v" class="text-[9px] font-mono text-appTextTer">Ref: 415 V</span>
+                      <button onclick="triggerCameraCapture('v')" class="inline-flex items-center gap-1 px-2 py-0.5 bg-cardBg hover:bg-amber-500 hover:text-neutral-950 border border-borderPrim text-appTextSec rounded text-[10px] font-mono transition-colors cursor-pointer">
+                        <i data-lucide="camera" class="h-3 w-3"></i>
+                        <span id="lbl-snap-v">Attach Media (0/5)</span>
+                      </button>
+                    </div>
                   </div>
-                  <input id="input-pump-v" type="number" step="any" placeholder="415" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                  <input id="input-pump-v" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                   <div id="thumb-container-v" class="hidden pt-1"></div>
                 </div>
 
                 <div class="space-y-1">
                   <div class="flex justify-between items-center">
                     <label class="block text-[9px] font-mono text-appTextSec uppercase">Current (Amp)</label>
-                    <button onclick="triggerCameraCapture('a')" class="inline-flex items-center gap-1 px-2 py-0.5 bg-cardBg hover:bg-amber-500 hover:text-neutral-950 border border-borderPrim text-appTextSec rounded text-[10px] font-mono transition-colors cursor-pointer">
-                      <i data-lucide="camera" class="h-3 w-3"></i>
-                      <span>Snap Ammeter</span>
-                    </button>
+                    <div class="flex items-center gap-1.5">
+                      <span id="ref-label-a" class="text-[9px] font-mono text-appTextTer">Ref: 180 A</span>
+                      <button onclick="triggerCameraCapture('a')" class="inline-flex items-center gap-1 px-2 py-0.5 bg-cardBg hover:bg-amber-500 hover:text-neutral-950 border border-borderPrim text-appTextSec rounded text-[10px] font-mono transition-colors cursor-pointer">
+                        <i data-lucide="camera" class="h-3 w-3"></i>
+                        <span id="lbl-snap-a">Attach Media (0/5)</span>
+                      </button>
+                    </div>
                   </div>
-                  <input id="input-pump-a" type="number" step="any" placeholder="85" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right font-bold text-amber-400" />
+                  <input id="input-pump-a" type="number" step="any" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right font-bold text-amber-400" />
                   <div id="thumb-container-a" class="hidden pt-1"></div>
                 </div>
 
                 <div class="space-y-1">
-                  <label class="block text-[9px] font-mono text-appTextSec uppercase">Power Factor (cos φ)</label>
-                  <input id="input-pump-pf" type="number" step="0.01" max="1.0" min="0.1" placeholder="0.88" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
+                  <div class="flex justify-between items-center">
+                    <label class="block text-[9px] font-mono text-appTextSec uppercase">Power Factor (cos φ)</label>
+                    <span id="ref-label-pf" class="text-[9px] font-mono text-appTextTer">Ref: 0.88</span>
+                  </div>
+                  <input id="input-pump-pf" type="number" step="0.01" max="1.0" min="0.1" class="w-full bg-inputBg border border-borderPrim focus:border-amber-500/50 outline-none text-appText font-mono text-xs px-2.5 py-1.5 rounded-lg text-right" />
                 </div>
               </div>
             </div>
@@ -1240,18 +1291,10 @@
             </button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <a id="lnk-pump-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
-              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-              Gmail Compose
-            </a>
-            <a id="lnk-pump-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
-              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-              Outlook Mail
-            </a>
-            <a id="lnk-pump-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              System Mailto
+          <div class="flex justify-center">
+            <a id="lnk-pump-mailto" href="#" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim hover:border-amber-500/50 rounded-xl text-xs font-mono text-appText font-bold transition-all cursor-pointer shadow-sm">
+              <i data-lucide="mail" class="h-4 w-4 text-amber-400"></i>
+              <span>Email</span>
             </a>
           </div>
         </div>
@@ -1415,18 +1458,10 @@
             </p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <a id="lnk-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
-              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-              Gmail Webmail
-            </a>
-            <a id="lnk-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
-              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-              Outlook Web
-            </a>
-            <a id="lnk-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              System Client
+          <div class="flex justify-center">
+            <a id="lnk-mailto" href="#" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim hover:border-amber-500/50 rounded-xl text-xs font-mono text-appText font-bold transition-all cursor-pointer shadow-sm">
+              <i data-lucide="mail" class="h-4 w-4 text-amber-400"></i>
+              <span>Email</span>
             </a>
           </div>
         </div>
@@ -1711,18 +1746,10 @@
             </p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <a id="lnk-pump-modal-gmail" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
-              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-              Gmail Compose
-            </a>
-            <a id="lnk-pump-modal-outlook" href="#" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
-              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-              Outlook Web
-            </a>
-            <a id="lnk-pump-modal-mailto" href="#" class="flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim rounded-lg text-xs font-mono text-appTextSec hover:text-appText transition-all">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              System Mailto
+          <div class="flex justify-center">
+            <a id="lnk-pump-modal-mailto" href="#" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cardBg hover:bg-inputBg border border-borderPrim hover:border-amber-500/50 rounded-xl text-xs font-mono text-appText font-bold transition-all cursor-pointer shadow-sm">
+              <i data-lucide="mail" class="h-4 w-4 text-amber-400"></i>
+              <span>Email</span>
             </a>
           </div>
         </div>
@@ -1753,6 +1780,34 @@
     </div>
   </div>
 
+
+  <!-- Media Attachment Preview Modal -->
+  <div id="modal-media-preview" class="fixed inset-0 bg-neutral-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden animate-fade-in">
+    <div class="bg-cardBg border border-borderPrim rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-borderSec bg-inputBg/60">
+        <div class="flex items-center gap-2">
+          <i data-lucide="image" class="h-4 w-4 text-amber-400"></i>
+          <span id="lbl-media-preview-title" class="text-xs font-mono font-bold text-appText uppercase">Media Attachment Preview</span>
+        </div>
+        <button onclick="closeMediaPreview()" class="text-appTextSec hover:text-appText text-lg p-1 rounded cursor-pointer">✕</button>
+      </div>
+      <div id="media-preview-body" class="p-4 bg-neutral-950/90 flex items-center justify-center min-h-[300px] max-h-[70vh]">
+        <!-- Image or Video injected dynamically -->
+      </div>
+      <div class="flex items-center justify-between px-5 py-3 border-t border-borderSec bg-inputBg/40">
+        <span id="lbl-media-preview-time" class="text-[10px] font-mono text-appTextTer">Recorded at: --</span>
+        <div class="flex gap-2">
+          <button id="btn-delete-preview-media" class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 rounded-lg text-xs font-mono transition-colors cursor-pointer flex items-center gap-1">
+            <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+            Delete Attachment
+          </button>
+          <button onclick="closeMediaPreview()" class="px-4 py-1.5 bg-inputBg hover:bg-cardBg border border-borderPrim text-appTextSec rounded-lg text-xs font-mono transition-colors cursor-pointer">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Vanilla JavaScript App Engine -->
   <script>
@@ -3468,32 +3523,64 @@
       return { name: found.name, short: found.short, isGroup: false };
     }
 
-    function createDefaultPumpData(key) {
+    function getPumpRefValues(key, u) {
+      if (!u) u = {};
       const isFeed = key.includes('fw_');
-      const isFire = key.includes('fire_');
       const isWater = key.includes('circ') || key.includes('sw_') || key.includes('condensate');
 
-      // Metric defaults
-      let ps = isFeed ? 2.5 : (isWater ? 0.6 : 0.8); // Bar
-      let pd = isFeed ? 22.0 : (isWater ? 4.5 : 6.0); // Bar
-      let q = isFeed ? 350.0 : (isWater ? 1200.0 : 150.0); // m3/hr
-      let ds = isFeed ? 200.0 : 300.0; // mm
-      let dd = isFeed ? 150.0 : 250.0; // mm
-      let zs = 1.0; // m
-      let zd = 2.5; // m
-      let hf = 0.5; // m
-      let sg = 1.0;
-      let temp = 30.0; // °C
-      let nrated = 3600; // RPM
-      let nact = 3560; // RPM
-      let v = 415; // Volts
-      let a = isFeed ? 180 : (isWater ? 95 : 45); // Ampere
-      let pf = 0.88; // Power factor
-      let pbaro = 101.3; // kPa
-      let pv = 4.2; // kPa
+      const ps_bar = isFeed ? 2.5 : (isWater ? 0.6 : 0.8);
+      const pd_bar = isFeed ? 22.0 : (isWater ? 4.5 : 6.0);
+      const q_m3h = isFeed ? 350.0 : (isWater ? 1200.0 : 150.0);
+      const ds_mm = isFeed ? 200.0 : 300.0;
+      const dd_mm = isFeed ? 150.0 : 250.0;
+      const zs_m = 1.0;
+      const zd_m = 2.5;
+      const hf_m = 0.5;
+      const sg_val = 1.0;
+      const temp_c = 30.0;
+      const nrated_val = 3600;
+      const nact_val = 3560;
+      const v_val = 415;
+      const a_val = isFeed ? 180 : (isWater ? 95 : 45);
+      const pf_val = 0.88;
+      const pbaro_kpa = 101.3;
+      const pv_kpa = 4.2;
+
+      const ps_disp = convertPressure(ps_bar, 'Bar', u.ps || 'Bar');
+      const pd_disp = convertPressure(pd_bar, 'Bar', u.pd || 'Bar');
+      const q_disp = convertFlow(q_m3h, 'm3_hr', u.q || 'm3_hr');
+      const ds_disp = convertLength(ds_mm / 1000, 'm', u.ds || 'mm');
+      const dd_disp = convertLength(dd_mm / 1000, 'm', u.dd || 'mm');
+      const zs_disp = convertLength(zs_m, 'm', u.zs || 'm');
+      const zd_disp = convertLength(zd_m, 'm', u.zd || 'm');
+      const hf_disp = convertLength(hf_m, 'm', u.hf || 'm');
+      const temp_disp = u.temp === 'F' ? (temp_c * 9/5 + 32) : temp_c;
+      const pbaro_disp = convertPressure(pbaro_kpa, 'kPa', u.pbaro || 'kPa');
+      const pv_disp = convertPressure(pv_kpa, 'kPa', u.pv || 'kPa');
 
       return {
-        // Units configuration
+        ps: ps_disp.toFixed(u.ps === 'Bar' || u.ps === 'MPa' ? 2 : 1),
+        pd: pd_disp.toFixed(u.pd === 'Bar' || u.pd === 'MPa' ? 2 : 1),
+        q: q_disp.toFixed(0),
+        ds: (u.ds === 'mm' ? ds_mm : ds_disp).toFixed(u.ds === 'mm' ? 0 : 1),
+        dd: (u.dd === 'mm' ? dd_mm : dd_disp).toFixed(u.dd === 'mm' ? 0 : 1),
+        zs: zs_disp.toFixed(1),
+        zd: zd_disp.toFixed(1),
+        hf: hf_disp.toFixed(1),
+        sg: sg_val.toFixed(2),
+        temp: temp_disp.toFixed(0),
+        nrated: nrated_val.toFixed(0),
+        nact: nact_val.toFixed(0),
+        v: v_val.toFixed(0),
+        a: a_val.toFixed(0),
+        pf: pf_val.toFixed(2),
+        pbaro: pbaro_disp.toFixed(u.pbaro === 'Bar' ? 3 : 1),
+        pv: pv_disp.toFixed(u.pv === 'Bar' ? 3 : 1)
+      };
+    }
+
+    function createDefaultPumpData(key) {
+      return {
         units: {
           ps: pumpState.globalUnitSystem === 'english' ? 'PSI' : 'Bar',
           pd: pumpState.globalUnitSystem === 'english' ? 'PSI' : 'Bar',
@@ -3508,18 +3595,9 @@
           pv: pumpState.globalUnitSystem === 'english' ? 'PSI' : 'kPa',
           fluid: 'sea_water'
         },
-        ps: pumpState.globalUnitSystem === 'english' ? (ps * 14.5038).toFixed(1) : ps.toFixed(2),
-        pd: pumpState.globalUnitSystem === 'english' ? (pd * 14.5038).toFixed(1) : pd.toFixed(2),
-        q: pumpState.globalUnitSystem === 'english' ? (q * 4.40287).toFixed(0) : q.toFixed(0),
-        ds: pumpState.globalUnitSystem === 'english' ? (ds / 25.4).toFixed(1) : ds.toFixed(0),
-        dd: pumpState.globalUnitSystem === 'english' ? (dd / 25.4).toFixed(1) : dd.toFixed(0),
-        zs: pumpState.globalUnitSystem === 'english' ? (zs * 3.28084).toFixed(1) : zs.toFixed(1),
-        zd: pumpState.globalUnitSystem === 'english' ? (zd * 3.28084).toFixed(1) : zd.toFixed(1),
-        hf: pumpState.globalUnitSystem === 'english' ? (hf * 3.28084).toFixed(1) : hf.toFixed(1),
-        sg, temp: pumpState.globalUnitSystem === 'english' ? 86.0 : temp,
-        nrated, nact, v, a, pf,
-        pbaro: pumpState.globalUnitSystem === 'english' ? 14.7 : pbaro,
-        pv: pumpState.globalUnitSystem === 'english' ? 0.61 : pv,
+        ps: '', pd: '', q: '', ds: '', dd: '', zs: '', zd: '', hf: '',
+        sg: '', temp: '', nrated: '', nact: '', v: '', a: '', pf: '',
+        pbaro: '', pv: '',
         hasValidReadings: true
       };
     }
@@ -3542,7 +3620,7 @@
     }
 
     // Comprehensive Hydraulics, Affinity Laws & Electrical Power Math
-    function calculatePumpMetrics(p) {
+    function calculatePumpMetrics(p, optKey) {
       if (!p || !p.hasValidReadings) {
         return {
           ps_bar: 0, pd_bar: 0, q_m3h: 0, ds_m: 0, dd_m: 0, zs_m: 0, zd_m: 0, hf_m: 0,
@@ -3554,30 +3632,39 @@
       }
 
       const u = p.units || { ps: 'Bar', pd: 'Bar', ds: 'mm', dd: 'mm', zs: 'm', zd: 'm', q: 'm3_hr', hf: 'm', temp: 'C', pbaro: 'kPa', pv: 'kPa' };
+      const refKey = optKey || getFullActivePumpKey();
+      const ref = getPumpRefValues(refKey, u);
+
+      const numVal = (val, defaultVal) => {
+        if (val !== undefined && val !== null && val !== '' && !isNaN(parseFloat(val))) {
+          return parseFloat(val);
+        }
+        return parseFloat(defaultVal);
+      };
 
       // Convert inputs into SI base units (Meters, Bar, m3/hr, kg/m3)
-      const ps_bar = convertPressure(parseFloat(p.ps), u.ps || 'Bar', 'Bar');
-      const pd_bar = convertPressure(parseFloat(p.pd), u.pd || 'Bar', 'Bar');
-      const q_m3h = convertFlow(parseFloat(p.q), u.q || 'm3_hr', 'm3_hr');
-      const ds_m = convertLength(parseFloat(p.ds), u.ds || 'mm', 'm');
-      const dd_m = convertLength(parseFloat(p.dd), u.dd || 'mm', 'm');
-      const zs_m = convertLength(parseFloat(p.zs), u.zs || 'm', 'm');
-      const zd_m = convertLength(parseFloat(p.zd), u.zd || 'm', 'm');
-      const hf_m = convertLength(parseFloat(p.hf), u.hf || 'm', 'm');
+      const ps_bar = convertPressure(numVal(p.ps, ref.ps), u.ps || 'Bar', 'Bar');
+      const pd_bar = convertPressure(numVal(p.pd, ref.pd), u.pd || 'Bar', 'Bar');
+      const q_m3h = convertFlow(numVal(p.q, ref.q), u.q || 'm3_hr', 'm3_hr');
+      const ds_m = convertLength(numVal(p.ds, ref.ds), u.ds || 'mm', 'm');
+      const dd_m = convertLength(numVal(p.dd, ref.dd), u.dd || 'mm', 'm');
+      const zs_m = convertLength(numVal(p.zs, ref.zs), u.zs || 'm', 'm');
+      const zd_m = convertLength(numVal(p.zd, ref.zd), u.zd || 'm', 'm');
+      const hf_m = convertLength(numVal(p.hf, ref.hf), u.hf || 'm', 'm');
       
-      const sg = parseFloat(p.sg) || 1.0;
+      const sg = numVal(p.sg, ref.sg) || 1.0;
       const density = sg * 1000.0; // kg/m3
       const g = 9.80665; // m/s2
 
-      const pbaro_kPa = convertPressure(parseFloat(p.pbaro), u.pbaro || 'kPa', 'kPa');
-      const pv_kPa = convertPressure(parseFloat(p.pv), u.pv || 'kPa', 'kPa');
+      const pbaro_kPa = convertPressure(numVal(p.pbaro, ref.pbaro), u.pbaro || 'kPa', 'kPa');
+      const pv_kPa = convertPressure(numVal(p.pv, ref.pv), u.pv || 'kPa', 'kPa');
 
-      const nrated = parseFloat(p.nrated) || 3600;
-      const nact = parseFloat(p.nact) || 3560;
+      const nrated = numVal(p.nrated, ref.nrated) || 3600;
+      const nact = numVal(p.nact, ref.nact) || 3560;
 
-      const volts = parseFloat(p.v) || 415;
-      const amps = parseFloat(p.a) || 85;
-      const pf = parseFloat(p.pf) || 0.88;
+      const volts = numVal(p.v, ref.v) || 415;
+      const amps = numVal(p.a, ref.a) || 85;
+      const pf = numVal(p.pf, ref.pf) || 0.88;
 
       if (isNaN(ps_bar) || isNaN(pd_bar) || isNaN(q_m3h) || ds_m <= 0 || dd_m <= 0) {
         return {
@@ -3679,10 +3766,35 @@
       savePumpState();
     };
 
-    // Camera Capture Handler for Phone / Tablet Users
+    // Camera & Video Attachment Handler (up to 5 per field)
     let currentCameraField = null;
 
+    function getFieldMediaArray(key, field) {
+      if (!pumpState.photos) pumpState.photos = {};
+      if (!pumpState.photos[key]) pumpState.photos[key] = {};
+      if (!pumpState.photos[key][field]) {
+        pumpState.photos[key][field] = [];
+      } else if (!Array.isArray(pumpState.photos[key][field])) {
+        const single = pumpState.photos[key][field];
+        pumpState.photos[key][field] = [
+          {
+            id: 'img_' + Date.now(),
+            dataUrl: single.dataUrl,
+            time: single.time || 'N/A',
+            type: 'image'
+          }
+        ];
+      }
+      return pumpState.photos[key][field];
+    }
+
     window.triggerCameraCapture = function(field) {
+      const key = getFullActivePumpKey();
+      const arr = getFieldMediaArray(key, field);
+      if (arr.length >= 5) {
+        alert('Maximum 5 media attachments allowed per gauge field. Delete an existing attachment to add a new one.');
+        return;
+      }
       currentCameraField = field;
       const cameraInput = document.getElementById('camera-file-input');
       if (cameraInput) {
@@ -3694,68 +3806,153 @@
       const file = event.target.files && event.target.files[0];
       if (!file || !currentCameraField) return;
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          // Compress captured image using Canvas
-          const canvas = document.createElement('canvas');
-          const maxDim = 600;
-          let w = img.width;
-          let h = img.height;
-          if (w > h) {
-            if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
-          } else {
-            if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
-          }
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.65);
+      const key = getFullActivePumpKey();
+      const arr = getFieldMediaArray(key, currentCameraField);
+      if (arr.length >= 5) {
+        alert('Maximum 5 media attachments allowed per gauge field.');
+        event.target.value = '';
+        return;
+      }
 
-          const key = getFullActivePumpKey();
-          if (!pumpState.photos[key]) pumpState.photos[key] = {};
-          pumpState.photos[key][currentCameraField] = {
-            dataUrl: compressedDataUrl,
+      if (file.type.startsWith('video/')) {
+        if (file.size > 12 * 1024 * 1024) {
+          alert('Video clip exceeds 12MB limit. Please attach or record a shorter clip under 12MB.');
+          event.target.value = '';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          arr.push({
+            id: 'vid_' + Date.now(),
+            dataUrl: e.target.result,
             time: new Date().toLocaleTimeString(),
-            field: currentCameraField
-          };
-
+            type: 'video'
+          });
           savePumpState();
+          renderCameraThumbnails();
+          updatePumpCalculations();
         };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const maxDim = 600;
+            let w = img.width, h = img.height;
+            if (w > h) {
+              if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+            } else {
+              if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.65);
+
+            arr.push({
+              id: 'img_' + Date.now(),
+              dataUrl: compressedDataUrl,
+              time: new Date().toLocaleTimeString(),
+              type: 'image'
+            });
+            savePumpState();
+            renderCameraThumbnails();
+            updatePumpCalculations();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
       event.target.value = ''; // Reset input
     };
 
-    window.deleteCameraPhoto = function(field) {
+    window.deleteCameraMedia = function(field, index) {
       const key = getFullActivePumpKey();
-      if (pumpState.photos[key] && pumpState.photos[key][field]) {
-        delete pumpState.photos[key][field];
+      const arr = getFieldMediaArray(key, field);
+      if (arr && arr[index] !== undefined) {
+        arr.splice(index, 1);
         savePumpState();
+        renderCameraThumbnails();
+        updatePumpCalculations();
       }
+    };
+
+    window.openMediaPreview = function(key, field, index) {
+      const arr = getFieldMediaArray(key, field);
+      const item = arr[index];
+      if (!item) return;
+
+      const modal = document.getElementById('modal-media-preview');
+      const body = document.getElementById('media-preview-body');
+      const timeLbl = document.getElementById('lbl-media-preview-time');
+      const titleLbl = document.getElementById('lbl-media-preview-title');
+      const delBtn = document.getElementById('btn-delete-preview-media');
+
+      if (titleLbl) titleLbl.innerText = `${field.toUpperCase()} Gauge Attachment (${index + 1}/${arr.length})`;
+      if (timeLbl) timeLbl.innerText = `Recorded: ${item.time}`;
+
+      if (body) {
+        if (item.type === 'video') {
+          body.innerHTML = `<video src="${item.dataUrl}" controls autoplay class="max-h-[60vh] max-w-full rounded-lg shadow-lg"></video>`;
+        } else {
+          body.innerHTML = `<img src="${item.dataUrl}" class="max-h-[60vh] max-w-full object-contain rounded-lg shadow-lg" alt="Gauge Attachment" />`;
+        }
+      }
+
+      if (delBtn) {
+        delBtn.onclick = function() {
+          deleteCameraMedia(field, index);
+          closeMediaPreview();
+        };
+      }
+
+      if (modal) modal.classList.remove('hidden');
+    };
+
+    window.closeMediaPreview = function() {
+      const modal = document.getElementById('modal-media-preview');
+      if (modal) modal.classList.add('hidden');
+      const body = document.getElementById('media-preview-body');
+      if (body) body.innerHTML = '';
     };
 
     function renderCameraThumbnails() {
       const key = getFullActivePumpKey();
-      const photos = pumpState.photos[key] || {};
       const fields = ['ps', 'pd', 'q', 'v', 'a'];
 
       fields.forEach(f => {
         const container = document.getElementById(`thumb-container-${f}`);
+        const lblSnap = document.getElementById(`lbl-snap-${f}`);
+        const mediaArr = getFieldMediaArray(key, f);
+
+        if (lblSnap) {
+          lblSnap.innerText = `Attach Media (${mediaArr.length}/5)`;
+        }
+
         if (!container) return;
 
-        if (photos[f]) {
+        if (mediaArr.length > 0) {
           container.classList.remove('hidden');
           container.innerHTML = `
-            <div class="relative group inline-block bg-neutral-900 border border-amber-500/40 rounded-lg p-1">
-              <img src="${photos[f].dataUrl}" class="h-12 w-16 object-cover rounded" alt="Gauge" />
-              <button onclick="deleteCameraPhoto('${f}')" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 text-[9px] hover:scale-110 transition-transform cursor-pointer">
-                ✕
-              </button>
-              <span class="block text-[8px] font-mono text-amber-400 text-center mt-0.5">Snapped ${photos[f].time}</span>
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              ${mediaArr.map((item, idx) => `
+                <div class="relative group inline-block bg-neutral-900 border border-amber-500/40 rounded-lg p-1">
+                  ${item.type === 'video' 
+                    ? `<div onclick="openMediaPreview('${key}', '${f}', ${idx})" class="relative cursor-pointer">
+                         <video src="${item.dataUrl}" class="h-12 w-16 object-cover rounded pointer-events-none"></video>
+                         <span class="absolute bottom-0.5 right-0.5 bg-neutral-950/80 text-amber-400 text-[8px] font-mono px-1 rounded flex items-center gap-0.5">🎥 Video</span>
+                       </div>`
+                    : `<img src="${item.dataUrl}" onclick="openMediaPreview('${key}', '${f}', ${idx})" class="h-12 w-16 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity" alt="Gauge" />`
+                  }
+                  <button onclick="deleteCameraMedia('${f}', ${idx})" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-[9px] hover:scale-110 transition-transform cursor-pointer shadow">
+                    ✕
+                  </button>
+                  <span class="block text-[8px] font-mono text-amber-400 text-center mt-0.5">${item.time}</span>
+                </div>
+              `).join('')}
             </div>
           `;
         } else {
@@ -3768,15 +3965,25 @@
       const galleryList = document.getElementById('div-photos-thumbnails-list');
       const galleryBox = document.getElementById('pump-all-photos-gallery');
       if (galleryList && galleryBox) {
-        const photoKeys = Object.keys(photos);
-        if (photoKeys.length > 0) {
+        let allMedia = [];
+        fields.forEach(f => {
+          const arr = getFieldMediaArray(key, f);
+          arr.forEach((m, idx) => {
+            allMedia.push({ ...m, field: f, idx });
+          });
+        });
+
+        if (allMedia.length > 0) {
           galleryBox.classList.remove('hidden');
-          galleryList.innerHTML = photoKeys.map(k => `
-            <div class="flex items-center gap-2 bg-inputBg p-1.5 rounded-lg border border-borderPrim">
-              <img src="${photos[k].dataUrl}" class="h-10 w-12 object-cover rounded" />
+          galleryList.innerHTML = allMedia.map(m => `
+            <div onclick="openMediaPreview('${key}', '${m.field}', ${m.idx})" class="flex items-center gap-2 bg-inputBg p-1.5 rounded-lg border border-borderPrim cursor-pointer hover:border-amber-500/50 transition-colors">
+              ${m.type === 'video'
+                ? `<div class="h-10 w-12 bg-neutral-900 rounded flex items-center justify-center text-[10px] text-amber-400">🎥 Clip</div>`
+                : `<img src="${m.dataUrl}" class="h-10 w-12 object-cover rounded" />`
+              }
               <div class="text-[9px] font-mono">
-                <span class="font-bold text-amber-400 uppercase block">${k} Gauge</span>
-                <span class="text-appTextTer">${photos[k].time}</span>
+                <span class="font-bold text-amber-400 uppercase block">${m.field} ${m.type}</span>
+                <span class="text-appTextTer">${m.time}</span>
               </div>
             </div>
           `).join('');
@@ -3907,6 +4114,33 @@
         if (el) el.value = val;
       });
 
+      // Update reference default labels & input placeholders
+      const ref = getPumpRefValues(key, p.units);
+      const refMap = [
+        { id: 'ref-label-ps', text: `Ref: ${ref.ps} ${p.units.ps || 'Bar'}` },
+        { id: 'ref-label-pd', text: `Ref: ${ref.pd} ${p.units.pd || 'Bar'}` },
+        { id: 'ref-label-ds', text: `Ref: ${ref.ds} ${p.units.ds || 'mm'}` },
+        { id: 'ref-label-dd', text: `Ref: ${ref.dd} ${p.units.dd || 'mm'}` },
+        { id: 'ref-label-zs', text: `Ref: ${ref.zs} ${p.units.zs || 'm'}` },
+        { id: 'ref-label-zd', text: `Ref: ${ref.zd} ${p.units.zd || 'm'}` },
+        { id: 'ref-label-q', text: `Ref: ${ref.q} ${p.units.q === 'm3_hr' ? 'm³/hr' : (p.units.q || 'm³/hr')}` },
+        { id: 'ref-label-hf', text: `Ref: ${ref.hf} ${p.units.hf || 'm'}` },
+        { id: 'ref-label-sg', text: `Ref: ${ref.sg}` },
+        { id: 'ref-label-temp', text: `Ref: ${ref.temp} °${p.units.temp || 'C'}` },
+        { id: 'ref-label-nrated', text: `Ref: ${ref.nrated} RPM` },
+        { id: 'ref-label-nact', text: `Ref: ${ref.nact} RPM` },
+        { id: 'ref-label-v', text: `Ref: ${ref.v} V` },
+        { id: 'ref-label-a', text: `Ref: ${ref.a} A` },
+        { id: 'ref-label-pf', text: `Ref: ${ref.pf}` },
+        { id: 'ref-label-pbaro', text: `Ref: ${ref.pbaro} ${p.units.pbaro || 'kPa'}` },
+        { id: 'ref-label-pv', text: `Ref: ${ref.pv} ${p.units.pv || 'kPa'}` }
+      ];
+
+      refMap.forEach(({ id, text }) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
+      });
+
       // Populate input values
       const fields = [
         'ps', 'pd', 'ds', 'dd', 'zs', 'zd', 'q', 'hf', 'sg', 'temp',
@@ -3915,8 +4149,11 @@
 
       fields.forEach(f => {
         const el = document.getElementById(`input-pump-${f}`);
-        if (el && document.activeElement !== el) {
-          el.value = p[f] !== undefined ? p[f] : '';
+        if (el) {
+          el.placeholder = `${ref[f] || ''}`;
+          if (document.activeElement !== el) {
+            el.value = p[f] !== undefined ? p[f] : '';
+          }
         }
       });
 
@@ -4072,7 +4309,7 @@
 
           return `
             <button onclick="selectSubPump('${sub.id}')" class="px-3 py-1.5 rounded-lg border text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 ${btnClass}">
-              <span>${sub.short}</span>
+              <span>${sub.name}</span>
               ${hasData ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>' : ''}
             </button>
           `;
@@ -4087,25 +4324,14 @@
       if (!container) return;
 
       const rawList = PUMP_METADATA[pumpState.facility];
-      // Sort alphabetically by short name
-      const sortedList = [...rawList].sort((a, b) => a.short.localeCompare(b.short));
+      // Sort alphabetically by full pump name
+      const sortedList = [...rawList].sort((a, b) => a.name.localeCompare(b.name));
 
       const optionsHtml = sortedList.map(p => {
         const isActive = p.id === pumpState.activePumpId;
-        
-        let hasData = false;
-        if (p.category === 'group' && p.subPumps) {
-          hasData = p.subPumps.some(s => getPumpDataByKey(`${pumpState.facility}_${p.id}_${s.id}`).hasValidReadings);
-        } else {
-          hasData = getPumpDataByKey(`${pumpState.facility}_${p.id}`).hasValidReadings;
-        }
-
-        const isGroupLabel = p.category === 'group' ? ' [Group Family]' : '';
-        const statusStr = hasData ? '● Inspected' : '○ Empty';
-
         return `
           <option value="${p.id}" ${isActive ? 'selected' : ''}>
-            ${p.short}${isGroupLabel} — ${p.name} (${statusStr})
+            ${p.name}
           </option>
         `;
       }).join('');
@@ -4433,16 +4659,11 @@
       const activeMeta = getActivePumpMeta();
       const subject = `Pump Performance Field Test - ${pumpState.facility} [${activeMeta.short}] - ${dateStr}`;
 
-      const lnkGmail = document.getElementById('lnk-pump-gmail');
-      const lnkOutlook = document.getElementById('lnk-pump-outlook');
       const lnkMailto = document.getElementById('lnk-pump-mailto');
-
-      if (lnkGmail) lnkGmail.href = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-      if (lnkOutlook) lnkOutlook.href = `https://outlook.live.com/default.aspx?rru=compose&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
       if (lnkMailto) lnkMailto.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
     }
 
-    // High-Fidelity XLSX Export with Camera Photos Sheet
+    // High-Fidelity Vertical XLSX Export
     window.generatePumpXLSXFile = function(scope) {
       if (typeof XLSX === 'undefined') return null;
       const wb = XLSX.utils.book_new();
@@ -4483,85 +4704,112 @@
         });
       }
 
+      // Vertical Layout Construction
       const rows = [
-        ['ASME PTC 8.2 FIELD ENGINEER PUMP PERFORMANCE COMPLIANCE REGISTRY'],
-        [`Generated At: ${new Date().toLocaleString()}`, `Scope: ${scope}`],
-        [],
-        [
-          'Pump Unit Identifier',
-          'Suction Press', 'S. Unit',
-          'Suction Diam', 'S. Diam Unit',
-          'Suction Elev', 'S. Elev Unit',
-          'Disch Press', 'D. Unit',
-          'Disch Diam', 'D. Diam Unit',
-          'Disch Elev', 'D. Elev Unit',
-          'Flow Q', 'Flow Unit',
-          'Friction Loss', 'Loss Unit',
-          'Fluid Medium', 'SG', 'Temp',
-          'Rated RPM', 'Actual RPM',
-          'Volts V', 'Current A', 'Power Factor',
-          'Total TDH (m)', 'Affinity Head (m)',
-          'Fluid Power (kW)', 'Elec Input (kW)',
-          'Efficiency (%)', 'NPSHa (m)',
-          'Cavitation Guard Status'
-        ]
+        ['ASME PTC 8.2 FIELD ENGINEER PUMP PERFORMANCE REPORT'],
+        [`Generated At: ${new Date().toLocaleString()}`, `Scope: ${scope.toUpperCase()}`],
+        []
       ];
 
-      const photoLogsRows = [
-        ['CAPTURED METER & GAUGE CAMERA SNAPSHOTS LOG'],
-        [],
-        ['Pump Unit Identifier', 'Gauge Target', 'Capture Time', 'Photo Data Format']
-      ];
-
-      pumpsToReport.forEach(({ key, name }) => {
+      if (pumpsToReport.length === 1) {
+        // Single Pump Vertical Layout: Column 1 = Parameter, Column 2 = Value, Column 3 = Units
+        const { key, name } = pumpsToReport[0];
         const pData = getPumpDataByKey(key);
-        const m = calculatePumpMetrics(pData);
+        const m = calculatePumpMetrics(pData, key);
         const u = pData.units || {};
+        const ref = getPumpRefValues(key, u);
 
-        if (!m.hasValidReadings) {
-          rows.push([name, 'UNINSPECTED']);
-          return;
-        }
+        rows.push(['Pump Unit Identifier', name, '']);
+        rows.push(['Parameter', 'Value', 'Units']);
 
-        rows.push([
-          name,
-          pData.ps, u.ps || 'Bar',
-          pData.ds, u.ds || 'mm',
-          pData.zs, u.zs || 'm',
-          pData.pd, u.pd || 'Bar',
-          pData.dd, u.dd || 'mm',
-          pData.zd, u.zd || 'm',
-          pData.q, u.q || 'm3_hr',
-          pData.hf, u.hf || 'm',
-          u.fluid || 'sea_water', pData.sg, pData.temp,
-          pData.nrated, pData.nact,
-          pData.v, pData.a, pData.pf,
-          parseFloat(m.tdh.toFixed(2)),
-          parseFloat(m.affinityHead_m.toFixed(2)),
-          parseFloat(m.fluidPowerKw.toFixed(2)),
-          parseFloat(m.elecPowerKw.toFixed(2)),
-          parseFloat(m.efficiency.toFixed(2)),
-          parseFloat(m.npsha_m.toFixed(2)),
-          m.npsha_m > 2.44 ? 'SAFE' : 'RISK'
-        ]);
+        const paramList = [
+          ['Suction Pressure (ps)', pData.ps !== '' ? pData.ps : `${ref.ps} (Ref)`, u.ps || 'Bar'],
+          ['Suction Pipe Diameter (ds)', pData.ds !== '' ? pData.ds : `${ref.ds} (Ref)`, u.ds || 'mm'],
+          ['Suction Elevation (zs)', pData.zs !== '' ? pData.zs : `${ref.zs} (Ref)`, u.zs || 'm'],
+          ['Discharge Pressure (pd)', pData.pd !== '' ? pData.pd : `${ref.pd} (Ref)`, u.pd || 'Bar'],
+          ['Discharge Pipe Diameter (dd)', pData.dd !== '' ? pData.dd : `${ref.dd} (Ref)`, u.dd || 'mm'],
+          ['Discharge Elevation (zd)', pData.zd !== '' ? pData.zd : `${ref.zd} (Ref)`, u.zd || 'm'],
+          ['Discharge Flow (Q)', pData.q !== '' ? pData.q : `${ref.q} (Ref)`, u.q === 'm3_hr' ? 'm³/hr' : (u.q || 'm³/hr')],
+          ['Friction Head Loss (hf)', pData.hf !== '' ? pData.hf : `${ref.hf} (Ref)`, u.hf || 'm'],
+          ['Fluid Medium', u.fluid || 'sea_water', '-'],
+          ['Specific Gravity (SG)', pData.sg !== '' ? pData.sg : `${ref.sg} (Ref)`, '-'],
+          ['Fluid Temperature', pData.temp !== '' ? pData.temp : `${ref.temp} (Ref)`, `°${u.temp || 'C'}`],
+          ['Rated Speed', pData.nrated !== '' ? pData.nrated : `${ref.nrated} (Ref)`, 'RPM'],
+          ['Actual Shaft Speed', pData.nact !== '' ? pData.nact : `${ref.nact} (Ref)`, 'RPM'],
+          ['Motor Voltage', pData.v !== '' ? pData.v : `${ref.v} (Ref)`, 'V'],
+          ['Motor Current', pData.a !== '' ? pData.a : `${ref.a} (Ref)`, 'A'],
+          ['Power Factor (cos φ)', pData.pf !== '' ? pData.pf : `${ref.pf} (Ref)`, '-'],
+          ['Barometric Pressure', pData.pbaro !== '' ? pData.pbaro : `${ref.pbaro} (Ref)`, u.pbaro || 'kPa'],
+          ['Vapor Pressure', pData.pv !== '' ? pData.pv : `${ref.pv} (Ref)`, u.pv || 'kPa'],
+          ['--- CALCULATED HYDRAULICS ---', '', ''],
+          ['Total Dynamic Head (TDH)', parseFloat(m.tdh.toFixed(2)), 'm column'],
+          ['Speed Corrected Head (Affinity)', parseFloat(m.affinityHead_m.toFixed(2)), 'm column'],
+          ['Head Drop Percentage', `${m.headDropPct.toFixed(1)}%`, m.headDropPct <= 10 ? 'GOOD' : 'HIGH DROP'],
+          ['Hydraulic Fluid Power', parseFloat(m.fluidPowerKw.toFixed(2)), 'kW'],
+          ['Electrical Power Input', parseFloat(m.elecPowerKw.toFixed(2)), 'kW'],
+          ['Overall Pump Efficiency', `${m.efficiency.toFixed(1)}%`, '%'],
+          ['NPSH Available (NPSHa)', parseFloat(m.npsha_m.toFixed(2)), 'm abs'],
+          ['Cavitation Status', m.npsha_m > 2.44 ? 'SAFE' : 'RISK', '']
+        ];
 
-        if (pumpState.photos[key]) {
-          Object.keys(pumpState.photos[key]).forEach(f => {
-            const photo = pumpState.photos[key][f];
-            photoLogsRows.push([name, `${f.toUpperCase()} Gauge`, photo.time, 'Base64 JPEG (Embedded)']);
-          });
-        }
-      });
+        paramList.forEach(item => rows.push(item));
+
+      } else {
+        // Multi-Pump Vertical Layout
+        // Column 1 = Parameter, Column 2..N = Pump Values, Column Last = Units
+        const headerRow = ['Parameter'];
+        const pumpDataList = [];
+
+        pumpsToReport.forEach(({ key, name }) => {
+          headerRow.push(name);
+          const pData = getPumpDataByKey(key);
+          const m = calculatePumpMetrics(pData, key);
+          const u = pData.units || {};
+          const ref = getPumpRefValues(key, u);
+          pumpDataList.push({ pData, m, u, ref });
+        });
+        headerRow.push('Units');
+        rows.push(headerRow);
+
+        const paramDefs = [
+          { label: 'Suction Pressure (ps)', getVal: p => p.pData.ps !== '' ? p.pData.ps : `${p.ref.ps} (Ref)`, getUnit: p => p.u.ps || 'Bar' },
+          { label: 'Suction Pipe Diam (ds)', getVal: p => p.pData.ds !== '' ? p.pData.ds : `${p.ref.ds} (Ref)`, getUnit: p => p.u.ds || 'mm' },
+          { label: 'Suction Elevation (zs)', getVal: p => p.pData.zs !== '' ? p.pData.zs : `${p.ref.zs} (Ref)`, getUnit: p => p.u.zs || 'm' },
+          { label: 'Discharge Pressure (pd)', getVal: p => p.pData.pd !== '' ? p.pData.pd : `${p.ref.pd} (Ref)`, getUnit: p => p.u.pd || 'Bar' },
+          { label: 'Discharge Pipe Diam (dd)', getVal: p => p.pData.dd !== '' ? p.pData.dd : `${p.ref.dd} (Ref)`, getUnit: p => p.u.dd || 'mm' },
+          { label: 'Discharge Elevation (zd)', getVal: p => p.pData.zd !== '' ? p.pData.zd : `${p.ref.zd} (Ref)`, getUnit: p => p.u.zd || 'm' },
+          { label: 'Discharge Flow (Q)', getVal: p => p.pData.q !== '' ? p.pData.q : `${p.ref.q} (Ref)`, getUnit: p => p.u.q === 'm3_hr' ? 'm³/hr' : (p.u.q || 'm³/hr') },
+          { label: 'Friction Loss (hf)', getVal: p => p.pData.hf !== '' ? p.pData.hf : `${p.ref.hf} (Ref)`, getUnit: p => p.u.hf || 'm' },
+          { label: 'Fluid Medium', getVal: p => p.u.fluid || 'sea_water', getUnit: () => '-' },
+          { label: 'Specific Gravity (SG)', getVal: p => p.pData.sg !== '' ? p.pData.sg : `${p.ref.sg} (Ref)`, getUnit: () => '-' },
+          { label: 'Fluid Temp', getVal: p => p.pData.temp !== '' ? p.pData.temp : `${p.ref.temp} (Ref)`, getUnit: p => `°${p.u.temp || 'C'}` },
+          { label: 'Rated Speed', getVal: p => p.pData.nrated !== '' ? p.pData.nrated : `${p.ref.nrated} (Ref)`, getUnit: () => 'RPM' },
+          { label: 'Actual Speed', getVal: p => p.pData.nact !== '' ? p.pData.nact : `${p.ref.nact} (Ref)`, getUnit: () => 'RPM' },
+          { label: 'Motor Voltage', getVal: p => p.pData.v !== '' ? p.pData.v : `${p.ref.v} (Ref)`, getUnit: () => 'V' },
+          { label: 'Motor Current', getVal: p => p.pData.a !== '' ? p.pData.a : `${p.ref.a} (Ref)`, getUnit: () => 'A' },
+          { label: 'Power Factor', getVal: p => p.pData.pf !== '' ? p.pData.pf : `${p.ref.pf} (Ref)`, getUnit: () => '-' },
+          { label: '--- CALCULATED HYDRAULICS ---', getVal: () => '', getUnit: () => '' },
+          { label: 'Total Dynamic Head (TDH)', getVal: p => parseFloat(p.m.tdh.toFixed(2)), getUnit: () => 'm' },
+          { label: 'Affinity Corrected Head', getVal: p => parseFloat(p.m.affinityHead_m.toFixed(2)), getUnit: () => 'm' },
+          { label: 'Head Drop %', getVal: p => `${p.m.headDropPct.toFixed(1)}%`, getUnit: () => '%' },
+          { label: 'Fluid Power', getVal: p => parseFloat(p.m.fluidPowerKw.toFixed(2)), getUnit: () => 'kW' },
+          { label: 'Electrical Power', getVal: p => parseFloat(p.m.elecPowerKw.toFixed(2)), getUnit: () => 'kW' },
+          { label: 'Efficiency', getVal: p => `${p.m.efficiency.toFixed(1)}%`, getUnit: () => '%' },
+          { label: 'NPSH Available', getVal: p => parseFloat(p.m.npsha_m.toFixed(2)), getUnit: () => 'm abs' },
+          { label: 'Cavitation Status', getVal: p => p.m.npsha_m > 2.44 ? 'SAFE' : 'RISK', getUnit: () => '' }
+        ];
+
+        paramDefs.forEach(def => {
+          const row = [def.label];
+          pumpDataList.forEach(p => row.push(def.getVal(p)));
+          row.push(def.getUnit(pumpDataList[0]));
+          rows.push(row);
+        });
+      }
 
       const wsPumps = XLSX.utils.aoa_to_sheet(rows);
       XLSX.utils.book_append_sheet(wb, wsPumps, 'Pump_Performance');
 
-      if (photoLogsRows.length > 3) {
-        const wsPhotos = XLSX.utils.aoa_to_sheet(photoLogsRows);
-        XLSX.utils.book_append_sheet(wb, wsPhotos, 'Meter_Photos_Log');
-      }
-
-      const activeMeta = getActivePumpMeta();
       const filename = `pump_performance_${scope}_${pumpState.facility}_${dateStr}.xlsx`;
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
