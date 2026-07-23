@@ -672,8 +672,9 @@
             <span class="text-[10px] font-mono font-bold px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-md">Step-by-Step Guided</span>
           </div>
 
-          <!-- Hidden Camera File Input for Mobile Device Camera & Video Capture -->
+          <!-- Hidden File Inputs for Mobile Device Camera & Gallery Capture -->
           <input type="file" id="camera-file-input" accept="image/*,video/*" capture="environment" class="hidden" onchange="handleCameraCaptureEvent(event)" />
+          <input type="file" id="gallery-file-input" accept="image/*,video/*" class="hidden" onchange="handleCameraCaptureEvent(event)" />
 
           <div class="space-y-5">
             
@@ -1780,6 +1781,75 @@
     </div>
   </div>
 
+
+  <!-- Media Capture & Attachment Modal -->
+  <div id="modal-media-capture" class="fixed inset-0 bg-neutral-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden animate-fade-in">
+    <div class="bg-cardBg border border-borderPrim rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-5 py-3.5 border-b border-borderSec bg-inputBg/60">
+        <div class="flex items-center gap-2">
+          <i data-lucide="camera" class="h-4 w-4 text-amber-400"></i>
+          <span id="lbl-media-capture-title" class="text-xs font-mono font-bold text-appText uppercase">Attach Gauge Media</span>
+        </div>
+        <button onclick="closeMediaCaptureModal()" class="text-appTextSec hover:text-appText text-lg p-1 rounded cursor-pointer">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 space-y-4 bg-cardBg">
+        <!-- Media Counter Badge -->
+        <div class="flex items-center justify-between bg-inputBg/80 p-3 rounded-xl border border-borderPrim">
+          <span class="text-xs font-mono text-appTextSec">Attached Media Limit</span>
+          <span id="lbl-media-capture-count" class="text-xs font-mono font-bold text-amber-400 px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 rounded-md">0 / 5 Media</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-2.5">
+          <!-- Default Primary Action: Live Camera Snapshot -->
+          <button id="btn-trigger-camera-direct" onclick="triggerDirectCamera()" class="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-mono font-bold text-xs py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-between group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-neutral-950/20 flex items-center justify-center">
+                <i data-lucide="camera" class="h-4 w-4"></i>
+              </div>
+              <div class="text-left">
+                <div class="text-xs font-bold uppercase tracking-wider">Take Camera Snapshot / Video</div>
+                <div class="text-[10px] font-normal opacity-80">Opens device camera directly (Photo or Video)</div>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="h-4 w-4 group-hover:translate-x-1 transition-transform"></i>
+          </button>
+
+          <!-- Secondary Action: Gallery Upload -->
+          <button id="btn-trigger-gallery-direct" onclick="triggerDirectGallery()" class="w-full bg-inputBg hover:bg-cardBg text-appText font-mono text-xs py-2.5 px-4 rounded-xl border border-borderPrim hover:border-amber-500/40 transition-all flex items-center justify-between group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-cardBg border border-borderPrim flex items-center justify-center text-amber-400">
+                <i data-lucide="image" class="h-4 w-4"></i>
+              </div>
+              <div class="text-left">
+                <div class="text-xs font-bold text-appText">Choose from Photo Gallery / Files</div>
+                <div class="text-[10px] text-appTextTer">Select existing picture or video file from phone</div>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="h-4 w-4 text-appTextSec group-hover:translate-x-1 transition-transform"></i>
+          </button>
+        </div>
+
+        <!-- Currently Attached Media Grid -->
+        <div class="space-y-2 pt-2 border-t border-borderSec/50">
+          <span class="text-[10px] font-mono uppercase text-appTextSec font-bold">Attached Items for this Gauge</span>
+          <div id="div-media-capture-items" class="min-h-[60px] max-h-[180px] overflow-y-auto space-y-2 pr-1">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-end px-5 py-3 border-t border-borderSec bg-inputBg/40">
+        <button onclick="closeMediaCaptureModal()" class="px-5 py-1.5 bg-amber-500/10 hover:bg-amber-500 hover:text-neutral-950 text-amber-400 border border-amber-500/30 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Media Attachment Preview Modal -->
   <div id="modal-media-preview" class="fixed inset-0 bg-neutral-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden animate-fade-in">
@@ -3789,17 +3859,97 @@
     }
 
     window.triggerCameraCapture = function(field) {
+      currentCameraField = field;
+      openMediaCaptureModal(field);
+    };
+
+    window.openMediaCaptureModal = function(field) {
+      currentCameraField = field;
       const key = getFullActivePumpKey();
       const arr = getFieldMediaArray(key, field);
-      if (arr.length >= 5) {
-        alert('Maximum 5 media attachments allowed per gauge field. Delete an existing attachment to add a new one.');
-        return;
+      
+      const modal = document.getElementById('modal-media-capture');
+      const title = document.getElementById('lbl-media-capture-title');
+      const countLbl = document.getElementById('lbl-media-capture-count');
+      const itemsDiv = document.getElementById('div-media-capture-items');
+      const btnCam = document.getElementById('btn-trigger-camera-direct');
+      const btnGal = document.getElementById('btn-trigger-gallery-direct');
+
+      const fieldNames = {
+        ps: 'Suction Pressure',
+        pd: 'Discharge Pressure',
+        q: 'Discharge Flow (Q)',
+        v: 'Motor Voltage',
+        a: 'Motor Current'
+      };
+
+      if (title) title.innerText = `Attach Media — ${fieldNames[field] || field.toUpperCase()}`;
+      if (countLbl) countLbl.innerText = `${arr.length} / 5 Media`;
+
+      if (btnCam) btnCam.disabled = arr.length >= 5;
+      if (btnGal) btnGal.disabled = arr.length >= 5;
+
+      if (itemsDiv) {
+        if (arr.length === 0) {
+          itemsDiv.innerHTML = `<div class="text-center py-4 text-appTextTer text-xs font-mono">No media attached yet. Tap "Take Camera Snapshot / Video" above to begin.</div>`;
+        } else {
+          itemsDiv.innerHTML = arr.map((item, idx) => `
+            <div class="flex items-center justify-between bg-inputBg p-2 rounded-xl border border-borderPrim">
+              <div class="flex items-center gap-3 cursor-pointer" onclick="openMediaPreview('${key}', '${field}', ${idx})">
+                ${item.type === 'video'
+                  ? `<div class="relative w-12 h-10 bg-neutral-900 rounded overflow-hidden flex items-center justify-center">
+                       <video src="${item.dataUrl}" class="w-full h-full object-cover pointer-events-none"></video>
+                       <span class="absolute text-[8px] font-mono text-amber-400 bg-neutral-950/80 px-0.5 rounded bottom-0 right-0">🎥 Video</span>
+                     </div>`
+                  : `<img src="${item.dataUrl}" class="w-12 h-10 object-cover rounded" alt="Gauge" />`
+                }
+                <div>
+                  <div class="text-xs font-mono font-bold text-appText flex items-center gap-1.5">
+                    <span>${item.type === 'video' ? '🎥 Video Clip' : '📷 Camera Snapshot'}</span>
+                    <span class="text-[10px] text-appTextTer font-normal">#${idx + 1}</span>
+                  </div>
+                  <div class="text-[10px] font-mono text-appTextTer">Recorded: ${item.time}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="openMediaPreview('${key}', '${field}', ${idx})" class="p-1 text-appTextSec hover:text-amber-400 text-xs font-mono rounded cursor-pointer" title="View Fullscreen">
+                  👁️
+                </button>
+                <button onclick="deleteMediaFromModal('${field}', ${idx})" class="p-1 text-red-400 hover:text-red-300 text-xs font-mono rounded cursor-pointer" title="Delete">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          `).join('');
+        }
       }
-      currentCameraField = field;
+
+      if (modal) modal.classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    };
+
+    window.closeMediaCaptureModal = function() {
+      const modal = document.getElementById('modal-media-capture');
+      if (modal) modal.classList.add('hidden');
+    };
+
+    window.triggerDirectCamera = function() {
       const cameraInput = document.getElementById('camera-file-input');
       if (cameraInput) {
         cameraInput.click();
       }
+    };
+
+    window.triggerDirectGallery = function() {
+      const galleryInput = document.getElementById('gallery-file-input');
+      if (galleryInput) {
+        galleryInput.click();
+      }
+    };
+
+    window.deleteMediaFromModal = function(field, index) {
+      deleteCameraMedia(field, index);
+      openMediaCaptureModal(field);
     };
 
     window.handleCameraCaptureEvent = function(event) {
@@ -3813,6 +3963,16 @@
         event.target.value = '';
         return;
       }
+
+      const onComplete = function() {
+        savePumpState();
+        renderCameraThumbnails();
+        updatePumpCalculations();
+        const modalCap = document.getElementById('modal-media-capture');
+        if (modalCap && !modalCap.classList.contains('hidden')) {
+          openMediaCaptureModal(currentCameraField);
+        }
+      };
 
       if (file.type.startsWith('video/')) {
         if (file.size > 12 * 1024 * 1024) {
@@ -3828,9 +3988,7 @@
             time: new Date().toLocaleTimeString(),
             type: 'video'
           });
-          savePumpState();
-          renderCameraThumbnails();
-          updatePumpCalculations();
+          onComplete();
         };
         reader.readAsDataURL(file);
       } else {
@@ -3858,9 +4016,7 @@
               time: new Date().toLocaleTimeString(),
               type: 'image'
             });
-            savePumpState();
-            renderCameraThumbnails();
-            updatePumpCalculations();
+            onComplete();
           };
           img.src = e.target.result;
         };
